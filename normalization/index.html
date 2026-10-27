@@ -1,0 +1,2067 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database Normalization: Interactive Tutorial</title>
+<meta name="description" content="Learn functional dependencies, 1NF to BCNF, lossless decomposition, dependency preservation, and the trade-offs of normalization. Theory, worked examples, dependency diagrams, a live FD workbench, runnable SQL, and knowledge checks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2EF; --surface:#FFFFFF; --ink:#0E2420; --soft:#46605A; --line:#C5D5CE;
+  --accent:#5B3FD0; --accent-tint:#E9E4FB; --accent-ink:#35208F;
+  --teal-tint:#DDF1ED;
+  --c-full:#0F766E; --c-part:#C2410C; --c-trans:#BE185D; --c-bcnf:#6D28D9;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1;
+  --code-bg:#0D1F1C; --code-bar:#16322D; --code-ink:#DDEBE7;
+  --code-kw:#C9BEFF; --code-st:#8FE0C0; --code-nu:#F2C77B; --code-cm:#7C9A93;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1614; --surface:#12231F; --ink:#E5F0EC; --soft:#9BB3AC; --line:#274039;
+    --accent:#A99BFF; --accent-tint:#2B2552; --accent-ink:#D4CCFF;
+    --teal-tint:#14332E;
+    --c-full:#4FD1C5; --c-part:#FB923C; --c-trans:#F472B6; --c-bcnf:#A78BFA;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D;
+    --code-bg:#08130F; --code-bar:#12302A;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,h4{font-family:"Familjen Grotesk","Public Sans",system-ui,sans-serif;line-height:1.15;letter-spacing:-.005em;margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1320px;margin:0 auto}
+/* sidebar */
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:700 20px "Familjen Grotesk",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+header.hero{padding:44px 40px 30px;border-bottom:1px solid var(--line)}
+header.hero h1{font-size:clamp(34px,5vw,58px);font-weight:700;max-width:16ch}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:62ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:10px;margin:22px 0 26px;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Familjen Grotesk",sans-serif;font-size:17px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:56px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:700}
+section.mod>.goal{color:var(--soft);font-size:18px;max-width:68ch;margin:10px 0 6px}
+.block{margin-top:30px}
+.chip{display:inline-block;font:700 13px "Public Sans",sans-serif;padding:2px 10px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink);border:1px solid var(--accent);margin-bottom:8px}
+.block h3{font-size:24px;margin-bottom:6px}
+.prose{max-width:74ch}
+.prose ul,.prose ol{padding-left:1.25em}
+.prose li{margin:.3em 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.callout{border-left:4px solid var(--accent);background:var(--surface);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;max-width:74ch}
+.callout.warn{border-color:var(--bad)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px}
+.wb-grid>*,.grid2>*,.tbls>*,.tabs2>*{min-width:0}
+.card{min-width:0}
+table{border-collapse:collapse;width:100%;background:var(--surface);border:1px solid var(--line);font-size:15.5px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--teal-tint);font-family:"Familjen Grotesk",sans-serif}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto;margin:14px 0;border-radius:var(--radius)}
+kbd,.inl{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--teal-tint);padding:1px 6px;border-radius:5px}
+.fdtxt{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+/* FD diagram */
+figure.fig{margin:16px 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+figure.fig .scroll{overflow-x:auto;padding:6px}
+figure.fig svg{display:block;min-width:640px;width:100%;height:auto}
+figure.fig figcaption{border-top:1px solid var(--line);padding:10px 16px;background:var(--bg);font-size:15.5px}
+.fdbox{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.fdbox.key{fill:var(--accent-tint);stroke:var(--accent);stroke-width:2}
+.fdtext{fill:var(--ink);font:600 12.5px "Public Sans",sans-serif;text-anchor:middle;dominant-baseline:central}
+svg g.fd{transition:opacity .15s}
+svg.dim g.fd{opacity:.14}
+svg.dim g.fd.on{opacity:1}
+ul.fdlegend{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+ul.fdlegend li{display:flex;gap:10px;align-items:baseline;padding:4px 6px;border-radius:7px;cursor:default}
+ul.fdlegend li:hover,ul.fdlegend li:focus{background:var(--surface)}
+ul.fdlegend .sw{flex:none;width:26px;height:0;border-top:3px solid;transform:translateY(-3px)}
+ul.fdlegend .tag{color:var(--soft);font-size:14px}
+/* labs */
+.lab{border-radius:var(--radius);overflow:hidden;border:1px solid var(--code-bar);margin:14px 0;background:var(--code-bg)}
+.labbar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--code-bar);color:#C9DDD8;font-size:14px;font-weight:600}
+.labbar button{margin-left:auto;background:var(--accent);color:#fff;border:0;border-radius:7px;padding:5px 12px;font:700 13.5px "Public Sans",sans-serif;cursor:pointer}
+@media (prefers-color-scheme: dark){.labbar button{color:#1b1240}}
+.lab pre{margin:0;padding:14px 16px;overflow-x:auto;color:var(--code-ink);font-size:13.5px;line-height:1.55;tab-size:2}
+.lab pre.scroll-y{max-height:560px;overflow-y:auto}
+.lab .kw{color:var(--code-kw);font-weight:600}.lab .cm{color:var(--code-cm);font-style:italic}.lab .st{color:var(--code-st)}.lab .nu{color:var(--code-nu)}
+.lab details{border-top:1px solid var(--code-bar);color:#C9DDD8}
+.lab summary{cursor:pointer;padding:8px 14px;font-weight:600;font-size:14px}
+.lab pre.out{background:#08130F;color:#B7E3CF;border-top:1px dashed #254563;max-height:520px;overflow:auto}
+/* quiz / duel */
+.quiz{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:6px 20px 18px}
+.q{padding:16px 0;border-bottom:1px solid var(--line)}
+.q:last-of-type{border-bottom:0}
+.qtext{font-weight:700;margin:0 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;cursor:pointer;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.picked{border-color:var(--accent);background:var(--accent-tint)}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.opt.missed{border-style:dashed;border-color:var(--ok)}
+.opt:disabled{cursor:default}
+.why{margin-top:10px;padding:10px 14px;border-radius:9px;background:var(--teal-tint);font-size:15.5px}
+.btn{font:700 15px "Public Sans",sans-serif;background:var(--ink);color:var(--surface);border:0;border-radius:9px;padding:9px 16px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.score{margin-top:14px;font-weight:700;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.duel{grid-template-columns:1fr}}
+.duel button{text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer}
+.duel button b{display:block;font-family:"Familjen Grotesk",sans-serif}
+.duel button.right{border-color:var(--ok);background:var(--ok-tint)}.duel button.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.duel-item{padding:16px 0;border-bottom:1px solid var(--line)}
+.duel-item:last-child{border-bottom:0}
+/* workbench */
+.wb{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.wb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:12px 16px;margin-bottom:12px}
+.wb label{display:block;font-weight:700;font-size:14.5px;margin-bottom:3px}
+.wb input[type=text],.wb textarea,.wb select{width:100%;font:inherit;font-family:"IBM Plex Mono",monospace;font-size:14px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.wb textarea{min-height:104px;resize:vertical}
+.wb .hint{color:var(--soft);font-size:13.5px;margin-top:3px}
+.wb-actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+.wb-out{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:14px}
+.wb-card{border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;background:var(--bg);min-width:0;overflow-x:auto}
+.wb-card h4{font-size:17px;margin-bottom:6px}
+.wb-card ol.trace{margin:6px 0;padding-left:1.3em;font-size:15px}
+.wb-card ul{margin:6px 0;padding-left:1.2em}
+.wb-card li{margin:.2em 0}
+.wb-err{border-color:var(--bad);background:var(--bad-tint)}
+.badge{display:inline-block;font:700 14px "Familjen Grotesk",sans-serif;padding:2px 12px;border-radius:99px;border:1.5px solid}
+.badge.good{color:var(--ok);background:var(--ok-tint);border-color:var(--ok)}
+.badge.bad{color:var(--bad);background:var(--bad-tint);border-color:var(--bad)}
+.badge.mid{color:var(--accent-ink);background:var(--accent-tint);border-color:var(--accent)}
+.relchips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.relchips span{font:600 13.5px "IBM Plex Mono",monospace;padding:3px 9px;border-radius:7px;background:var(--teal-tint);border:1px solid var(--line)}
+table.tab{width:auto;font-size:13.5px;font-family:"IBM Plex Mono",monospace}
+table.tab th,table.tab td{padding:4px 9px;text-align:center}
+table.tab td.a{background:var(--ok-tint);font-weight:700}
+table.tab td.b{color:var(--soft)}
+.tabs2{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.tabs2 figcaption{font-size:13.5px;color:var(--soft);margin-bottom:4px}
+/* data tables */
+table.dt{width:auto;min-width:0;font-size:14.5px}
+table.dt th,table.dt td{padding:5px 10px;white-space:nowrap}
+table.dt th.pk{text-decoration:underline}
+table.dt tr.bad td{background:var(--bad-tint)}
+table.dt tr.ev td{background:var(--ok-tint)}
+table.dt td.hl{background:var(--accent-tint);font-weight:700}
+.dtwrap{overflow-x:auto;margin:8px 0}
+.dtcap{font:700 15px "Familjen Grotesk",sans-serif;margin:10px 0 2px}
+.tbls{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.stepper-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stepper-nav button{font:700 15px "Familjen Grotesk",sans-serif;padding:8px 14px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.stepper-nav button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){.stepper-nav button.on{color:#1b1240}}
+.pill{display:inline-block;font:600 13px "IBM Plex Mono",monospace;padding:2px 8px;border-radius:6px;background:var(--teal-tint);border:1px solid var(--line);margin:0 4px 4px 0}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px}
+.seg label{display:flex;gap:8px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer;font-weight:600;margin:0}
+.seg input{accent-color:var(--accent)}
+.seg label:has(input:checked){border-color:var(--accent);background:var(--accent-tint)}
+.tries{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.tries button{font:600 13.5px "IBM Plex Mono",monospace;padding:5px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tries button:hover{border-color:var(--accent)}
+.verdict{padding:10px 14px;border-radius:9px;margin:8px 0;font-weight:600}
+.verdict.good{background:var(--ok-tint);border:1.5px solid var(--ok)}
+.verdict.bad{background:var(--bad-tint);border:1.5px solid var(--bad)}
+.verdict.mid{background:var(--accent-tint);border:1.5px solid var(--accent)}
+pre.ddl{background:var(--code-bg);color:var(--code-ink);border-radius:var(--radius);padding:8px 0;margin:10px 0;font-size:13.5px;overflow-x:auto}
+.ddl .line{display:block;padding:2px 16px;border-left:4px solid transparent;cursor:pointer;white-space:pre}
+.ddl .line.static{cursor:default}
+.ddl .line:hover:not(.static){background:#16322D}
+.ddl .line.flag{border-left-color:var(--code-nu);background:#243b34}
+.ddl .line.hit{border-left-color:#4CC9A0;background:#12382d}
+.ddl .line.miss{border-left-color:#FB923C;background:#3b2a1a}
+.ddl .line.false{border-left-color:#FF8B82;background:#3d1f1d}
+.ddl-notes{display:grid;gap:8px;margin-top:8px}
+.ddl-notes div{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:15px}
+textarea.free{width:100%;min-height:120px;font:inherit;font-size:16px;padding:10px 12px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+footer{padding:28px 40px;border-top:1px solid var(--line);color:var(--soft);font-size:15px}
+@media (max-width:980px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:14px 16px}
+  nav.side ol{display:flex;overflow-x:auto;gap:6px}
+  nav.side a{white-space:nowrap}
+  nav.side .sub,nav.side button{display:none}
+  header.hero,main,footer{padding-left:18px;padding-right:18px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="side" aria-label="Tutorial sections">
+  <div class="brand">Database normalization</div>
+  <div class="sub">Dependencies, normal forms, trade-offs</div>
+  <ol id="navlist">
+    <li><a href="#start">Start here</a></li>
+    <li><a href="#m1" data-key="m1">Functional dependencies<span class="tick"></span></a></li>
+    <li><a href="#m2" data-key="m2">1NF to BCNF<span class="tick"></span></a></li>
+    <li><a href="#m3" data-key="m3">Good decompositions<span class="tick"></span></a></li>
+    <li><a href="#m4" data-key="m4">Performance trade-offs<span class="tick"></span></a></li>
+    <li><a href="#m5" data-key="m5">Refine a schema<span class="tick"></span></a></li>
+    <li><a href="#final" data-key="final">Final check<span class="tick"></span></a></li>
+  </ol>
+  <button id="resetAll" type="button">Reset my progress</button>
+</nav>
+
+<div>
+<header class="hero" id="start">
+  <h1>Store every fact once</h1>
+  <p class="lede">Normalization is the practice of finding the dependencies hiding inside a table and separating them, so a change happens in one place and the database cannot disagree with itself. Here is one table with five dependencies tangled together. By the end you will be able to take it apart, and prove you did it correctly.</p>
+  <figure class="fig" id="heroFig" aria-label="Dependency diagram of the ORDER_LINE table"></figure>
+  <ul class="outcomes">
+    <li><b>Identify</b>Functional dependencies, closures, and keys.</li>
+    <li><b>Normalize</b>Reach 1NF, 2NF, 3NF, and BCNF.</li>
+    <li><b>Evaluate</b>Lossless join and dependency preservation.</li>
+    <li><b>Weigh</b>Normalization against performance.</li>
+    <li><b>Refine</b>Schemas for maintainability and consistency.</li>
+  </ul>
+  <div class="card">
+    <h3 style="font-size:20px">Before you start</h3>
+    <p style="margin-top:6px"><b>SQL labs.</b> Each lab is a complete script. Press <b>Copy</b>, paste it into any SQLite tool, and run it: the <span class="inl">sqlite3</span> command line, <b>DB Browser for SQLite</b>, or the SQLite extension for VS Code. Open a fresh database for each lab. Every lab drops its own tables first, so you can run it again safely.</p>
+    <p style="margin-bottom:0"><b>The FD Workbench.</b> Modules 1 to 3 include a calculator that works out closures, keys, normal forms, and decomposition tests from dependencies you type. Use it to check your own homework answers, not only the built-in examples. Write dependencies as <span class="inl">A, B -&gt; C</span>, one per line.</p>
+  </div>
+</header>
+
+<main>
+<!-- ================= MODULE 1 ================= -->
+<section class="mod" id="m1">
+  <h2>1. Functional dependencies</h2>
+  <p class="goal">Read a schema and say which attributes determine which others, then compute closures and keys from those dependencies.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>What a functional dependency says</h3>
+    <p>A <b>functional dependency</b> (FD) <span class="fdtxt">X → Y</span> says: whenever two rows have the same values for X, they must have the same values for Y. We say X <b>determines</b> Y.</p>
+    <ul>
+      <li><span class="fdtxt">sid → sname</span>: a student ID always comes with the same name.</li>
+      <li><span class="fdtxt">sid, cid → grade</span>: a grade is fixed by the student and the course together.</li>
+      <li><span class="fdtxt">sid → grade</span> is <i>false</i>: one student has different grades in different courses.</li>
+    </ul>
+    <div class="callout"><b>FDs come from the business rules, not from the data.</b> A table with six rows can satisfy an FD by accident. The data can <i>disprove</i> a dependency (one counterexample is enough) but it can never <i>prove</i> one. You decide an FD is real by asking "could this ever have two values?" in the real world.</div>
+    <p>A dependency is <b>trivial</b> when the right side is already inside the left side (<span class="fdtxt">A, B → A</span>). Trivial FDs are always true and never interesting.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Picture</span>
+    <h3>Reading a dependency diagram</h3>
+    <p class="prose">Boxes are attributes; the shaded boxes are the key. Each line starts with dots under the determinant and ends with arrowheads on the attributes it determines. Hover or focus a row in the legend to isolate its arrows.</p>
+    <figure class="fig" id="enrollFig"></figure>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Deriving new dependencies: Armstrong's axioms</h3>
+    <p>Given a set F of FDs, more follow logically. Three rules generate all of them (they are <b>sound</b> and <b>complete</b>):</p>
+    <div class="tablewrap"><table>
+      <tr><th>Rule</th><th>Statement</th><th>Example</th></tr>
+      <tr><td>Reflexivity</td><td>If Y ⊆ X then X → Y</td><td>A, B → A</td></tr>
+      <tr><td>Augmentation</td><td>If X → Y then XZ → YZ</td><td>A → B gives A, C → B, C</td></tr>
+      <tr><td>Transitivity</td><td>If X → Y and Y → Z then X → Z</td><td>sid → zip and zip → city give sid → city</td></tr>
+    </table></div>
+    <p>Handy consequences: <b>union</b> (X → Y and X → Z give X → YZ), <b>decomposition</b> (X → YZ gives X → Y and X → Z), and <b>pseudotransitivity</b> (X → Y and WY → Z give WX → Z).</p>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Closure: the tool you will use constantly</h3>
+    <p>The <b>closure</b> X⁺ is the set of every attribute that X determines under F. Algorithm: start with X; repeat "if the left side of some FD is inside the set, add its right side" until nothing changes.</p>
+    <p><b>Worked example.</b> R(A, B, C, D), F = {A → B, B → C}. Compute A⁺: start {A}; A → B adds B → {A, B}; B → C adds C → {A, B, C}. D never appears, so A⁺ = {A, B, C}.</p>
+    <p>Closure answers almost every question: <b>X → Y follows from F</b> exactly when Y ⊆ X⁺. And it defines keys:</p>
+    <ul>
+      <li>A <b>superkey</b> is a set whose closure is every attribute of R.</li>
+      <li>A <b>candidate key</b> is a minimal superkey (remove any attribute and it stops being one).</li>
+      <li>A <b>prime attribute</b> belongs to at least one candidate key; the rest are <b>non-prime</b>.</li>
+    </ul>
+    <div class="callout"><b>Shortcut for finding keys.</b> An attribute that never appears on any right-hand side must be in every key. An attribute that appears only on right-hand sides is in no key. Start from the "must" attributes, check their closure, and add more only if needed.</div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Minimal cover: the tidy version of F</h3>
+    <p>A <b>minimal cover</b> is an equivalent set of FDs with no waste. Build it in three steps: (1) make every right side a single attribute; (2) remove <b>extraneous</b> attributes from left sides (in <span class="fdtxt">A, B → C</span>, B is extraneous if A → C already follows); (3) remove <b>redundant</b> FDs that the others already imply. You need it for the 3NF synthesis algorithm in module 3.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Does it hold in this data?</h3>
+    <p class="prose">Pick the left-side columns and the right-side column. The tester looks for two rows that agree on the left but disagree on the right. Try the quick buttons, then press <b>Add a student</b> and watch what happens to the "coincidence" dependencies.</p>
+    <div class="card" id="fdTester"></div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>FD Workbench: closures and keys</h3>
+    <p class="prose">Choose an example or type your own. Use the lecture example to confirm that <span class="fdtxt">C, D</span> is a key even though it determines nothing alone in a visible way.</p>
+    <div id="wb1"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>Test dependencies with SQL</h3>
+    <p>An FD <span class="fdtxt">X → Y</span> holds in a table exactly when <span class="inl">GROUP BY X HAVING COUNT(DISTINCT Y) &gt; 1</span> returns no rows. Lab 1 packages that into a report, then shows the coincidence dependencies breaking and a one-row edit corrupting a stored FD.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 1: testing dependencies against data</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lab="lab1">DROP VIEW  IF EXISTS fd_report;
+DROP TABLE IF EXISTS enroll;
+
+CREATE TABLE enroll (
+  sid     INTEGER,
+  sname   TEXT,
+  cid     TEXT,
+  ctitle  TEXT,
+  credits INTEGER,
+  grade   TEXT
+);
+
+INSERT INTO enroll VALUES
+  (1, 'Ada',   'CS101', 'Intro to Programming', 3, 'A'),
+  (1, 'Ada',   'CS220', 'Data Structures',      4, 'B'),
+  (2, 'Ben',   'CS101', 'Intro to Programming', 3, 'A'),
+  (2, 'Ben',   'MA201', 'Linear Algebra',       5, 'C'),
+  (3, 'Carla', 'CS220', 'Data Structures',      4, 'A'),
+  (3, 'Carla', 'MA201', 'Linear Algebra',       5, 'B');
+
+-- X -&gt; Y holds in the data exactly when no X value is paired with two different Y values.
+-- Each number counts the X values that break the dependency (0 means it holds).
+CREATE VIEW fd_report AS
+SELECT 'sid -&gt; sname' AS dependency,
+       (SELECT COUNT(*) FROM (SELECT 1 FROM enroll GROUP BY sid HAVING COUNT(DISTINCT sname) &gt; 1)) AS violators
+UNION ALL SELECT 'cid -&gt; ctitle',
+       (SELECT COUNT(*) FROM (SELECT 1 FROM enroll GROUP BY cid HAVING COUNT(DISTINCT ctitle) &gt; 1))
+UNION ALL SELECT 'sid, cid -&gt; grade',
+       (SELECT COUNT(*) FROM (SELECT 1 FROM enroll GROUP BY sid, cid HAVING COUNT(DISTINCT grade) &gt; 1))
+UNION ALL SELECT 'sid -&gt; grade',
+       (SELECT COUNT(*) FROM (SELECT 1 FROM enroll GROUP BY sid HAVING COUNT(DISTINCT grade) &gt; 1))
+UNION ALL SELECT 'credits -&gt; ctitle',
+       (SELECT COUNT(*) FROM (SELECT 1 FROM enroll GROUP BY credits HAVING COUNT(DISTINCT ctitle) &gt; 1))
+UNION ALL SELECT 'sname -&gt; sid',
+       (SELECT COUNT(*) FROM (SELECT 1 FROM enroll GROUP BY sname HAVING COUNT(DISTINCT sid) &gt; 1));
+
+SELECT * FROM fd_report;
+
+-- "credits -&gt; ctitle" and "sname -&gt; sid" hold in this tiny sample, but they are NOT rules:
+-- many courses share a credit count, and two students can share a name. Add more data:
+INSERT INTO enroll VALUES (4, 'Ben', 'CS230', 'Databases', 4, 'B');
+SELECT * FROM fd_report;
+
+-- Redundancy invites inconsistency: rename a course in only ONE of its rows.
+UPDATE enroll SET ctitle = 'Programming I' WHERE sid = 1 AND cid = 'CS101';
+SELECT * FROM fd_report WHERE dependency = 'cid -&gt; ctitle';
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">dependency         violators
+-----------------  ---------
+sid -&gt; sname       0
+cid -&gt; ctitle      0
+sid, cid -&gt; grade  0
+sid -&gt; grade       3
+credits -&gt; ctitle  0
+sname -&gt; sid       0
+
+dependency         violators
+-----------------  ---------
+sid -&gt; sname       0
+cid -&gt; ctitle      0
+sid, cid -&gt; grade  0
+sid -&gt; grade       3
+credits -&gt; ctitle  1
+sname -&gt; sid       1
+
+dependency     violators
+-------------  ---------
+cid -&gt; ctitle  1</pre></details></div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 1</h3>
+    <div class="quiz" data-quiz="m1"></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 2 ================= -->
+<section class="mod" id="m2">
+  <h2>2. Normal forms: 1NF to BCNF</h2>
+  <p class="goal">Take a messy table through each normal form, and know exactly which dependency each step removes.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Why bother: the three anomalies</h3>
+    <p>When one row records several independent facts, the same fact is stored many times. That causes:</p>
+    <ul>
+      <li><b>Update anomaly</b>: change a customer's city in one row and forget the others, and the table contradicts itself.</li>
+      <li><b>Insertion anomaly</b>: you cannot record a new product until someone orders it.</li>
+      <li><b>Deletion anomaly</b>: deleting a customer's last order also erases the customer's address.</li>
+    </ul>
+    <p>Normal forms are a ladder of rules, each one eliminating a kind of dependency that causes these anomalies.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Picture</span>
+    <h3>Three kinds of dependency</h3>
+    <p class="prose">This is the same ORDER_LINE table as the top of the page, now colored by what each dependency is doing relative to the key <span class="fdtxt">(order_id, product_id)</span>.</p>
+    <figure class="fig" id="orderFig"></figure>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>The ladder</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Form</th><th>Rule</th><th>Removes</th></tr>
+      <tr><td><b>1NF</b></td><td>Every cell holds one atomic value; no repeating groups; the table has a primary key.</td><td>Lists packed into cells</td></tr>
+      <tr><td><b>2NF</b></td><td>1NF, and every non-prime attribute depends on the <i>whole</i> of every candidate key.</td><td>Partial dependencies (only matter when a key has 2+ attributes)</td></tr>
+      <tr><td><b>3NF</b></td><td>2NF, and for every non-trivial FD X → A: X is a superkey <i>or</i> A is a prime attribute.</td><td>Transitive dependencies through a non-key</td></tr>
+      <tr><td><b>BCNF</b></td><td>For every non-trivial FD X → A: X is a superkey. No exceptions.</td><td>Dependencies whose determinant is not a key, even onto prime attributes</td></tr>
+    </table></div>
+    <div class="callout">The memory line: every non-key attribute must depend on <b>the key</b> (1NF), <b>the whole key</b> (2NF), and <b>nothing but the key</b> (3NF). BCNF adds: "so help me Codd", every determinant must be a key. Every BCNF table is in 3NF, every 3NF table is in 2NF, and so on.</div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Example</span>
+    <h3>Normalize an order table, one step at a time</h3>
+    <p class="prose">Business rules: an order belongs to one customer; a customer has one postal code; in this business a postal code belongs to one city; a product has one name and price. Step through the stages and watch the same data get split.</p>
+    <div class="stepper-nav" id="stepNav" role="tablist" aria-label="Normalization stages"></div>
+    <div class="card" id="stepBody"></div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>FD Workbench: which normal form is it in?</h3>
+    <p class="prose">The first example is the order table. Switch to the others to see 2NF, 3NF-but-not-BCNF, and BCNF cases. Then type your own.</p>
+    <div id="wb2"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>When 3NF is not enough: BCNF</h3>
+    <p>Tutoring(student, subject, tutor). Rules: a student has one tutor per subject (<span class="fdtxt">student, subject → tutor</span>), and each tutor teaches exactly one subject (<span class="fdtxt">tutor → subject</span>). The candidate keys are <span class="fdtxt">(student, subject)</span> and <span class="fdtxt">(student, tutor)</span>. Every attribute is prime, so the table is in <b>3NF</b>. But <span class="fdtxt">tutor</span> is not a key, so it is <b>not</b> in BCNF, and the fact "Lee teaches Math" is stored once per student.</p>
+  </div>
+  <div class="block">
+    <figure class="fig" id="tutorFig"></figure>
+    <div class="tbls">
+      <div><div class="dtcap">TUTORING (before)</div><div class="dtwrap"><table class="dt"><thead><tr><th class="pk">student</th><th class="pk">subject</th><th>tutor</th></tr></thead><tbody>
+        <tr><td>Ada</td><td>Math</td><td class="hl">Lee</td></tr><tr><td>Ada</td><td>Physics</td><td>Kim</td></tr><tr><td>Ben</td><td>Math</td><td class="hl">Lee</td></tr><tr><td>Carla</td><td>Physics</td><td>Kim</td></tr><tr><td>Dev</td><td>Math</td><td>Park</td></tr></tbody></table></div></div>
+      <div><div class="dtcap">TUTOR_SUBJECT</div><div class="dtwrap"><table class="dt"><thead><tr><th class="pk">tutor</th><th>subject</th></tr></thead><tbody>
+        <tr><td>Lee</td><td>Math</td></tr><tr><td>Kim</td><td>Physics</td></tr><tr><td>Park</td><td>Math</td></tr></tbody></table></div></div>
+      <div><div class="dtcap">STUDENT_TUTOR</div><div class="dtwrap"><table class="dt"><thead><tr><th class="pk">student</th><th class="pk">tutor</th></tr></thead><tbody>
+        <tr><td>Ada</td><td>Lee</td></tr><tr><td>Ada</td><td>Kim</td></tr><tr><td>Ben</td><td>Lee</td></tr><tr><td>Carla</td><td>Kim</td></tr><tr><td>Dev</td><td>Park</td></tr></tbody></table></div></div>
+    </div>
+    <p class="prose">The decomposition is lossless, but notice what happened: no single table now holds student, subject, and tutor together, so the rule <span class="fdtxt">student, subject → tutor</span> can no longer be checked inside one table. That cost is the subject of module 3.</p>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>Normalize with SQL</h3>
+    <p>Lab 2 builds the packed table, fixes it to 1NF, 2NF, and 3NF using <span class="inl">INSERT ... SELECT DISTINCT</span>, proves with <span class="inl">EXCEPT</span> that the join of the new tables reproduces the old one exactly, and finishes with the BCNF tutoring split.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 2: from one table to 3NF and BCNF</span><button type="button" class="copy">Copy</button></div>
+<pre class="scroll-y"><code data-lab="lab2">PRAGMA foreign_keys = OFF;
+DROP TABLE IF EXISTS order_line;      DROP TABLE IF EXISTS orders;
+DROP TABLE IF EXISTS order_line_2nf;  DROP TABLE IF EXISTS orders_2nf;
+DROP TABLE IF EXISTS customer;
+DROP TABLE IF EXISTS postal;          DROP TABLE IF EXISTS product;
+DROP TABLE IF EXISTS order_line_1nf;  DROP TABLE IF EXISTS orders_raw;
+DROP TABLE IF EXISTS student_tutor;   DROP TABLE IF EXISTS tutor_subject;
+DROP TABLE IF EXISTS tutoring;
+PRAGMA foreign_keys = ON;
+
+-- ===== Start: items packed into one cell (not 1NF) =====
+CREATE TABLE orders_raw (
+  order_id INTEGER PRIMARY KEY, order_date TEXT, cust_id TEXT, cust_name TEXT,
+  postal_code TEXT, city TEXT, items TEXT
+);
+INSERT INTO orders_raw VALUES
+  (1001, '2026-09-01', 'C1', 'Ada',   '20740', 'College Park', 'P10:Pen:1.50:3; P20:Notebook:4.00:1'),
+  (1002, '2026-09-02', 'C2', 'Ben',   '20740', 'College Park', 'P10:Pen:1.50:2; P40:Pencil:0.50:10'),
+  (1003, '2026-09-03', 'C3', 'Carla', '20715', 'Bowie',        'P30:Stapler:9.25:5; P40:Pencil:0.50:20');
+
+-- Which orders contain a Pen? Searching inside a packed cell gives a wrong answer
+-- (order 1003 only has a Pencil):
+SELECT order_id FROM orders_raw WHERE items LIKE '%Pen%';
+
+-- ===== 1NF: one value per cell, one row per order line, key (order_id, product_id) =====
+CREATE TABLE order_line_1nf (
+  order_id INTEGER, order_date TEXT, cust_id TEXT, cust_name TEXT,
+  postal_code TEXT, city TEXT,
+  product_id TEXT, product_name TEXT, unit_price REAL, qty INTEGER,
+  PRIMARY KEY (order_id, product_id)
+);
+INSERT INTO order_line_1nf VALUES
+  (1001, '2026-09-01', 'C1', 'Ada',   '20740', 'College Park', 'P10', 'Pen',      1.50,  3),
+  (1001, '2026-09-01', 'C1', 'Ada',   '20740', 'College Park', 'P20', 'Notebook', 4.00,  1),
+  (1002, '2026-09-02', 'C2', 'Ben',   '20740', 'College Park', 'P10', 'Pen',      1.50,  2),
+  (1002, '2026-09-02', 'C2', 'Ben',   '20740', 'College Park', 'P40', 'Pencil',   0.50, 10),
+  (1003, '2026-09-03', 'C3', 'Carla', '20715', 'Bowie',        'P30', 'Stapler',  9.25,  5),
+  (1003, '2026-09-03', 'C3', 'Carla', '20715', 'Bowie',        'P40', 'Pencil',   0.50, 20);
+
+SELECT order_id FROM order_line_1nf WHERE product_id = 'P10';
+
+-- ===== 2NF: remove partial dependencies =====
+--   order_id -&gt; order_date, cust_id, ...   (part of the key)
+--   product_id -&gt; product_name, unit_price (part of the key)
+CREATE TABLE product (
+  product_id TEXT PRIMARY KEY, product_name TEXT NOT NULL, unit_price REAL NOT NULL
+);
+CREATE TABLE orders_2nf (
+  order_id INTEGER PRIMARY KEY, order_date TEXT NOT NULL, cust_id TEXT NOT NULL,
+  cust_name TEXT NOT NULL, postal_code TEXT NOT NULL, city TEXT NOT NULL
+);
+CREATE TABLE order_line_2nf (
+  order_id   INTEGER REFERENCES orders_2nf(order_id),
+  product_id TEXT    REFERENCES product(product_id),
+  qty        INTEGER NOT NULL,
+  PRIMARY KEY (order_id, product_id)
+);
+INSERT INTO product        SELECT DISTINCT product_id, product_name, unit_price FROM order_line_1nf;
+INSERT INTO orders_2nf     SELECT DISTINCT order_id, order_date, cust_id, cust_name, postal_code, city FROM order_line_1nf;
+INSERT INTO order_line_2nf SELECT order_id, product_id, qty FROM order_line_1nf;
+
+-- ===== 3NF: remove transitive dependencies =====
+--   order_id -&gt; cust_id -&gt; cust_name, postal_code        postal_code -&gt; city
+CREATE TABLE postal (
+  postal_code TEXT PRIMARY KEY, city TEXT NOT NULL
+);
+CREATE TABLE customer (
+  cust_id TEXT PRIMARY KEY, cust_name TEXT NOT NULL,
+  postal_code TEXT NOT NULL REFERENCES postal(postal_code)
+);
+CREATE TABLE orders (
+  order_id INTEGER PRIMARY KEY, order_date TEXT NOT NULL,
+  cust_id TEXT NOT NULL REFERENCES customer(cust_id)
+);
+CREATE TABLE order_line (
+  order_id   INTEGER REFERENCES orders(order_id),
+  product_id TEXT    REFERENCES product(product_id),
+  qty        INTEGER NOT NULL,
+  PRIMARY KEY (order_id, product_id)
+);
+INSERT INTO postal     SELECT DISTINCT postal_code, city FROM orders_2nf;
+INSERT INTO customer   SELECT DISTINCT cust_id, cust_name, postal_code FROM orders_2nf;
+INSERT INTO orders     SELECT order_id, order_date, cust_id FROM orders_2nf;
+INSERT INTO order_line SELECT order_id, product_id, qty FROM order_line_2nf;
+
+-- The 2NF tables were stepping stones; remove them.
+DROP TABLE order_line_2nf;
+DROP TABLE orders_2nf;
+
+-- ===== Prove nothing was lost or invented: join everything back and compare =====
+WITH rebuilt AS (
+  SELECT o.order_id, o.order_date, c.cust_id, c.cust_name, c.postal_code, p.city,
+         l.product_id, pr.product_name, pr.unit_price, l.qty
+  FROM order_line l
+  JOIN orders   o  ON o.order_id    = l.order_id
+  JOIN customer c  ON c.cust_id     = o.cust_id
+  JOIN postal   p  ON p.postal_code = c.postal_code
+  JOIN product  pr ON pr.product_id = l.product_id
+)
+SELECT (SELECT COUNT(*) FROM (SELECT * FROM order_line_1nf EXCEPT SELECT * FROM rebuilt)) AS lost_rows,
+       (SELECT COUNT(*) FROM (SELECT * FROM rebuilt EXCEPT SELECT * FROM order_line_1nf)) AS invented_rows;
+
+-- The payoff: a fact now lives in ONE place. Rename the city once; both customers see it.
+UPDATE postal SET city = 'College Park, MD' WHERE postal_code = '20740';
+SELECT c.cust_name, p.city FROM customer c JOIN postal p ON p.postal_code = c.postal_code ORDER BY c.cust_id;
+
+-- Try to break the rules (un-comment ONE line at a time; each should fail):
+-- INSERT INTO order_line VALUES (1001, 'P99', 1);        -- no such product
+-- INSERT INTO customer VALUES ('C9', 'Zed', '99999');    -- no such postal code
+
+-- ===== BCNF: Tutoring(student, subject, tutor) =====
+--   student, subject -&gt; tutor      (a student has one tutor per subject)
+--   tutor -&gt; subject               (each tutor teaches exactly one subject)  &lt;- tutor is not a key
+CREATE TABLE tutoring (
+  student TEXT, subject TEXT, tutor TEXT,
+  PRIMARY KEY (student, subject)
+);
+INSERT INTO tutoring VALUES
+  ('Ada', 'Math', 'Lee'), ('Ada', 'Physics', 'Kim'), ('Ben', 'Math', 'Lee'),
+  ('Carla', 'Physics', 'Kim'), ('Dev', 'Math', 'Park');
+
+-- Redundancy: the fact "Lee teaches Math" is stored once per student of Lee's.
+SELECT tutor, subject, COUNT(*) AS times_stored FROM tutoring GROUP BY tutor, subject ORDER BY tutor;
+
+-- Decompose so every determinant is a key:
+CREATE TABLE tutor_subject (tutor TEXT PRIMARY KEY, subject TEXT NOT NULL);
+CREATE TABLE student_tutor (
+  student TEXT, tutor TEXT REFERENCES tutor_subject(tutor),
+  PRIMARY KEY (student, tutor)
+);
+INSERT INTO tutor_subject SELECT DISTINCT tutor, subject FROM tutoring;
+INSERT INTO student_tutor SELECT DISTINCT student, tutor FROM tutoring;
+
+SELECT (SELECT COUNT(*) FROM (
+          SELECT student, subject, tutor FROM tutoring
+          EXCEPT
+          SELECT st.student, ts.subject, st.tutor
+          FROM student_tutor st JOIN tutor_subject ts ON ts.tutor = st.tutor)) AS lost_rows,
+       (SELECT COUNT(*) FROM (
+          SELECT st.student, ts.subject, st.tutor
+          FROM student_tutor st JOIN tutor_subject ts ON ts.tutor = st.tutor
+          EXCEPT
+          SELECT student, subject, tutor FROM tutoring)) AS invented_rows;
+
+-- Lee changes subject: ONE row, not one per student.
+UPDATE tutor_subject SET subject = 'Statistics' WHERE tutor = 'Lee';
+SELECT * FROM tutor_subject ORDER BY tutor;
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">order_id
+--------
+1001
+1002
+1003
+
+order_id
+--------
+1001
+1002
+
+lost_rows  invented_rows
+---------  -------------
+0          0
+
+cust_name  city
+---------  ----------------
+Ada        College Park, MD
+Ben        College Park, MD
+Carla      Bowie
+
+tutor  subject  times_stored
+-----  -------  ------------
+Kim    Physics  2
+Lee    Math     2
+Park   Math     1
+
+lost_rows  invented_rows
+---------  -------------
+0          0
+
+tutor  subject
+-----  ----------
+Kim    Physics
+Lee    Statistics
+Park   Math
+
+Un-commenting each "try it" line, one at a time, gives:
+  INSERT INTO order_line VALUES (1001, 'P99', 1);
+    -&gt; Error: FOREIGN KEY constraint failed
+  INSERT INTO customer VALUES ('C9', 'Zed', '99999');
+    -&gt; Error: FOREIGN KEY constraint failed</pre></details></div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 2</h3>
+    <div class="quiz" data-quiz="m2"></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 3 ================= -->
+<section class="mod" id="m3">
+  <h2>3. Evaluating decompositions</h2>
+  <p class="goal">Splitting a table is easy. Splitting it <i>correctly</i> means you can rebuild the original exactly and still enforce every rule.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Two properties every good decomposition needs</h3>
+    <p><b>Lossless join.</b> Joining the pieces back together must give exactly the original rows: no row lost, no extra "spurious" row invented. A lossy decomposition fails the second way: the join manufactures combinations that never happened, so you cannot trust any answer.</p>
+    <p><b>Dependency preservation.</b> Every FD in F should be checkable inside a single decomposed table (or follow from the FDs that are). If not, enforcing the rule means joining tables on every write.</p>
+    <p>Lossless join is <b>mandatory</b>. Dependency preservation is <b>desirable</b>, and sometimes you must trade it away.</p>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Testing for lossless join</h3>
+    <p><b>Two tables.</b> Decomposing R into R₁ and R₂ is lossless if and only if the shared attributes determine all of one side:</p>
+    <p class="fdtxt" style="margin-left:1em">R₁ ∩ R₂ → R₁ − R₂ &nbsp;or&nbsp; R₁ ∩ R₂ → R₂ − R₁</p>
+    <p>In plain words: the shared columns must be a key of at least one of the pieces.</p>
+    <p><b>Any number of tables: the chase.</b> Build a grid with one row per piece and one column per attribute. Put the symbol <b>a</b> where the piece has the attribute and a unique <b>b</b> symbol where it does not. For each FD X → Y: whenever two rows agree on X, make them agree on Y (replace a <b>b</b> with an <b>a</b> if one is available). Repeat until nothing changes. The decomposition is lossless if some row ends up entirely <b>a</b>.</p>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Testing dependency preservation</h3>
+    <p>For each FD X → Y in F: start with Z = X. Repeat over every piece Rᵢ: <span class="fdtxt">Z = Z ∪ ((Z ∩ Rᵢ)⁺ ∩ Rᵢ)</span>, until Z stops growing. If Y ⊆ Z, the FD is preserved. The trick is that you never compute the projected dependencies; closure under the <i>original</i> F does the work.</p>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Two algorithms that produce good decompositions</h3>
+    <div class="grid2">
+      <div class="card"><b>BCNF decomposition</b>
+        <ol style="margin:.5em 0 0;padding-left:1.2em">
+          <li>Find a table Rᵢ with a violating FD X → Y (X not a superkey of Rᵢ).</li>
+          <li>Replace Rᵢ with <span class="fdtxt">X⁺ ∩ Rᵢ</span> and <span class="fdtxt">Rᵢ − (X⁺ − X)</span>.</li>
+          <li>Repeat until every piece is in BCNF.</li>
+        </ol>
+        <p style="margin-bottom:0"><b>Guarantees:</b> lossless. <b>Does not guarantee</b> dependency preservation.</p></div>
+      <div class="card"><b>3NF synthesis</b>
+        <ol style="margin:.5em 0 0;padding-left:1.2em">
+          <li>Compute a minimal cover.</li>
+          <li>Make one table per left side, containing that left side and everything it determines.</li>
+          <li>Drop any table contained in another.</li>
+          <li>If no table contains a candidate key of R, add one that does.</li>
+        </ol>
+        <p style="margin-bottom:0"><b>Guarantees:</b> lossless <i>and</i> dependency-preserving, every table in 3NF.</p></div>
+    </div>
+    <div class="tablewrap"><table>
+      <tr><th></th><th>3NF synthesis</th><th>BCNF decomposition</th></tr>
+      <tr><td>Lossless join</td><td>Always</td><td>Always</td></tr>
+      <tr><td>Dependency preserving</td><td>Always</td><td>Not always</td></tr>
+      <tr><td>Redundancy from FDs</td><td>A little can remain</td><td>None</td></tr>
+    </table></div>
+    <p>Practical rule: aim for BCNF. If it costs you a dependency you cannot afford to lose, settle for 3NF and say why.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>FD Workbench: test any decomposition</h3>
+    <p class="prose">Load an example, then edit the relations to see the verdicts change. The <b>suggest</b> buttons run the two algorithms; <b>Test this</b> loads the suggestion back into the decomposition box.</p>
+    <div id="wb3"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>See spurious rows, and a lost dependency</h3>
+    <p>Part A decomposes a booking table two ways and counts the invented rows. Part B shows the BCNF tutoring split accepting a row that breaks the original rule, then repairs it with a trigger.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 3: lossless join and dependency preservation</span><button type="button" class="copy">Copy</button></div>
+<pre class="scroll-y"><code data-lab="lab3">PRAGMA foreign_keys = OFF;
+DROP TRIGGER IF EXISTS one_tutor_per_subject;
+DROP TABLE IF EXISTS student_tutor;  DROP TABLE IF EXISTS tutor_subject;  DROP TABLE IF EXISTS tutoring;
+DROP TABLE IF EXISTS guest_hotel;    DROP TABLE IF EXISTS hotel_loc;
+DROP TABLE IF EXISTS guest_city;     DROP TABLE IF EXISTS hotel_city;     DROP TABLE IF EXISTS booking;
+PRAGMA foreign_keys = ON;
+
+-- ===== Part A: lossless join =====
+-- Booking(guest, hotel, city) with hotel -&gt; city. Key: (guest, hotel).
+CREATE TABLE booking (guest TEXT, hotel TEXT, city TEXT, PRIMARY KEY (guest, hotel));
+INSERT INTO booking VALUES
+  ('Ada', 'Hilton',   'Boston'),
+  ('Ben', 'Marriott', 'Boston'),
+  ('Ada', 'Ritz',     'Paris');
+
+-- BAD decomposition: split on city. city determines neither guest nor hotel.
+CREATE TABLE guest_city AS SELECT DISTINCT guest, city FROM booking;
+CREATE TABLE hotel_city AS SELECT DISTINCT hotel, city FROM booking;
+
+SELECT g.guest, h.hotel, g.city
+FROM guest_city g JOIN hotel_city h ON h.city = g.city
+ORDER BY g.guest, h.hotel;
+
+-- The extra rows are "spurious tuples": combinations that were never in the original.
+SELECT g.guest, h.hotel, g.city
+FROM guest_city g JOIN hotel_city h ON h.city = g.city
+EXCEPT
+SELECT guest, hotel, city FROM booking
+ORDER BY 1, 2;
+
+-- GOOD decomposition: split on hotel. hotel -&gt; city, so hotel is a key of hotel_loc.
+CREATE TABLE hotel_loc (hotel TEXT PRIMARY KEY, city TEXT NOT NULL);
+CREATE TABLE guest_hotel (
+  guest TEXT, hotel TEXT REFERENCES hotel_loc(hotel),
+  PRIMARY KEY (guest, hotel)
+);
+INSERT INTO hotel_loc   SELECT DISTINCT hotel, city FROM booking;
+INSERT INTO guest_hotel SELECT guest, hotel FROM booking;
+
+SELECT (SELECT COUNT(*) FROM (
+          SELECT gh.guest, gh.hotel, hl.city FROM guest_hotel gh JOIN hotel_loc hl ON hl.hotel = gh.hotel
+          EXCEPT SELECT guest, hotel, city FROM booking)) AS spurious_rows,
+       (SELECT COUNT(*) FROM (
+          SELECT guest, hotel, city FROM booking
+          EXCEPT
+          SELECT gh.guest, gh.hotel, hl.city FROM guest_hotel gh JOIN hotel_loc hl ON hl.hotel = gh.hotel)) AS lost_rows;
+
+-- ===== Part B: dependency preservation =====
+-- Tutoring(student, subject, tutor):  student, subject -&gt; tutor   and   tutor -&gt; subject.
+-- The BCNF decomposition is lossless, but no single table contains student, subject AND tutor.
+CREATE TABLE tutor_subject (tutor TEXT PRIMARY KEY, subject TEXT NOT NULL);
+CREATE TABLE student_tutor (
+  student TEXT, tutor TEXT REFERENCES tutor_subject(tutor),
+  PRIMARY KEY (student, tutor)
+);
+INSERT INTO tutor_subject VALUES ('Lee', 'Math'), ('Kim', 'Physics'), ('Park', 'Math');
+INSERT INTO student_tutor VALUES ('Ada', 'Lee'), ('Ada', 'Kim'), ('Ben', 'Lee');
+
+-- Ada already has a Math tutor (Lee). Park also teaches Math. The database accepts this,
+-- even though it breaks the original rule  student, subject -&gt; tutor:
+INSERT INTO student_tutor VALUES ('Ada', 'Park');
+
+SELECT st.student, ts.subject, COUNT(DISTINCT st.tutor) AS tutors
+FROM student_tutor st JOIN tutor_subject ts ON ts.tutor = st.tutor
+GROUP BY st.student, ts.subject
+HAVING COUNT(DISTINCT st.tutor) &gt; 1;
+
+-- The lost dependency must now be enforced by hand. Remove the bad row, add a trigger:
+DELETE FROM student_tutor WHERE student = 'Ada' AND tutor = 'Park';
+
+CREATE TRIGGER one_tutor_per_subject
+BEFORE INSERT ON student_tutor
+WHEN EXISTS (
+  SELECT 1
+  FROM student_tutor st
+  JOIN tutor_subject have ON have.tutor = st.tutor
+  JOIN tutor_subject want ON want.tutor = NEW.tutor
+  WHERE st.student = NEW.student AND have.subject = want.subject
+)
+BEGIN
+  SELECT RAISE(ABORT, 'student already has a tutor for that subject');
+END;
+
+-- Try it (un-comment; should fail):
+-- INSERT INTO student_tutor VALUES ('Ada', 'Park');   -- Ada already has Lee for Math
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">guest  hotel     city
+-----  --------  ------
+Ada    Hilton    Boston
+Ada    Marriott  Boston
+Ada    Ritz      Paris
+Ben    Hilton    Boston
+Ben    Marriott  Boston
+
+guest  hotel     city
+-----  --------  ------
+Ada    Marriott  Boston
+Ben    Hilton    Boston
+
+spurious_rows  lost_rows
+-------------  ---------
+0              0
+
+student  subject  tutors
+-------  -------  ------
+Ada      Math     2
+
+Un-commenting each "try it" line, one at a time, gives:
+  INSERT INTO student_tutor VALUES ('Ada', 'Park');
+    -&gt; Error: student already has a tutor for that subject</pre></details></div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 3</h3>
+    <div class="quiz" data-quiz="m3"></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 4 ================= -->
+<section class="mod" id="m4">
+  <h2>4. Normalization versus performance</h2>
+  <p class="goal">Normalization buys consistency and costs joins. Learn when that price is worth paying, and how to pay less of it.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>The trade in one table</h3>
+    <div class="tablewrap"><table>
+      <tr><th></th><th>More normalized</th><th>More denormalized</th></tr>
+      <tr><td>Reads</td><td>More joins per query</td><td>Fewer joins, wider rows</td></tr>
+      <tr><td>Writes</td><td>One place to change a fact</td><td>Every copy must change</td></tr>
+      <tr><td>Consistency</td><td>Enforced by the structure</td><td>Enforced by your code, or not at all</td></tr>
+      <tr><td>Storage</td><td>Smaller</td><td>Larger (repeated values)</td></tr>
+      <tr><td>Changing the schema</td><td>Local and clear</td><td>Touches many columns</td></tr>
+    </table></div>
+    <p><b>Where each tends to win.</b> Systems that take many small, concurrent updates (orders, payments, enrolments, called OLTP) favor normalization. Read-mostly reporting and analytics (OLAP, data warehouses) often favor wide, pre-joined tables, such as a star schema, loaded from the normalized source on a schedule.</p>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Before you denormalize</h3>
+    <ol>
+      <li><b>Measure.</b> Find the slow query and its actual plan. Do not guess.</li>
+      <li><b>Index.</b> Most "slow join" problems are missing indexes on the join columns.</li>
+      <li><b>Rewrite or cache.</b> A better query, a cached result, or a read replica often removes the problem.</li>
+      <li><b>Then</b> consider a controlled copy: a precomputed column, a summary table, or a materialized view.</li>
+    </ol>
+    <p>If you do copy data, <b>keep the normalized tables as the source of truth</b> and treat the copy as a cache you can rebuild. Decide how it stays consistent: a trigger, the same transaction in the application, or a scheduled rebuild. Write the decision down.</p>
+    <div class="callout"><b>Not every copy is redundancy.</b> The unit price on an order line is a different fact from the product's current price: it is the price <i>at the time of sale</i>. It can legitimately differ, so it belongs in the order line. Redundancy means storing the <i>same</i> fact twice, not storing a historical snapshot.</div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Should I denormalize?</h3>
+    <p class="prose">Answer four questions about a specific slow query and get a recommendation.</p>
+    <div class="card" id="decider"></div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Design duel: trade-off edition</h3>
+    <div class="card" id="duels"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>Measure the trade-off</h3>
+    <p>Lab 4 builds 100,000 sales two ways, a normalized design and a pre-joined copy, then compares the same report, the cost of moving one customer to a new city, and a trigger-maintained summary table. Run each report several times and compare the time your tool shows (in the <span class="inl">sqlite3</span> command line, type <span class="inl">.timer on</span> first). On our test run the pre-joined query took roughly half the time of the joined one; your numbers will differ, and the gap widens as tables and joins grow.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 4: normalized vs. denormalized vs. summary table</span><button type="button" class="copy">Copy</button></div>
+<pre class="scroll-y"><code data-lab="lab4">PRAGMA foreign_keys = OFF;
+DROP TRIGGER IF EXISTS sale_after_insert;
+DROP TABLE IF EXISTS customer_revenue;  DROP TABLE IF EXISTS sale_flat;
+DROP TABLE IF EXISTS sale;              DROP TABLE IF EXISTS customer;  DROP TABLE IF EXISTS product;
+PRAGMA foreign_keys = ON;
+
+-- ===== The normalized design: 2,000 customers, 100 products, 100,000 sales =====
+CREATE TABLE customer (cust_id INTEGER PRIMARY KEY, cust_name TEXT NOT NULL, city TEXT NOT NULL);
+CREATE TABLE product  (product_id INTEGER PRIMARY KEY, product_name TEXT NOT NULL, unit_price REAL NOT NULL);
+CREATE TABLE sale (
+  sale_id    INTEGER PRIMARY KEY,
+  cust_id    INTEGER NOT NULL REFERENCES customer(cust_id),
+  product_id INTEGER NOT NULL REFERENCES product(product_id),
+  qty        INTEGER NOT NULL
+);
+
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i &lt; 2000)
+INSERT INTO customer SELECT i, 'Customer ' || i, 'City ' || (i % 20) FROM n;
+
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i &lt; 100)
+INSERT INTO product SELECT i, 'Product ' || i, 1 + (i % 10) * 0.5 FROM n;
+
+WITH RECURSIVE n(i) AS (SELECT 1 UNION ALL SELECT i + 1 FROM n WHERE i &lt; 100000)
+INSERT INTO sale SELECT i, (i * 7919) % 2000 + 1, (i * 104729) % 100 + 1, i % 5 + 1 FROM n;
+
+-- ===== The denormalized copy: everything pre-joined into one wide table =====
+CREATE TABLE sale_flat AS
+SELECT s.sale_id, s.cust_id, c.cust_name, c.city,
+       s.product_id, p.product_name, p.unit_price,
+       s.qty, s.qty * p.unit_price AS line_total
+FROM sale s
+JOIN customer c ON c.cust_id    = s.cust_id
+JOIN product  p ON p.product_id = s.product_id;
+
+SELECT (SELECT COUNT(*) FROM sale) AS sale_rows, (SELECT COUNT(*) FROM sale_flat) AS flat_rows;
+
+-- ===== Read cost: the same report, two ways. Run each a few times and compare the time your tool reports =====
+-- (sqlite3 command line: type  .timer on  first.)
+-- Normalized: two joins
+SELECT c.city, ROUND(SUM(s.qty * p.unit_price), 2) AS revenue
+FROM sale s
+JOIN customer c ON c.cust_id    = s.cust_id
+JOIN product  p ON p.product_id = s.product_id
+GROUP BY c.city
+ORDER BY revenue DESC, c.city
+LIMIT 3;
+
+-- Denormalized: one scan, no joins
+SELECT city, ROUND(SUM(line_total), 2) AS revenue
+FROM sale_flat
+GROUP BY city
+ORDER BY revenue DESC, city
+LIMIT 3;
+
+-- Look at how the database plans each one:
+EXPLAIN QUERY PLAN
+SELECT c.city, SUM(s.qty * p.unit_price)
+FROM sale s JOIN customer c ON c.cust_id = s.cust_id JOIN product p ON p.product_id = s.product_id
+GROUP BY c.city;
+
+-- ===== Write cost: customer 7 moves to a new city =====
+UPDATE customer SET city = 'New City' WHERE cust_id = 7;
+SELECT changes() AS rows_changed_normalized;
+
+UPDATE sale_flat SET city = 'New City' WHERE cust_id = 7;
+SELECT changes() AS rows_changed_denormalized;
+-- Miss even one of those rows and the flat table now disagrees with itself.
+
+-- ===== A middle path: keep the base tables normalized, add a summary table kept in sync by a trigger =====
+CREATE TABLE customer_revenue (cust_id INTEGER PRIMARY KEY, revenue REAL NOT NULL);
+INSERT INTO customer_revenue
+SELECT s.cust_id, SUM(s.qty * p.unit_price)
+FROM sale s JOIN product p ON p.product_id = s.product_id
+GROUP BY s.cust_id;
+
+CREATE TRIGGER sale_after_insert
+AFTER INSERT ON sale
+BEGIN
+  INSERT INTO customer_revenue (cust_id, revenue)
+  VALUES (NEW.cust_id, NEW.qty * (SELECT unit_price FROM product WHERE product_id = NEW.product_id))
+  ON CONFLICT (cust_id) DO UPDATE SET revenue = revenue + excluded.revenue;
+END;
+
+SELECT revenue FROM customer_revenue WHERE cust_id = 7;
+
+INSERT INTO sale VALUES (100001, 7, 5, 3);
+
+-- The summary must always equal the live calculation:
+SELECT ROUND(r.revenue, 2) AS summary,
+       ROUND((SELECT SUM(s.qty * p.unit_price) FROM sale s JOIN product p ON p.product_id = s.product_id
+              WHERE s.cust_id = 7), 2) AS recomputed
+FROM customer_revenue r WHERE r.cust_id = 7;
+-- This trigger only covers INSERT. A real system also needs UPDATE and DELETE triggers (or a scheduled rebuild).
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">sale_rows  flat_rows
+---------  ---------
+100000     100000
+
+city     revenue
+-------  --------
+City 17  112500.0
+City 7   112500.0
+City 18  100000.0
+
+city     revenue
+-------  --------
+City 17  112500.0
+City 7   112500.0
+City 18  100000.0
+
+[query plan: the exact text varies by SQLite version]
+
+rows_changed_normalized
+-----------------------
+1
+
+rows_changed_denormalized
+-------------------------
+50
+
+revenue
+-------
+1125.0
+
+summary  recomputed
+-------  ----------
+1135.5   1135.5</pre></details></div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 4</h3>
+    <div class="quiz" data-quiz="m4"></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 5 ================= -->
+<section class="mod" id="m5">
+  <h2>5. Refining a schema for maintainability and consistency</h2>
+  <p class="goal">Take an existing, messy database and improve it safely: find the rules, split the tables, write the rules down as constraints, and migrate without losing a row.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>The refactoring workflow</h3>
+    <ol>
+      <li><b>Audit.</b> List the business rules as FDs. Query the data to find where it already breaks them.</li>
+      <li><b>Clean.</b> Fix inconsistent values (spelling, case, whitespace) <i>before</i> splitting, or the split will duplicate them as separate "facts".</li>
+      <li><b>Design.</b> Decompose to 3NF or BCNF. Choose keys.</li>
+      <li><b>Constrain.</b> Turn every rule into something the database enforces.</li>
+      <li><b>Migrate.</b> Copy parents before children with <span class="inl">INSERT ... SELECT DISTINCT</span>.</li>
+      <li><b>Verify.</b> Prove the new tables reproduce the old data (<span class="inl">EXCEPT</span> both ways must return nothing).</li>
+      <li><b>Bridge.</b> Publish a view with the old shape so existing queries keep working while you migrate callers.</li>
+      <li><b>Retire</b> the old table once nothing reads it.</li>
+    </ol>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>The constraint toolbox</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Constraint</th><th>Enforces</th><th>Typical use</th></tr>
+      <tr><td><span class="inl">PRIMARY KEY</span></td><td>Each row is uniquely identifiable</td><td>Every table</td></tr>
+      <tr><td><span class="inl">FOREIGN KEY</span></td><td>A reference points at a real row (referential integrity)</td><td>Every relationship</td></tr>
+      <tr><td><span class="inl">UNIQUE</span></td><td>No duplicates in a column that is not the key</td><td>Email, code, other candidate keys</td></tr>
+      <tr><td><span class="inl">NOT NULL</span></td><td>A value must exist</td><td>Total participation, required facts</td></tr>
+      <tr><td><span class="inl">CHECK</span></td><td>A value satisfies a rule</td><td>qty &gt; 0, small fixed lists of values</td></tr>
+      <tr><td>Lookup table</td><td>Allowed values live in data, not in code</td><td>Statuses or categories that change</td></tr>
+      <tr><td>Trigger</td><td>Rules that span tables</td><td>FDs lost in a decomposition (module 3)</td></tr>
+    </table></div>
+    <p><b>Maintainability habits.</b> One table per kind of thing. Each fact has exactly one home. Names say what a column is. Schema changes live in scripts you can rerun, and every migration ends with a reconciliation query.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Spot the schema smells</h3>
+    <p class="prose">This table has seven problems. Click the lines you think are wrong, then press <b>Reveal</b>.</p>
+    <div class="card" id="smells"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>A complete, safe migration</h3>
+    <p>Lab 5 starts with a legacy table containing three spellings of the same city, audits and cleans it, builds the constrained schema, migrates, reconciles to zero differences, and publishes a compatibility view. The last block proves the new schema rejects bad data.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 5: refactor a legacy table</span><button type="button" class="copy">Copy</button></div>
+<pre class="scroll-y"><code data-lab="lab5">PRAGMA foreign_keys = OFF;
+DROP VIEW  IF EXISTS legacy_orders_v;
+DROP TABLE IF EXISTS order_line;  DROP TABLE IF EXISTS orders;   DROP TABLE IF EXISTS customer;
+DROP TABLE IF EXISTS city;        DROP TABLE IF EXISTS product;  DROP TABLE IF EXISTS legacy_orders;
+PRAGMA foreign_keys = ON;
+
+-- ===== Step 0: the legacy table everyone has been using =====
+CREATE TABLE legacy_orders (
+  order_id INTEGER, order_date TEXT,
+  cust_id TEXT, cust_name TEXT, email TEXT, city TEXT,
+  product_code TEXT, product_name TEXT, unit_price REAL, qty INTEGER
+);
+INSERT INTO legacy_orders VALUES
+  (1, '2026-09-01', 'C1', 'Ada',   'ada@example.edu',   'Bowie',     'P10', 'Pen',      1.50, 3),
+  (1, '2026-09-01', 'C1', 'Ada',   'ada@example.edu',   'bowie ',    'P20', 'Notebook', 4.00, 1),
+  (2, '2026-09-02', 'C2', 'Ben',   'ben@example.edu',   'Laurel',    'P10', 'Pen',      1.50, 2),
+  (3, '2026-09-03', 'C3', 'Carla', 'carla@example.edu', 'Greenbelt', 'P30', 'Stapler',   9.25, 5),
+  (3, '2026-09-03', 'C3', 'Carla', 'carla@example.edu', 'GREENBELT', 'P10', 'Pen',      1.50, 1),
+  (4, '2026-09-04', 'C2', 'Ben',   'ben@example.edu',   'Laurel',    'P30', 'Stapler',   9.25, 1);
+
+-- ===== Step 1: audit. cust_id -&gt; city should hold. Which customers break it? =====
+SELECT cust_id, COUNT(DISTINCT city) AS spellings
+FROM legacy_orders GROUP BY cust_id HAVING COUNT(DISTINCT city) &gt; 1;
+
+-- ===== Step 2: clean the data BEFORE splitting (one spelling per city) =====
+UPDATE legacy_orders
+SET city = UPPER(SUBSTR(TRIM(city), 1, 1)) || LOWER(SUBSTR(TRIM(city), 2));
+
+SELECT cust_id, COUNT(DISTINCT city) AS spellings
+FROM legacy_orders GROUP BY cust_id HAVING COUNT(DISTINCT city) &gt; 1;
+
+-- ===== Step 3: create the target schema, with the rules written down as constraints =====
+CREATE TABLE city (
+  city_id   INTEGER PRIMARY KEY,
+  city_name TEXT NOT NULL UNIQUE
+);
+CREATE TABLE customer (
+  cust_id   TEXT PRIMARY KEY,
+  cust_name TEXT NOT NULL,
+  email     TEXT NOT NULL UNIQUE,
+  city_id   INTEGER NOT NULL REFERENCES city(city_id)
+);
+CREATE TABLE product (
+  product_code TEXT PRIMARY KEY,
+  product_name TEXT NOT NULL,
+  unit_price   REAL NOT NULL CHECK (unit_price &gt;= 0)
+);
+CREATE TABLE orders (
+  order_id   INTEGER PRIMARY KEY,
+  order_date TEXT NOT NULL,
+  cust_id    TEXT NOT NULL REFERENCES customer(cust_id)
+);
+CREATE TABLE order_line (
+  order_id     INTEGER REFERENCES orders(order_id),
+  product_code TEXT    REFERENCES product(product_code),
+  qty          INTEGER NOT NULL CHECK (qty &gt; 0),
+  PRIMARY KEY (order_id, product_code)
+);
+
+-- ===== Step 4: migrate, parents before children =====
+INSERT INTO city (city_name) SELECT DISTINCT city FROM legacy_orders ORDER BY city;
+INSERT INTO customer
+  SELECT DISTINCT l.cust_id, l.cust_name, l.email, c.city_id
+  FROM legacy_orders l JOIN city c ON c.city_name = l.city;
+INSERT INTO product    SELECT DISTINCT product_code, product_name, unit_price FROM legacy_orders;
+INSERT INTO orders     SELECT DISTINCT order_id, order_date, cust_id FROM legacy_orders;
+INSERT INTO order_line SELECT order_id, product_code, qty FROM legacy_orders;
+
+-- ===== Step 5: a compatibility view that looks exactly like the old table =====
+CREATE VIEW legacy_orders_v AS
+SELECT o.order_id, o.order_date, c.cust_id, c.cust_name, c.email, ci.city_name AS city,
+       p.product_code, p.product_name, p.unit_price, l.qty
+FROM order_line l
+JOIN orders   o  ON o.order_id     = l.order_id
+JOIN customer c  ON c.cust_id      = o.cust_id
+JOIN city     ci ON ci.city_id     = c.city_id
+JOIN product  p  ON p.product_code = l.product_code;
+
+-- ===== Step 6: reconcile. Both numbers must be 0 =====
+SELECT (SELECT COUNT(*) FROM (SELECT * FROM legacy_orders EXCEPT SELECT * FROM legacy_orders_v)) AS lost_rows,
+       (SELECT COUNT(*) FROM (SELECT * FROM legacy_orders_v EXCEPT SELECT * FROM legacy_orders)) AS invented_rows;
+
+-- Old reports keep working through the view:
+SELECT city, ROUND(SUM(qty * unit_price), 2) AS revenue FROM legacy_orders_v GROUP BY city ORDER BY city;
+
+-- ===== Step 7: the new schema now refuses bad data (un-comment ONE line at a time; each should fail) =====
+-- INSERT INTO order_line VALUES (1, 'P99', 1);                       -- no such product
+-- INSERT INTO order_line VALUES (1, 'P30', 0);                       -- qty must be &gt; 0
+-- INSERT INTO customer VALUES ('C9', 'Zed', 'ada@example.edu', 1);   -- duplicate email
+-- DELETE FROM city WHERE city_id = 1;                                -- city 1 is still in use
+
+-- And a fact now changes in exactly one place:
+UPDATE city SET city_name = 'Bowie, MD' WHERE city_name = 'Bowie';
+SELECT DISTINCT cust_name, city FROM legacy_orders_v WHERE cust_id = 'C1';
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">cust_id  spellings
+-------  ---------
+C1       2
+C3       2
+
+cust_id  spellings
+-------  ---------
+(no rows)
+
+lost_rows  invented_rows
+---------  -------------
+0          0
+
+city       revenue
+---------  -------
+Bowie      8.5
+Greenbelt  47.75
+Laurel     12.25
+
+cust_name  city
+---------  ---------
+Ada        Bowie, MD
+
+Un-commenting each "try it" line, one at a time, gives:
+  INSERT INTO order_line VALUES (1, 'P99', 1);
+    -&gt; Error: FOREIGN KEY constraint failed
+  INSERT INTO order_line VALUES (1, 'P30', 0);
+    -&gt; Error: CHECK constraint failed: qty &gt; 0
+  INSERT INTO customer VALUES ('C9', 'Zed', 'ada@example.edu', 1);
+    -&gt; Error: UNIQUE constraint failed: customer.email
+  DELETE FROM city WHERE city_id = 1;
+    -&gt; Error: FOREIGN KEY constraint failed</pre></details></div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 5</h3>
+    <div class="quiz" data-quiz="m5"></div>
+  </div>
+</section>
+
+<!-- ================= FINAL ================= -->
+<section class="mod" id="final">
+  <h2>Final check</h2>
+  <p class="goal">Twelve mixed questions across all five modules. Some ask for more than one answer.</p>
+  <div class="block"><div class="quiz" data-quiz="final"></div></div>
+
+  <div class="block prose">
+    <span class="chip">Apply it</span>
+    <h3>Design challenge: the clinic</h3>
+    <p>A clinic's scheduling system is one table, <b>ClinicVisit</b>, with a diagnosis-codes column holding lists like "J10, E11". Rules:</p>
+    <ul>
+      <li>A visit has one patient, one doctor, and one date.</li>
+      <li>A patient has one name and one phone number.</li>
+      <li>A doctor has one name and works in one room.</li>
+      <li>A room is in one building.</li>
+    </ul>
+    <p>Your tasks:</p>
+    <ol>
+      <li>Write the functional dependencies and find the candidate key.</li>
+      <li>Say which normal form the table is in, and why (ignore the diagnosis list for now).</li>
+      <li>Decompose it to 3NF. Show that your decomposition is lossless and preserves every dependency.</li>
+      <li>Fix the diagnosis-codes column so the design reaches 1NF.</li>
+      <li>Write the SQL: tables, keys, foreign keys, and one CHECK or UNIQUE constraint you can justify.</li>
+      <li>Name one denormalization you would consider for a reporting query, and say how you would keep it consistent.</li>
+    </ol>
+    <p>Check tasks 1 to 3 in the workbench below.</p>
+  </div>
+  <div class="block"><div id="wbF"></div></div>
+</section>
+</main>
+
+<footer>Functional dependencies, normal forms, decompositions, and design trade-offs. Progress and drafts stay in your own browser.</footer>
+</div>
+</div>
+
+<script>
+// Pure functional-dependency logic. No DOM. Inlined into the page by build.py and unit-tested in Node.
+const FD = (() => {
+  const MAXN = 14;
+  const splitList = s => String(s).split(/[,\s]+/).map(x => x.trim()).filter(Boolean);
+  const uniq = a => [...new Set(a)];
+  const pop = m => { let c = 0; while (m) { c += m & 1; m >>= 1; } return c; };
+  const subsetOf = (a, b) => a.every(x => b.includes(x));
+  const same = (a, b) => a.length === b.length && subsetOf(a, b);
+
+  /* ---------- parsing ---------- */
+  function parseAttrs(text) { return uniq(splitList(text)); }
+
+  function expandToken(tok, U) {
+    if (U.includes(tok)) return [tok];
+    if (tok.length > 1 && [...tok].every(ch => U.includes(ch))) return [...tok];   // "AB" -> A, B when attributes are single letters
+    return [tok];
+  }
+  function parseSide(text, U) { return uniq(splitList(text).flatMap(t => expandToken(t, U))); }
+
+  function parseFDs(text, U) {
+    const fds = [], errors = [];
+    String(text).split(/[\n;]+/).map(s => s.trim()).filter(Boolean).forEach(line => {
+      const parts = line.split(/->|→|=>/);
+      if (parts.length !== 2) { errors.push(`Cannot read "${line}". Write it like: A, B -> C`); return; }
+      const l = parseSide(parts[0], U), r = parseSide(parts[1], U);
+      if (!l.length || !r.length) { errors.push(`Both sides of "${line}" need at least one attribute.`); return; }
+      const bad = uniq([...l, ...r].filter(a => !U.includes(a)));
+      if (bad.length) { errors.push(`"${line}" uses ${bad.join(', ')}, which is not in the attribute list.`); return; }
+      fds.push({ l, r });
+    });
+    return { fds, errors };
+  }
+
+  function parseRels(text, U) {
+    const rels = [], errors = [];
+    String(text).split(/[\n;]+/).map(s => s.trim()).filter(Boolean).forEach(line => {
+      const r = parseSide(line, U);
+      const bad = r.filter(a => !U.includes(a));
+      if (bad.length) { errors.push(`"${line}" uses ${bad.join(', ')}, which is not in the attribute list.`); return; }
+      if (r.length) rels.push(U.filter(a => r.includes(a)));
+    });
+    const covered = new Set(rels.flat());
+    const missing = U.filter(a => !covered.has(a));
+    if (rels.length && missing.length) errors.push(`These attributes appear in no relation: ${missing.join(', ')}.`);
+    return { rels, errors };
+  }
+
+  /* ---------- closure ---------- */
+  function closure(X, fds, trace) {
+    const res = new Set(X);
+    let changed = true;
+    while (changed) {
+      changed = false;
+      for (const f of fds) {
+        if (f.l.every(a => res.has(a)) && !f.r.every(a => res.has(a))) {
+          const added = f.r.filter(a => !res.has(a));
+          added.forEach(a => res.add(a));
+          changed = true;
+          if (trace) trace.push({ fd: f, added });
+        }
+      }
+    }
+    return res;
+  }
+  // closure restricted to the attributes of R (used for projected dependencies)
+  const clWithin = (R, fds) => X => { const c = closure(X, fds); return new Set(R.filter(a => c.has(a))); };
+
+  /* ---------- subsets ---------- */
+  const pick = (R, m) => R.filter((_, i) => (m >> i) & 1);
+  function maskList(n) {
+    const a = [];
+    for (let m = 1; m < (1 << n); m++) a.push(m);
+    return a.sort((x, y) => pop(x) - pop(y) || x - y);
+  }
+
+  /* ---------- keys and normal forms ---------- */
+  function candidateKeys(R, cl) {
+    const keys = [];
+    for (const m of maskList(R.length)) {
+      if (keys.some(k => (k & m) === k)) continue;
+      const c = cl(pick(R, m));
+      if (R.every(a => c.has(a))) keys.push(m);
+    }
+    return keys.map(m => pick(R, m));
+  }
+
+  function analyze(R, cl) {
+    const keys = candidateKeys(R, cl);
+    const prime = new Set(keys.flat());
+    let part = [], trans = [], bcnf = [];
+    for (const m of maskList(R.length)) {
+      const X = pick(R, m), c = cl(X);
+      const rhs = R.filter(a => c.has(a) && !X.includes(a));
+      if (!rhs.length) continue;
+      if (R.every(a => c.has(a))) continue;                       // X is a superkey: allowed
+      bcnf.push({ X, rhs });
+      const np = rhs.filter(a => !prime.has(a));
+      if (np.length) {
+        if (keys.some(k => X.length < k.length && subsetOf(X, k))) part.push({ X, rhs: np });
+        else trans.push({ X, rhs: np });
+      }
+    }
+    // a violation found from a superset of an earlier violating determinant adds no information
+    const minimal = list => list.filter(e => !list.some(o => o !== e && o.X.length < e.X.length && subsetOf(o.X, e.X)));
+    trans = trans.filter(e => !part.some(p => subsetOf(p.X, e.X)));
+    const level = part.length ? '1NF' : trans.length ? '2NF' : bcnf.length ? '3NF' : 'BCNF';
+    return {
+      keys, level,
+      prime: R.filter(a => prime.has(a)),
+      nonprime: R.filter(a => !prime.has(a)),
+      part: minimal(part), trans: minimal(trans), bcnf: minimal(bcnf)
+    };
+  }
+
+  /* ---------- minimal cover ---------- */
+  const fdKey = f => [...f.l].sort().join(',') + '->' + f.r.join(',');
+  function minimalCover(fds) {
+    let F = [];
+    fds.forEach(f => f.r.forEach(a => { if (!f.l.includes(a)) F.push({ l: [...f.l], r: [a] }); }));
+    F.forEach(f => {
+      for (const a of [...f.l]) {
+        if (f.l.length > 1) {
+          const rest = f.l.filter(x => x !== a);
+          if (closure(rest, F).has(f.r[0])) f.l = rest;
+        }
+      }
+    });
+    const seen = new Set();
+    F = F.filter(f => { const k = fdKey(f); if (seen.has(k)) return false; seen.add(k); return true; });
+    for (let i = 0; i < F.length;) {
+      const rest = F.filter((_, j) => j !== i);
+      if (closure(F[i].l, rest).has(F[i].r[0])) F = rest; else i++;
+    }
+    return F;
+  }
+  function groupFDs(F) {
+    const out = [];
+    F.forEach(f => {
+      const g = out.find(o => same(o.l, f.l));
+      if (g) f.r.forEach(a => { if (!g.r.includes(a)) g.r.push(a); });
+      else out.push({ l: [...f.l], r: [...f.r] });
+    });
+    return out;
+  }
+
+  /* ---------- decomposition ---------- */
+  function dropSubsumed(rels) {
+    const out = [];
+    rels.forEach((r, i) => {
+      const dominated = rels.some((o, j) => j !== i && subsetOf(r, o) && (o.length > r.length || j < i));
+      if (!dominated) out.push(r);
+    });
+    return out;
+  }
+
+  function findBcnfViolation(Ri, fds) {
+    const cl = clWithin(Ri, fds);
+    for (const m of maskList(Ri.length)) {
+      const X = pick(Ri, m), c = cl(X);
+      if (c.size > X.length && c.size < Ri.length) return { X, c: Ri.filter(a => c.has(a)) };
+    }
+    return null;
+  }
+
+  function bcnfDecompose(R, fds) {
+    const out = [], work = [R], steps = [];
+    while (work.length) {
+      const Ri = work.shift();
+      const v = findBcnfViolation(Ri, fds);
+      if (!v) { out.push(Ri); continue; }
+      const R2 = Ri.filter(a => v.X.includes(a) || !v.c.includes(a));
+      steps.push({ from: Ri, X: v.X, closure: v.c, into: [v.c, R2] });
+      work.push(v.c, R2);
+    }
+    return { rels: dropSubsumed(out), steps };
+  }
+
+  function synth3NF(R, fds) {
+    const mc = minimalCover(fds), groups = groupFDs(mc);
+    let rels = dropSubsumed(groups.map(g => R.filter(a => g.l.includes(a) || g.r.includes(a))));
+    const keys = candidateKeys(R, clWithin(R, fds));
+    let addedKey = null;
+    if (!rels.some(r => keys.some(k => subsetOf(k, r)))) { addedKey = keys[0]; rels.push(keys[0]); }
+    return { rels, cover: groups, keys, addedKey };
+  }
+
+  /* ---------- lossless join (tableau chase) ---------- */
+  function chase(R, rels, fds) {
+    const idx = a => R.indexOf(a);
+    const rows = rels.map((Ri, i) => R.map(a => Ri.includes(a) ? 'a' + a : 'b' + (i + 1) + a));
+    const initial = rows.map(r => [...r]);
+    let changed = true, guard = 0;
+    while (changed && guard++ < 1000) {
+      changed = false;
+      for (const f of fds) {
+        for (let i = 0; i < rows.length; i++) for (let j = i + 1; j < rows.length; j++) {
+          if (!f.l.every(a => rows[i][idx(a)] === rows[j][idx(a)])) continue;
+          for (const b of f.r) {
+            const k = idx(b), x = rows[i][k], y = rows[j][k];
+            if (x === y) continue;
+            const keep = x[0] === 'a' ? x : y[0] === 'a' ? y : (x < y ? x : y);
+            const drop = keep === x ? y : x;
+            rows.forEach(r => { if (r[k] === drop) r[k] = keep; });
+            changed = true;
+          }
+        }
+      }
+    }
+    const lossless = rows.some(r => r.every(v => v[0] === 'a'));
+    return { lossless, initial, final: rows };
+  }
+
+  /* ---------- dependency preservation ---------- */
+  function preservation(fds, rels) {
+    return fds.map(f => {
+      const Z = new Set(f.l);
+      let changed = true;
+      while (changed) {
+        changed = false;
+        for (const Ri of rels) {
+          const inter = Ri.filter(a => Z.has(a));
+          const c = closure(inter, fds);
+          Ri.forEach(a => { if (c.has(a) && !Z.has(a)) { Z.add(a); changed = true; } });
+        }
+      }
+      return { fd: f, preserved: f.r.every(a => Z.has(a)) };
+    });
+  }
+
+  return { MAXN, parseAttrs, parseSide, parseFDs, parseRels, closure, clWithin, candidateKeys, analyze, minimalCover, groupFDs, bcnfDecompose, synth3NF, chase, preservation, dropSubsumed };
+})();
+
+</script>
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const NS = 'http://www.w3.org/2000/svg';
+const svgEl = (n, a = {}, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const set = a => '{' + a.map(esc).join(', ') + '}';
+const fdTxt = f => esc(f.l.join(', ')) + ' → ' + esc(f.r.join(', '));
+
+/* ---------- storage (safe) ---------- */
+const KEY = 'normalization-tutorial-v1';
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
+  set(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+};
+function saveScore(key, score, total) { const s = store.get(); s.scores = s.scores || {}; s.scores[key] = [score, total]; store.set(s); refreshNav(); }
+function refreshNav() {
+  const sc = store.get().scores || {};
+  $$('#navlist a[data-key]').forEach(a => { const v = sc[a.dataset.key]; $('.tick', a).textContent = v ? `${v[0]}/${v[1]}` : ''; });
+}
+
+/* ---------- FD diagram ---------- */
+const CLS = {
+  full:  { color: 'var(--c-full)',  dash: '' },
+  part:  { color: 'var(--c-part)',  dash: '7 4' },
+  trans: { color: 'var(--c-trans)', dash: '2 3' },
+  bcnf:  { color: 'var(--c-bcnf)',  dash: '7 3 2 3' }
+};
+function drawFDs(host, spec) {
+  host.innerHTML = '';
+  const n = spec.attrs.length, bw = spec.bw || 94, gap = spec.gap || 8, step = bw + gap, pad = 12, top = 12, bh = 36, lv = 24;
+  const W = pad * 2 + n * step - gap, H = top + bh + 14 + (spec.fds.length - 1) * lv + 20;
+  const scroll = h('div', 'scroll'); host.appendChild(scroll);
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': spec.label }, scroll);
+  const defs = svgEl('defs', {}, svg);
+  Object.entries(CLS).forEach(([k, c]) => {
+    const m = svgEl('marker', { id: `ah-${spec.id}-${k}`, viewBox: '0 0 10 10', refX: '8', refY: '5', markerWidth: '7', markerHeight: '7', orient: 'auto' }, defs);
+    svgEl('path', { d: 'M0,0 L10,5 L0,10 z', style: `fill:${c.color}` }, m);
+  });
+  const cx = a => pad + spec.attrs.indexOf(a) * step + bw / 2;
+  const gFd = spec.fds.map((f, k) => {
+    const g = svgEl('g', { class: 'fd', 'data-k': k }, svg), y = top + bh + 14 + k * lv, c = CLS[f.cls || 'full'];
+    const xs = [...f.l, ...f.r].map(cx), style = `stroke:${c.color};stroke-width:2;fill:none` + (c.dash ? `;stroke-dasharray:${c.dash}` : '');
+    svgEl('line', { x1: Math.min(...xs), x2: Math.max(...xs), y1: y, y2: y, style }, g);
+    f.l.forEach(a => { svgEl('line', { x1: cx(a), x2: cx(a), y1: top + bh, y2: y, style }, g); svgEl('circle', { cx: cx(a), cy: top + bh + 3, r: 3.2, style: `fill:${c.color}` }, g); });
+    f.r.forEach(a => svgEl('line', { x1: cx(a), x2: cx(a), y1: y, y2: top + bh + 2, style: `stroke:${c.color};stroke-width:2`, 'marker-end': `url(#ah-${spec.id}-${f.cls || 'full'})` }, g));
+    return g;
+  });
+  spec.attrs.forEach(a => {
+    const isKey = (spec.key || []).includes(a), x = pad + spec.attrs.indexOf(a) * step;
+    svgEl('rect', { x, y: top, width: bw, height: bh, rx: 6, class: 'fdbox' + (isKey ? ' key' : '') }, svg);
+    svgEl('text', { x: x + bw / 2, y: top + bh / 2, class: 'fdtext' }, svg).textContent = a;
+  });
+  const cap = h('figcaption'); host.appendChild(cap);
+  if (spec.intro) { const p = h('div'); p.innerHTML = spec.intro; p.style.marginBottom = '6px'; cap.append(p); }
+  const ul = h('ul', 'fdlegend'); cap.append(ul);
+  spec.fds.forEach((f, k) => {
+    const li = h('li'); li.tabIndex = 0;
+    const sw = h('span', 'sw'); sw.style.borderTopColor = CLS[f.cls || 'full'].color; if (CLS[f.cls || 'full'].dash) sw.style.borderTopStyle = f.cls === 'trans' ? 'dotted' : 'dashed';
+    const t = h('span', 'fdtxt'); t.innerHTML = fdTxt(f); const tag = h('span', 'tag', f.tag || '');
+    li.append(sw, t, tag); ul.append(li);
+    const on = () => { svg.classList.add('dim'); gFd[k].classList.add('on'); }, off = () => { svg.classList.remove('dim'); gFd[k].classList.remove('on'); };
+    li.addEventListener('mouseenter', on); li.addEventListener('mouseleave', off); li.addEventListener('focus', on); li.addEventListener('blur', off);
+  });
+}
+const ORDER_ATTRS = ['order_id', 'product_id', 'qty', 'order_date', 'cust_id', 'cust_name', 'postal_code', 'city', 'product_name', 'unit_price'];
+const ORDER_FDS = [
+  { l: ['order_id', 'product_id'], r: ['qty'], cls: 'full', tag: 'depends on the whole key: fine' },
+  { l: ['order_id'], r: ['order_date', 'cust_id'], cls: 'part', tag: 'partial: only part of the key (breaks 2NF)' },
+  { l: ['product_id'], r: ['product_name', 'unit_price'], cls: 'part', tag: 'partial: only part of the key (breaks 2NF)' },
+  { l: ['cust_id'], r: ['cust_name', 'postal_code'], cls: 'trans', tag: 'transitive: a non-key decides it (breaks 3NF)' },
+  { l: ['postal_code'], r: ['city'], cls: 'trans', tag: 'transitive: a non-key decides it (breaks 3NF)' }
+];
+drawFDs($('#heroFig'), { id: 'hero', attrs: ORDER_ATTRS, key: ['order_id', 'product_id'], fds: ORDER_FDS, label: 'Dependency diagram of ORDER_LINE with five functional dependencies', intro: '<b>ORDER_LINE</b>: one table, five dependencies. Hover a row to isolate its arrows.' });
+drawFDs($('#orderFig'), { id: 'ord', attrs: ORDER_ATTRS, key: ['order_id', 'product_id'], fds: ORDER_FDS, label: 'ORDER_LINE dependencies colored by type' });
+drawFDs($('#enrollFig'), { id: 'enr', attrs: ['sid', 'cid', 'grade', 'sname', 'ctitle', 'credits'], key: ['sid', 'cid'], bw: 96, label: 'ENROLL dependency diagram', fds: [
+  { l: ['sid', 'cid'], r: ['grade'], cls: 'full', tag: 'the key determines grade' },
+  { l: ['sid'], r: ['sname'], cls: 'part', tag: 'half the key is enough to decide the name' },
+  { l: ['cid'], r: ['ctitle', 'credits'], cls: 'part', tag: 'half the key is enough to decide title and credits' }] });
+drawFDs($('#tutorFig'), { id: 'tut', attrs: ['student', 'subject', 'tutor'], key: ['student', 'subject'], bw: 150, label: 'Tutoring dependency diagram', fds: [
+  { l: ['student', 'subject'], r: ['tutor'], cls: 'full', tag: 'the key determines tutor: fine' },
+  { l: ['tutor'], r: ['subject'], cls: 'bcnf', tag: 'tutor is not a key, yet it determines subject: BCNF violation' }] });
+
+/* ---------- FD Workbench ---------- */
+const PRESETS = {
+  chain:   { name: 'Chain: A → B → C', attrs: 'A, B, C, D', fds: 'A -> B\nB -> C', x: 'A', rels: 'A, B\nB, C\nC, D' },
+  text:    { name: 'Lecture example: A, B, C, D, E', attrs: 'A, B, C, D, E', fds: 'A -> B\nB, C -> E\nE, D -> A', x: 'C, D', rels: 'A, B\nA, C, D, E' },
+  orders:  { name: 'Orders (module 2 example)', attrs: ORDER_ATTRS.join(', '), fds: 'order_id, product_id -> qty\norder_id -> order_date, cust_id\nproduct_id -> product_name, unit_price\ncust_id -> cust_name, postal_code\npostal_code -> city', x: 'order_id, product_id',
+           rels: 'order_id, product_id, qty\norder_id, order_date, cust_id\nproduct_id, product_name, unit_price\ncust_id, cust_name, postal_code\npostal_code, city' },
+  redund:  { name: 'Redundant dependencies', attrs: 'A, B, C', fds: 'A -> B, C\nB -> C\nA -> B\nA, B -> C', x: 'A', rels: 'A, B\nB, C' },
+  emp:     { name: 'Employee: emp → dept → head (2NF only)', attrs: 'emp, dept, dept_head', fds: 'emp -> dept\ndept -> dept_head', x: 'emp', rels: 'emp, dept\ndept, dept_head' },
+  tutor:   { name: 'Tutoring (3NF, not BCNF)', attrs: 'student, subject, tutor', fds: 'student, subject -> tutor\ntutor -> subject', x: 'tutor', rels: 'tutor, subject\nstudent, tutor' },
+  address: { name: 'Address (BCNF costs a dependency)', attrs: 'street, city, zip', fds: 'street, city -> zip\nzip -> city', x: 'zip', rels: 'zip, city\nstreet, zip' },
+  bookbad: { name: 'Booking: split on city (lossy)', attrs: 'guest, hotel, city', fds: 'hotel -> city', x: 'hotel', rels: 'guest, city\nhotel, city' },
+  bookok:  { name: 'Booking: split on hotel (lossless)', attrs: 'guest, hotel, city', fds: 'hotel -> city', x: 'hotel', rels: 'guest, hotel\nhotel, city' },
+  cross:   { name: 'Split with nothing in common', attrs: 'A, B, C, D', fds: 'A -> B\nC -> D', x: 'A', rels: 'A, B\nC, D' },
+  clinic:  { name: 'Challenge: ClinicVisit', attrs: 'visit_id, patient_id, patient_name, patient_phone, doctor_id, doctor_name, clinic_room, clinic_building, visit_date',
+             fds: 'visit_id -> patient_id, doctor_id, visit_date\npatient_id -> patient_name, patient_phone\ndoctor_id -> doctor_name, clinic_room\nclinic_room -> clinic_building', x: 'visit_id', rels: 'visit_id, patient_id, doctor_id, visit_date\npatient_id, patient_name, patient_phone\ndoctor_id, doctor_name, clinic_room\nclinic_room, clinic_building' }
+};
+
+function tableauHtml(R, rows) {
+  const sym = v => v[0] === 'a' ? 'a' : (m => m ? `b<sub>${m[1]}·${esc(m[2])}</sub>` : esc(v))(/^b(\d+)(.*)$/.exec(v));
+  return '<table class="tab"><thead><tr><th></th>' + R.map(a => `<th>${esc(a)}</th>`).join('') + '</tr></thead><tbody>' +
+    rows.map((r, i) => `<tr><th>R${i + 1}</th>` + r.map(v => `<td class="${v[0] === 'a' ? 'a' : 'b'}">${sym(v)}</td>`).join('') + '</tr>').join('') + '</tbody></table>';
+}
+
+function Workbench(host, cfg) {
+  const sh = cfg.show;
+  const wrap = h('div', 'wb'); host.innerHTML = ''; host.append(wrap);
+  const grid = h('div', 'wb-grid'); wrap.append(grid);
+  const field = (label, el, hint) => { const d = h('div'); const l = h('label', null, label); d.append(l, el); if (hint) d.append(h('div', 'hint', hint)); grid.append(d); return el; };
+  const sel = h('select'); cfg.presets.forEach(k => { const o = h('option', null, PRESETS[k].name); o.value = k; sel.append(o); });
+  field('Example', sel);
+  const attrsIn = field('Attributes', Object.assign(h('input'), { type: 'text', spellcheck: false }), 'Separate with commas.');
+  const fdsIn = field('Functional dependencies', Object.assign(h('textarea'), { spellcheck: false }), 'One per line: A, B -> C');
+  let xIn = null, relsIn = null;
+  if (sh.closure) xIn = field('Find the closure of', Object.assign(h('input'), { type: 'text', spellcheck: false }), 'A set of attributes, e.g. A, B');
+  if (sh.decomp) relsIn = field('Decomposition', Object.assign(h('textarea'), { spellcheck: false }), 'One relation per line (its attributes, comma separated).');
+  [attrsIn, fdsIn, xIn, relsIn].forEach(el => { if (el) el.setAttribute('aria-label', el.previousSibling ? el.previousSibling.textContent : 'field'); });
+  const actions = h('div', 'wb-actions'); wrap.append(actions);
+  const go = h('button', 'btn', 'Analyze'); go.type = 'button'; actions.append(go);
+  let bBtn = null, tBtn = null;
+  if (sh.suggest) {
+    bBtn = h('button', 'btn alt', 'Suggest BCNF decomposition'); tBtn = h('button', 'btn alt', 'Suggest 3NF decomposition');
+    bBtn.type = tBtn.type = 'button'; actions.append(bBtn, tBtn);
+  }
+  const out = h('div', 'wb-out'); out.setAttribute('aria-live', 'polite'); wrap.append(out);
+
+  const card = (title, html, cls) => { const d = h('div', 'wb-card' + (cls ? ' ' + cls : '')); d.append(h('h4', null, title)); const b = h('div'); b.innerHTML = html; d.append(b); out.append(d); return d; };
+  function load(k) { const p = PRESETS[k]; attrsIn.value = p.attrs; fdsIn.value = p.fds; if (xIn) xIn.value = p.x; if (relsIn) relsIn.value = p.rels; }
+  function read() {
+    out.innerHTML = '';
+    const U = FD.parseAttrs(attrsIn.value);
+    if (!U.length) { card('Check your input', 'Enter at least one attribute.', 'wb-err'); return null; }
+    if (U.length > FD.MAXN) { card('Too many attributes', `This workbench handles up to ${FD.MAXN} attributes.`, 'wb-err'); return null; }
+    const p = FD.parseFDs(fdsIn.value, U);
+    if (p.errors.length) { card('Check your dependencies', '<ul>' + p.errors.map(e => `<li>${esc(e)}</li>`).join('') + '</ul>', 'wb-err'); return null; }
+    return { U, F: p.fds };
+  }
+
+  function showClosure(U, F) {
+    const X = FD.parseSide(xIn.value, U), bad = X.filter(a => !U.includes(a));
+    if (!X.length || bad.length) { card('Closure', 'Enter attributes from the list above in "Find the closure of".', 'wb-err'); return; }
+    const trace = [], c = FD.closure(X, F, trace);
+    let cur = [...X];
+    let html = `<ol class="trace"><li>Start with ${set(X)}.</li>` + trace.map(t => { cur = cur.concat(t.added); return `<li>Apply <span class="fdtxt">${fdTxt(t.fd)}</span>: add ${set(t.added)} → ${set(cur)}.</li>`; }).join('') + '</ol>';
+    const all = U.every(a => c.has(a));
+    html += `<p><b>${set(X)}⁺ = ${set(U.filter(a => c.has(a)))}</b></p><p>` + (all ? '<span class="badge good">superkey</span> It determines every attribute.' : `<span class="badge mid">not a superkey</span> Missing: ${set(U.filter(a => !c.has(a)))}.`) + '</p>';
+    card('Attribute closure', html);
+  }
+  function showKeys(U, F) {
+    const cl = FD.clWithin(U, F), keys = FD.candidateKeys(U, cl), prime = new Set(keys.flat());
+    const rhsAll = new Set(F.flatMap(f => f.r)), must = U.filter(a => !rhsAll.has(a)), never = U.filter(a => rhsAll.has(a) && !F.some(f => f.l.includes(a)));
+    let html = `<p><b>Candidate key${keys.length > 1 ? 's' : ''}:</b></p><div class="relchips">${keys.map(k => `<span>${set(k)}</span>`).join('')}</div>`;
+    html += `<p><b>Prime attributes:</b> ${set(U.filter(a => prime.has(a)))}<br><b>Non-prime attributes:</b> ${set(U.filter(a => !prime.has(a)))}</p>`;
+    html += `<p class="hint" style="color:var(--soft)">Never on a right-hand side, so in every key: ${set(must)}.` + (never.length ? ` Only ever determined, never a determinant: ${set(never)}.` : '') + '</p>';
+    card('Candidate keys', html);
+  }
+  function showCover(U, F) {
+    const mc = FD.groupFDs(FD.minimalCover(F));
+    const same = F.length === mc.length && F.every(f => mc.some(g => g.l.length === f.l.length && g.l.every(a => f.l.includes(a)) && g.r.length === f.r.length && g.r.every(a => f.r.includes(a))));
+    card('Minimal cover', '<ul>' + mc.map(f => `<li class="fdtxt">${fdTxt(f)}</li>`).join('') + '</ul>' + (same ? '<p>Your dependencies were already minimal.</p>' : '<p>Smaller than what you typed: redundant dependencies and extra left-side attributes were removed.</p>'));
+  }
+  function showNF(U, F) {
+    const a = FD.analyze(U, FD.clWithin(U, F));
+    const why = {
+      '1NF': 'A non-prime attribute depends on only part of a candidate key (a partial dependency), so the table is not in 2NF. We assume every cell is atomic.',
+      '2NF': 'No partial dependencies, but a non-prime attribute is determined by something that is not a key (a transitive dependency).',
+      '3NF': 'Every non-prime attribute depends on the key, the whole key, and nothing but the key. Some determinant is still not a superkey; 3NF allows that only because the attribute it determines is prime.',
+      'BCNF': 'Every determinant is a superkey.'
+    }[a.level];
+    let html = `<p><span class="badge ${a.level === 'BCNF' ? 'good' : a.level === '3NF' ? 'mid' : 'bad'}">Highest normal form: ${a.level}</span></p><p>${why}</p>`;
+    html += `<p><b>Candidate keys:</b> ${a.keys.map(set).join(', ')}</p>`;
+    const keyOf = X => a.keys.find(k => X.length < k.length && X.every(x => k.includes(x)));
+    if (a.part.length) html += '<p><b>Partial dependencies (break 2NF):</b></p><ul>' + a.part.map(p => `<li><span class="fdtxt">${esc(p.X.join(', '))} → ${esc(p.rhs.join(', '))}</span> (${set(p.X)} is only part of the key ${set(keyOf(p.X))})</li>`).join('') + '</ul>';
+    if (a.trans.length) html += '<p><b>Transitive dependencies (break 3NF):</b></p><ul>' + a.trans.map(p => `<li><span class="fdtxt">${esc(p.X.join(', '))} → ${esc(p.rhs.join(', '))}</span> (${set(p.X)} is not a key)</li>`).join('') + '</ul>';
+    const only = a.bcnf.filter(b => !a.part.some(p => p.X.join() === b.X.join()) && !a.trans.some(p => p.X.join() === b.X.join()));
+    if (only.length) html += '<p><b>BCNF violations (allowed in 3NF because the dependent attributes are prime):</b></p><ul>' + only.map(p => `<li><span class="fdtxt">${esc(p.X.join(', '))} → ${esc(p.rhs.join(', '))}</span> (${set(p.X)} is not a superkey)</li>`).join('') + '</ul>';
+    card('Normal form', html);
+  }
+  function showDecomp(U, F) {
+    const pr = FD.parseRels(relsIn.value, U);
+    if (pr.errors.length || !pr.rels.length) { card('Check your decomposition', '<ul>' + (pr.errors.length ? pr.errors : ['Enter at least one relation.']).map(e => `<li>${esc(e)}</li>`).join('') + '</ul>', 'wb-err'); return; }
+    const rels = pr.rels;
+    if (rels.some(r => r.length > FD.MAXN)) { card('Too large', 'Each relation must have at most ' + FD.MAXN + ' attributes.', 'wb-err'); return; }
+    const ch = FD.chase(U, rels, F);
+    let html = `<p><span class="badge ${ch.lossless ? 'good' : 'bad'}">${ch.lossless ? 'Lossless join' : 'Lossy join'}</span></p>`;
+    if (rels.length === 2) {
+      const [R1, R2] = rels, inter = R1.filter(a => R2.includes(a)), c = FD.closure(inter, F);
+      const d1 = R1.filter(a => !R2.includes(a)), d2 = R2.filter(a => !R1.includes(a));
+      html += `<p>Shared attributes: ${set(inter)}. Their closure is ${set(U.filter(a => c.has(a)))}. ` + (d1.every(a => c.has(a)) ? `It contains ${set(d1)} (R1 − R2), so the shared attributes determine R1's other columns.` : d2.every(a => c.has(a)) ? `It contains ${set(d2)} (R2 − R1), so the shared attributes determine R2's other columns.` : `It contains neither ${set(d1)} nor ${set(d2)}, so the shared attributes are not a key of either piece.`) + '</p>';
+    }
+    html += `<div class="tabs2"><div><figcaption>Start</figcaption>${tableauHtml(U, ch.initial)}</div><div><figcaption>After applying the dependencies (chase)</figcaption>${tableauHtml(U, ch.final)}</div></div>`;
+    html += `<p style="color:var(--soft);font-size:14.5px">${ch.lossless ? 'A row is all <b>a</b>, so the join reproduces the original exactly.' : 'No row is all <b>a</b>, so the join can invent rows that were never in the original.'}</p>`;
+    card('Lossless join test', html);
+
+    const pres = FD.preservation(F, rels), allP = pres.every(p => p.preserved);
+    card('Dependency preservation', `<p><span class="badge ${allP ? 'good' : 'bad'}">${allP ? 'All dependencies preserved' : 'Not dependency preserving'}</span></p><ul>` +
+      pres.map(p => `<li>${p.preserved ? '✓' : '✗'} <span class="fdtxt">${fdTxt(p.fd)}</span> ${p.preserved ? 'can be enforced from the pieces' : 'cannot be enforced inside one table or derived from the others'}</li>`).join('') + '</ul>');
+
+    const lv = rels.map(r => { const an = FD.analyze(r, FD.clWithin(r, F)); return `<li><span class="fdtxt">${esc(r.join(', '))}</span>: <b>${an.level}</b>, key ${an.keys.map(set).join(' or ')}</li>`; });
+    card('Normal form of each piece', '<ul>' + lv.join('') + '</ul>');
+  }
+
+  function analyze() {
+    const r = read(); if (!r) return;
+    const { U, F } = r;
+    if (sh.closure) showClosure(U, F);
+    if (sh.keys) showKeys(U, F);
+    if (sh.cover) showCover(U, F);
+    if (sh.nf) showNF(U, F);
+    if (sh.decomp) showDecomp(U, F);
+  }
+  function suggest(kind) {
+    const r = read(); if (!r) return;
+    const { U, F } = r;
+    let rels, notes = '';
+    if (kind === 'bcnf') {
+      const d = FD.bcnfDecompose(U, F); rels = d.rels;
+      notes = d.steps.length ? '<ol class="trace">' + d.steps.map(s => `<li>Split ${set(s.from)} on <span class="fdtxt">${esc(s.X.join(', '))} → ${esc(s.closure.filter(a => !s.X.includes(a)).join(', '))}</span> into ${set(s.into[0])} and ${set(s.into[1])}.</li>`).join('') + '</ol>' : '<p>Already in BCNF; nothing to split.</p>';
+    } else {
+      const s = FD.synth3NF(U, F); rels = s.rels;
+      notes = '<p>Minimal cover grouped by left side:</p><ul>' + s.cover.map(g => `<li class="fdtxt">${fdTxt(g)}</li>`).join('') + '</ul>' + (s.addedKey ? `<p>No table contained a candidate key, so ${set(s.addedKey)} was added.</p>` : '<p>Some table already contains a candidate key, so nothing was added.</p>');
+    }
+    const ch = FD.chase(U, rels, F), pres = FD.preservation(F, rels), allP = pres.every(p => p.preserved);
+    let html = notes + '<p><b>Result:</b></p><div class="relchips">' + rels.map(x => `<span>${esc(x.join(', '))}</span>`).join('') + '</div>' +
+      `<p><span class="badge ${ch.lossless ? 'good' : 'bad'}">${ch.lossless ? 'Lossless' : 'Lossy'}</span> <span class="badge ${allP ? 'good' : 'bad'}">${allP ? 'Dependency preserving' : 'Loses: ' + pres.filter(p => !p.preserved).map(p => esc(p.fd.l.join(', ') + ' → ' + p.fd.r.join(', '))).join('; ')}</span></p>`;
+    out.innerHTML = '';
+    const c = card(kind === 'bcnf' ? 'BCNF decomposition' : '3NF synthesis', html);
+    if (relsIn) { const b = h('button', 'btn alt', 'Test this decomposition'); b.type = 'button'; b.style.marginTop = '6px'; b.addEventListener('click', () => { relsIn.value = rels.map(x => x.join(', ')).join('\n'); analyze(); }); c.append(b); }
+  }
+  sel.addEventListener('change', () => { load(sel.value); analyze(); });
+  go.addEventListener('click', analyze);
+  if (bBtn) { bBtn.addEventListener('click', () => suggest('bcnf')); tBtn.addEventListener('click', () => suggest('3nf')); }
+  load(cfg.presets[0]); analyze();
+}
+Workbench($('#wb1'), { presets: ['chain', 'text', 'orders', 'redund'], show: { closure: true, keys: true, cover: true } });
+Workbench($('#wb2'), { presets: ['orders', 'emp', 'tutor', 'text', 'address'], show: { keys: true, nf: true, suggest: true } });
+Workbench($('#wb3'), { presets: ['bookbad', 'bookok', 'tutor', 'address', 'orders', 'cross'], show: { decomp: true, suggest: true } });
+Workbench($('#wbF'), { presets: ['clinic'], show: { keys: true, nf: true, decomp: true, suggest: true } });
+
+/* ---------- data tester (module 1) ---------- */
+(function tester() {
+  const host = $('#fdTester');
+  const cols = ['sid', 'sname', 'cid', 'ctitle', 'credits', 'grade'];
+  const base = [[1, 'Ada', 'CS101', 'Intro to Programming', 3, 'A'], [1, 'Ada', 'CS220', 'Data Structures', 4, 'B'], [2, 'Ben', 'CS101', 'Intro to Programming', 3, 'A'],
+    [2, 'Ben', 'MA201', 'Linear Algebra', 5, 'C'], [3, 'Carla', 'CS220', 'Data Structures', 4, 'A'], [3, 'Carla', 'MA201', 'Linear Algebra', 5, 'B']];
+  const extra = [4, 'Ben', 'CS230', 'Databases', 4, 'B'];
+  const tries = [
+    { l: ['sid'], r: 'sname', hint: 'A real rule: a student ID names one student.' },
+    { l: ['cid'], r: 'ctitle', hint: 'A real rule: a course code names one course.' },
+    { l: ['sid'], r: 'grade', hint: 'Not a rule: a student gets different grades in different courses.' },
+    { l: ['sid', 'cid'], r: 'grade', hint: 'A real rule: one grade per student per course.' },
+    { l: ['credits'], r: 'ctitle', hint: 'Holds here by coincidence. Could two courses share a credit count? Press "Add a student".' },
+    { l: ['sname'], r: 'sid', hint: 'Holds here by coincidence. Could two students share a name? Press "Add a student".' }
+  ];
+  let withExtra = false, hint = '';
+  const trow = h('div', 'tries'); const lhsBox = h('div', 'seg'); const rhsSel = h('select'); rhsSel.setAttribute('aria-label', 'Right-hand column');
+  cols.forEach(c => { const l = h('label'); const i = Object.assign(h('input'), { type: 'checkbox', value: c }); l.append(i, document.createTextNode(c)); lhsBox.append(l); const o = h('option', null, c); o.value = c; rhsSel.append(o); });
+  const addBtn = h('button', 'btn alt', 'Add a student'); addBtn.type = 'button';
+  const verdict = h('div'), tableHost = h('div', 'dtwrap'), hintEl = h('p');
+  tries.forEach(t => { const b = h('button', null, t.l.join(', ') + ' → ' + t.r); b.type = 'button'; b.addEventListener('click', () => { $$('input', lhsBox).forEach(i => i.checked = t.l.includes(i.value)); rhsSel.value = t.r; hint = t.hint; run(); }); trow.append(b); });
+  const l1 = h('div'); l1.innerHTML = '<b>Quick tests</b>';
+  const l2 = h('div'); l2.innerHTML = '<b>Left side (determinant)</b>';
+  const l3 = h('div'); l3.innerHTML = '<b>Right side</b>';
+  const ctrl = h('div'); ctrl.style.cssText = 'display:flex;gap:12px;align-items:center;flex-wrap:wrap'; ctrl.append(rhsSel, addBtn);
+  host.append(l1, trow, l2, lhsBox, l3, ctrl, verdict, hintEl, tableHost);
+  function run() {
+    const rows = withExtra ? base.concat([extra]) : base;
+    const L = $$('input:checked', lhsBox).map(i => i.value), R = rhsSel.value;
+    addBtn.textContent = withExtra ? 'Remove the added student' : 'Add a student';
+    hintEl.textContent = hint; hintEl.style.color = 'var(--soft)';
+    if (!L.length) { verdict.className = 'verdict mid'; verdict.textContent = 'Pick at least one column for the left side.'; draw(rows, L, R, new Set(), new Set()); return; }
+    if (L.includes(R)) { verdict.className = 'verdict mid'; verdict.textContent = 'Trivial: the right side is already part of the left side, so this always holds.'; draw(rows, L, R, new Set(), new Set()); return; }
+    const li = L.map(c => cols.indexOf(c)), ri = cols.indexOf(R), groups = new Map();
+    rows.forEach((r, i) => { const k = li.map(j => r[j]).join('|'); if (!groups.has(k)) groups.set(k, { vals: new Set(), idx: [] }); const g = groups.get(k); g.vals.add(r[ri]); g.idx.push(i); });
+    const bad = new Set(), ev = new Set(); let first = null;
+    groups.forEach((g, k) => { if (g.vals.size > 1) { g.idx.forEach(i => bad.add(i)); if (!first) first = { k, vals: [...g.vals] }; } else if (g.idx.length > 1) g.idx.forEach(i => ev.add(i)); });
+    if (bad.size) { verdict.className = 'verdict bad'; verdict.textContent = `Violated: ${L.join(', ')} = ${first.k.split('|').join(', ')} appears with ${R} = ${first.vals.join(' and ')}.`; }
+    else { verdict.className = 'verdict good'; verdict.textContent = `Holds in this data: each value of ${L.join(', ')} goes with exactly one ${R}.` + (ev.size ? ' (Green rows are the evidence: they repeat the left side with the same right side.)' : ' (No left side repeats, so it holds trivially here.)'); }
+    draw(rows, L, R, bad, ev);
+  }
+  function draw(rows, L, R, bad, ev) {
+    let html = '<table class="dt"><thead><tr>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr></thead><tbody>';
+    rows.forEach((r, i) => { html += `<tr class="${bad.has(i) ? 'bad' : ev.has(i) ? 'ev' : ''}">` + r.map((v, j) => `<td class="${(L.includes(cols[j]) || cols[j] === R) && (bad.has(i) || ev.has(i)) ? 'hl' : ''}">${esc(v)}</td>`).join('') + '</tr>'; });
+    tableHost.innerHTML = html + '</tbody></table>';
+  }
+  $$('input', lhsBox).forEach(i => i.addEventListener('change', () => { hint = ''; run(); }));
+  rhsSel.addEventListener('change', () => { hint = ''; run(); });
+  addBtn.addEventListener('click', () => { withExtra = !withExtra; run(); });
+  $$('input', lhsBox)[0].checked = true; rhsSel.value = 'sname'; run();
+})();
+
+/* ---------- normalization stepper (module 2) ---------- */
+(function stepper() {
+  const T = (name, cols, rows, pk, note) => ({ name, cols, rows, pk, note });
+  const lines = [[1001, '2026-09-01', 'C1', 'Ada', '20740', 'College Park', 'P10', 'Pen', '1.50', 3], [1001, '2026-09-01', 'C1', 'Ada', '20740', 'College Park', 'P20', 'Notebook', '4.00', 1],
+    [1002, '2026-09-02', 'C2', 'Ben', '20740', 'College Park', 'P10', 'Pen', '1.50', 2], [1002, '2026-09-02', 'C2', 'Ben', '20740', 'College Park', 'P40', 'Pencil', '0.50', 10],
+    [1003, '2026-09-03', 'C3', 'Carla', '20715', 'Bowie', 'P30', 'Stapler', '9.25', 5], [1003, '2026-09-03', 'C3', 'Carla', '20715', 'Bowie', 'P40', 'Pencil', '0.50', 20]];
+  const product = [['P10', 'Pen', '1.50'], ['P20', 'Notebook', '4.00'], ['P30', 'Stapler', '9.25'], ['P40', 'Pencil', '0.50']];
+  const STEPS = [
+    { tab: 'Start', title: 'One table with a packed cell', rule: 'The items column holds a list. Nothing about this table is searchable or constrained.', fixes: 'Problem: searching for "Pen" also matches "Pencil" (try it in Lab 2). Items cannot have keys, prices, or constraints. The table is not in 1NF.',
+      tables: [T('ORDERS_RAW', ['order_id', 'order_date', 'cust_id', 'cust_name', 'postal_code', 'city', 'items'], [[1001, '2026-09-01', 'C1', 'Ada', '20740', 'College Park', 'P10:Pen:1.50:3; P20:Notebook:4.00:1'], [1002, '2026-09-02', 'C2', 'Ben', '20740', 'College Park', 'P10:Pen:1.50:2; P40:Pencil:0.50:10'], [1003, '2026-09-03', 'C3', 'Carla', '20715', 'Bowie', 'P30:Stapler:9.25:5; P40:Pencil:0.50:20']], ['order_id'])] },
+    { tab: '1NF', title: 'Atomic values, one row per order line', rule: 'Rule: one value per cell, no repeating groups, a primary key. Key: (order_id, product_id).', fixes: 'Fixed: every cell is atomic and searchable. Still wrong: the order date repeats on each line, the product name repeats on every order of that product, and the city repeats for every customer in that postal code.',
+      tables: [T('ORDER_LINE', ['order_id', 'order_date', 'cust_id', 'cust_name', 'postal_code', 'city', 'product_id', 'product_name', 'unit_price', 'qty'], lines, ['order_id', 'product_id'])] },
+    { tab: '2NF', title: 'Remove partial dependencies', rule: 'Rule: every non-key attribute depends on the whole key. order_id alone determines the date and customer; product_id alone determines the name and price. Move each to its own table.', fixes: 'Fixed: product facts are stored once per product. Still wrong: in ORDERS, the customer name and postal code repeat for every order by that customer, and the city repeats for every customer in a postal code.',
+      tables: [T('ORDERS', ['order_id', 'order_date', 'cust_id', 'cust_name', 'postal_code', 'city'], [[1001, '2026-09-01', 'C1', 'Ada', '20740', 'College Park'], [1002, '2026-09-02', 'C2', 'Ben', '20740', 'College Park'], [1003, '2026-09-03', 'C3', 'Carla', '20715', 'Bowie']], ['order_id']),
+        T('PRODUCT', ['product_id', 'product_name', 'unit_price'], product, ['product_id']),
+        T('ORDER_LINE', ['order_id', 'product_id', 'qty'], lines.map(l => [l[0], l[6], l[9]]), ['order_id', 'product_id'])] },
+    { tab: '3NF', title: 'Remove transitive dependencies', rule: 'Rule: nothing but the key. order_id → cust_id → cust_name, postal_code and postal_code → city are chains through non-keys. Split each chain.', fixes: 'Fixed: change a city name in one POSTAL row and every customer sees it. Check: every determinant in these five tables is a key, so the design is also in BCNF.',
+      tables: [T('ORDERS', ['order_id', 'order_date', 'cust_id'], [[1001, '2026-09-01', 'C1'], [1002, '2026-09-02', 'C2'], [1003, '2026-09-03', 'C3']], ['order_id']),
+        T('CUSTOMER', ['cust_id', 'cust_name', 'postal_code'], [['C1', 'Ada', '20740'], ['C2', 'Ben', '20740'], ['C3', 'Carla', '20715']], ['cust_id']),
+        T('POSTAL', ['postal_code', 'city'], [['20740', 'College Park'], ['20715', 'Bowie']], ['postal_code']),
+        T('PRODUCT', ['product_id', 'product_name', 'unit_price'], product, ['product_id']),
+        T('ORDER_LINE', ['order_id', 'product_id', 'qty'], lines.map(l => [l[0], l[6], l[9]]), ['order_id', 'product_id'])] }
+  ];
+  const nav = $('#stepNav'), body = $('#stepBody');
+  STEPS.forEach((s, i) => { const b = h('button', null, s.tab); b.type = 'button'; b.setAttribute('role', 'tab'); b.addEventListener('click', () => go(i)); nav.append(b); });
+  function go(i) {
+    const s = STEPS[i];
+    $$('button', nav).forEach((b, j) => { b.classList.toggle('on', j === i); b.setAttribute('aria-selected', j === i); });
+    body.innerHTML = '';
+    body.append(Object.assign(h('h3', null, s.title), { style: 'font-size:21px' }));
+    const p1 = h('p', null, s.rule), p2 = h('p'); p2.textContent = s.fixes; p2.style.color = 'var(--soft)';
+    body.append(p1, p2);
+    const wrap = h('div', 'tbls');
+    s.tables.forEach(t => {
+      const d = h('div'); d.append(h('div', 'dtcap', t.name));
+      const w = h('div', 'dtwrap'); w.innerHTML = '<table class="dt"><thead><tr>' + t.cols.map(c => `<th class="${t.pk.includes(c) ? 'pk' : ''}">${c}</th>`).join('') + '</tr></thead><tbody>' + t.rows.map(r => '<tr>' + r.map(v => `<td>${esc(v)}</td>`).join('') + '</tr>').join('') + '</tbody></table>';
+      d.append(w); wrap.append(d);
+    });
+    body.append(wrap);
+    const n = h('p', null, 'Underlined column headings are the primary key.'); n.style.cssText = 'color:var(--soft);font-size:14px;margin-bottom:0'; body.append(n);
+  }
+  go(0);
+})();
+
+/* ---------- decision helper (module 4) ---------- */
+(function decider() {
+  const host = $('#decider');
+  const Qs = [
+    { id: 'q1', q: 'Have you already added indexes and checked the query plan?', o: [['no', 'Not yet'], ['yes', 'Yes, and it is still too slow']] },
+    { id: 'q2', q: 'What dominates the workload on this data?', o: [['reads', 'Reads'], ['writes', 'Writes']] },
+    { id: 'q3', q: 'How often does the data you would copy change?', o: [['rare', 'Rarely'], ['often', 'Often']] },
+    { id: 'q4', q: 'Can a reader tolerate a slightly stale value?', o: [['yes', 'Yes'], ['no', 'No, it must always be current']] }
+  ];
+  const ans = {};
+  Qs.forEach(q => {
+    const d = h('div'); d.append(Object.assign(h('b'), { textContent: q.q }));
+    const seg = h('div', 'seg');
+    q.o.forEach(([v, t]) => { const l = h('label'); const i = Object.assign(h('input'), { type: 'radio', name: q.id, value: v }); i.addEventListener('change', () => { ans[q.id] = v; show(); }); l.append(i, document.createTextNode(t)); seg.append(l); });
+    d.append(seg); host.append(d);
+  });
+  const res = h('div'); res.setAttribute('aria-live', 'polite'); host.append(res);
+  function show() {
+    if (Qs.some(q => !ans[q.id])) { res.innerHTML = '<p style="color:var(--soft)">Answer all four to see a recommendation.</p>'; return; }
+    let cls = 'mid', title, text, doc = '';
+    if (ans.q1 === 'no') { cls = 'good'; title = 'Do not denormalize yet'; text = 'Add indexes on the join and filter columns, read the query plan, and rewrite the query first. Most slow joins are missing indexes.'; }
+    else if (ans.q2 === 'writes') { cls = 'good'; title = 'Stay normalized'; text = 'Every copy multiplies the cost of each write and adds a way to go inconsistent. Look at batching, caching results, or a read replica instead.'; }
+    else if (ans.q3 === 'rare') { title = 'Good candidate for a controlled copy'; text = 'Copy the column or store a precomputed value. The base tables stay the source of truth.'; doc = 'Document which table is the source, and add a check query that finds copies that have drifted.'; }
+    else if (ans.q4 === 'yes') { title = 'Use a summary table refreshed on a schedule'; text = 'Build it from the normalized tables (nightly, hourly). Readers query the summary; writers never touch it.'; doc = 'State the refresh schedule on the report so nobody mistakes it for live data.'; }
+    else { cls = 'bad'; title = 'Keep it live without copying columns'; text = 'The data changes often and must always be current. Use a trigger-maintained summary table, or a materialized or indexed view if your DBMS has one. Avoid copying descriptive columns into other tables.'; doc = 'Test the trigger for INSERT, UPDATE, and DELETE; a missed case silently corrupts the summary.'; }
+    res.innerHTML = `<div class="verdict ${cls}">${esc(title)}</div><p>${esc(text)}</p>` + (doc ? `<p style="color:var(--soft)"><b>Write down:</b> ${esc(doc)}</p>` : '');
+  }
+  show();
+})();
+
+/* ---------- schema smells (module 5) ---------- */
+(function smells() {
+  const host = $('#smells');
+  const L = [
+    ['CREATE TABLE employee_data (', null],
+    ['  id        INTEGER,', { why: 'No primary key, and it can be NULL, so rows can be duplicated or unidentifiable.', fix: 'id INTEGER PRIMARY KEY' }],
+    ['  name      TEXT NOT NULL,', null],
+    ['  email     TEXT NOT NULL UNIQUE,', null],
+    ["  skills    TEXT,            -- 'sql, java, python'", { why: 'Several values in one cell breaks 1NF and makes searching unreliable.', fix: 'A child table employee_skill(employee_id, skill).' }],
+    ['  dept_name TEXT,', { why: 'Department facts repeat on every employee row, which invites update anomalies.', fix: 'Store dept_id and reference a department table.' }],
+    ['  dept_head TEXT,', { why: 'dept_head depends on the department, not on the employee: a transitive dependency.', fix: 'Store it once, in the department table.' }],
+    ['  status    TEXT,            -- any text at all', { why: '"active", "Active", and "actve" can all coexist; nothing validates the value.', fix: "CHECK (status IN ('active','on_leave','left')) or a status lookup table with a foreign key." }],
+    ['  salary    TEXT,', { why: 'A number stored as text sorts and sums incorrectly and has no range check.', fix: 'salary NUMERIC NOT NULL CHECK (salary >= 0)' }],
+    ['  hire_date TEXT NOT NULL,', null],
+    ["  manager   TEXT             -- manager's name", { why: 'A name is not a reliable reference: it can be misspelled, duplicated, or change.', fix: 'manager_id INTEGER REFERENCES employee(id)' }],
+    [');', null]
+  ];
+  const pre = h('pre', 'ddl'); const flags = new Set(); let revealed = false;
+  const rows = L.map(([t, s], i) => {
+    const d = h('span', 'line' + (s ? '' : ' static'), t || ' '); d.dataset.i = i;
+    if (s) { d.tabIndex = 0; d.setAttribute('role', 'checkbox'); d.setAttribute('aria-checked', 'false'); d.setAttribute('aria-label', 'Flag line: ' + t.trim()); }
+    pre.append(d); return d;
+  });
+  // all lines (smelly or not) are clickable; static class only for the structural lines CREATE/);
+  rows.forEach((d, i) => { if (i === 0 || i === L.length - 1) return; d.classList.remove('static'); d.tabIndex = 0; d.setAttribute('role', 'checkbox'); d.setAttribute('aria-checked', 'false'); d.setAttribute('aria-label', 'Flag line: ' + L[i][0].trim()); });
+  function toggle(i) { if (revealed) return; flags.has(i) ? flags.delete(i) : flags.add(i); rows[i].classList.toggle('flag', flags.has(i)); rows[i].setAttribute('aria-checked', flags.has(i)); }
+  rows.forEach((d, i) => { if (i === 0 || i === L.length - 1) return; d.addEventListener('click', () => toggle(i)); d.addEventListener('keydown', e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); toggle(i); } }); });
+  const bar = h('div', 'score'), rv = h('button', 'btn', 'Reveal'), rs = h('button', 'btn alt', 'Reset'), msg = h('span'); rv.type = rs.type = 'button'; bar.append(rv, rs, msg);
+  const notes = h('div', 'ddl-notes');
+  host.append(pre, bar, notes);
+  rv.addEventListener('click', () => {
+    revealed = true; let hit = 0, fa = 0, total = 0; notes.innerHTML = '';
+    L.forEach(([t, s], i) => {
+      if (i === 0 || i === L.length - 1) return;
+      rows[i].classList.remove('flag');
+      if (s) { total++; if (flags.has(i)) { hit++; rows[i].classList.add('hit'); } else rows[i].classList.add('miss'); const n = h('div'); n.innerHTML = `<b>${flags.has(i) ? '✓ ' : '✗ Missed: '}${esc(t.trim().replace(/,\s*(--.*)?$/, ''))}</b><br>${esc(s.why)} <i>Fix:</i> ${esc(s.fix)}`; notes.append(n); }
+      else if (flags.has(i)) { fa++; rows[i].classList.add('false'); const n = h('div'); n.innerHTML = `<b>✗ False alarm: ${esc(t.trim().replace(/,\s*(--.*)?$/, ''))}</b><br>This line is fine as written.`; notes.append(n); }
+    });
+    msg.textContent = `Found ${hit} of ${total}` + (fa ? `, with ${fa} false alarm${fa > 1 ? 's' : ''}.` : ', with no false alarms.');
+  });
+  rs.addEventListener('click', () => { revealed = false; flags.clear(); notes.innerHTML = ''; msg.textContent = ''; rows.forEach(r => r.classList.remove('flag', 'hit', 'miss', 'false')); $$('[role=checkbox]', pre).forEach(r => r.setAttribute('aria-checked', 'false')); });
+})();
+
+/* ---------- design duel (module 4) ---------- */
+(function duels() {
+  const host = $('#duels');
+  const D = [
+    { t: 'The morning dashboard', ctx: 'Requirement: 300 managers open a dashboard each morning showing yesterday’s totals by region. The base data is 40 million rows and the six-table join takes 25 seconds even with indexes.', A: ['Keep joining live', 'Run the six-table join every time someone opens the page.'], B: ['Summary table', 'Build a regional summary table each night from the normalized tables.'], best: 1, why: 'Indexes are already in place, the data is a day old by nature, and the same answer is requested 300 times. A nightly summary removes the cost; the normalized tables stay the source of truth. Cost: the dashboard is not live, and a rebuild job must be monitored.' },
+    { t: 'Customer email on the order page', ctx: 'Requirement: each order page shows the customer’s current email. Customers occasionally change email. Lookups are by primary key and are fast.', A: ['Copy the email', 'Store customer_email in every order row.'], B: ['Join to CUSTOMER', 'Keep the email only in CUSTOMER and join on cust_id.'], best: 1, why: 'A primary-key join is cheap, the value changes, and it must be current. Copying it would store the same fact many times with no performance problem to justify it.' },
+    { t: 'The price on an order line', ctx: 'Requirement: invoices must show what the customer was charged. Product prices change every few months.', A: ['Only PRODUCT.unit_price', 'Look up the current price whenever an invoice is printed.'], B: ['Store the price on the line', 'Keep unit_price_at_sale in ORDER_LINE as well.'], best: 1, why: 'The price charged at the time of sale is a different fact from today’s price. Without it, reprinting an old invoice shows the wrong amount. This is a historical snapshot, not redundancy.' }
+  ];
+  D.forEach(d => {
+    const box = h('div', 'duel-item'); box.append(h('b', null, d.t), h('p', null, d.ctx));
+    const grid = h('div', 'duel'), why = h('div', 'why'); why.hidden = true; why.textContent = d.why;
+    [d.A, d.B].forEach((o, i) => {
+      const b = h('button'); b.type = 'button'; b.append(h('b', null, o[0]), document.createTextNode(o[1]));
+      b.addEventListener('click', () => { $$('button', grid).forEach((x, j) => { x.disabled = true; if (j === d.best) x.classList.add('right'); else if (j === i) x.classList.add('wrong'); }); why.prepend(h('b', null, i === d.best ? 'Right call. ' : 'Not the better design. ')); why.hidden = false; });
+      grid.append(b);
+    });
+    box.append(grid, why); host.append(box);
+  });
+})();
+
+/* ---------- SQL highlight + copy ---------- */
+const KW = 'CREATE|TABLE|VIEW|TRIGGER|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|UNIQUE|DEFAULT|CHECK|INSERT|INTO|VALUES|SELECT|FROM|WHERE|JOIN|LEFT|ON|GROUP|BY|ORDER|HAVING|COUNT|SUM|ROUND|AS|DROP|IF|EXISTS|PRAGMA|UPDATE|SET|DELETE|CASCADE|INTEGER|TEXT|REAL|AND|OR|IN|CASE|WHEN|THEN|ELSE|END|DISTINCT|BETWEEN|IS|WITH|RECURSIVE|UNION|ALL|EXCEPT|LIMIT|DESC|AFTER|BEFORE|BEGIN|NEW|CONFLICT|DO|EXPLAIN|QUERY|PLAN|LIKE|ALTER|RENAME|TO|USING|EXCLUDED|RAISE|ABORT|UPPER|LOWER|SUBSTR|TRIM|CHANGES|OFF';
+const TOK = new RegExp(`(--[^\\n]*)|('(?:[^']|'')*')|\\b(${KW})\\b|\\b(\\d+(?:\\.\\d+)?)\\b`, 'gi');
+function highlight(code) {
+  const esc2 = code.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  code.innerHTML = esc2.replace(TOK, (m, cm, st, kw) => cm ? `<span class="cm">${m}</span>` : st ? `<span class="st">${m}</span>` : kw ? `<span class="kw">${m}</span>` : `<span class="nu">${m}</span>`);
+}
+$$('.lab code').forEach(c => { c.dataset.raw = c.textContent; highlight(c); });
+$$('.lab .copy').forEach(btn => btn.addEventListener('click', async () => {
+  const code = $('code', btn.closest('.lab')), txt = code.dataset.raw || code.textContent;
+  try { await navigator.clipboard.writeText(txt); }
+  catch (e) { const ta = h('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (_) {} ta.remove(); }
+  const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = old, 1500);
+}));
+
+/* ---------- quizzes ---------- */
+const Q = (q, o, a, why) => ({ q, o, a, why });
+const QUIZ = {
+  m1: [
+    Q('In R(A, B, C) with the dependency A → B, which statement is correct?', ['Any two rows with the same A must have the same B', 'Any two rows with the same B must have the same A', 'A is a key of R', 'B is a key of R'], 0, 'X → Y means rows that agree on X must agree on Y. It says nothing about the reverse, and A is not necessarily a key (C is not determined).'),
+    Q('R(A, B, C, D) has F = {A → B, B → C}. What is the closure A⁺?', ['{A}', '{A, B}', '{A, B, C}', '{A, B, C, D}'], 2, 'A gives B, B gives C. Nothing determines D, so D is not in the closure.'),
+    Q('Which dependency is trivial?', ['A, B → A', 'A → A, B', 'A → B', 'B → A'], 0, 'A dependency is trivial when its right side is contained in its left side.'),
+    Q('R(A, B, C, D) with F = {A → B, B → C, C → D}. What is the candidate key?', ['A', 'B', 'D', 'A, B'], 0, 'A⁺ = {A, B, C, D}. B⁺ and D⁺ never reach A. {A, B} is a superkey but not minimal.'),
+    Q('In a six-row sample, every instructor teaches exactly one course. Can you conclude instructor → course is a rule of the design?', ['Yes, the data proves it', 'No: data can disprove an FD but cannot prove it; the rule must come from the requirements', 'Yes, because there are fewer than ten rows', 'Only if instructor is the primary key'], 1, 'A sample can satisfy a dependency by coincidence. Ask whether the real world could ever break it.'),
+    Q('From X → Y and Y → Z, which dependency follows by transitivity?', ['X → Z', 'Z → X', 'Y → X', 'X, Z → Y'], 0, 'Transitivity is one of Armstrong’s three axioms.'),
+    Q('R(A, B, C) has F = {A → B, B → C}. Which of these are superkeys? (Select all that apply.)', ['A', 'A, B', 'B', 'B, C'], [0, 1], 'A⁺ = {A, B, C} and {A, B}⁺ = {A, B, C}. B⁺ = {B, C} and {B, C}⁺ = {B, C} never reach A.')
+  ],
+  m2: [
+    Q('Which normal form forbids partial dependencies on a candidate key?', ['1NF', '2NF', '3NF', 'BCNF'], 1, '2NF requires every non-prime attribute to depend on the whole of every candidate key.'),
+    Q('A column "phones" holds the text "555-0101, 555-0102". Which normal form does this violate?', ['1NF', '2NF', '3NF', 'BCNF'], 0, '1NF requires atomic values: one value per cell.'),
+    Q('R(order_id, product_id, qty, product_name) has key (order_id, product_id), and product_id → product_name. What is the highest normal form?', ['1NF', '2NF', '3NF', 'BCNF'], 0, 'product_name depends on only part of the key: a partial dependency, so the table is not in 2NF.'),
+    Q('R(emp, dept, dept_head) has key emp, with emp → dept and dept → dept_head. What is the highest normal form?', ['1NF', '2NF', '3NF', 'BCNF'], 1, 'The key is a single attribute, so no partial dependencies exist (2NF). dept → dept_head is transitive, which breaks 3NF.'),
+    Q('Which statement defines BCNF?', ['For every non-trivial FD X → Y, X is a superkey', 'For every FD X → Y, Y is part of a key', 'No attribute is multivalued', 'Every attribute depends only on part of the key'], 0, 'BCNF has no exceptions: every determinant must be a superkey.'),
+    Q('How does 3NF differ from BCNF?', ['3NF allows X → A when A is a prime attribute even if X is not a superkey', '3NF allows multivalued attributes', '3NF only applies to single-attribute keys', 'There is no difference'], 0, 'That exception is exactly the gap between them.'),
+    Q('Tutoring(student, subject, tutor) has student, subject → tutor and tutor → subject. What is the highest normal form?', ['1NF', '2NF', '3NF', 'BCNF'], 2, 'Every attribute is prime, so 3NF holds. But tutor is not a superkey, so BCNF fails.'),
+    Q('R(A, B, C, D) has key A. Which of these given dependencies violate 3NF? (Select all that apply.)', ['A → B', 'B → C', 'C → D', 'A → D'], [1, 2], 'B and C are not superkeys and C, D are non-prime. A is the key, so A → anything is fine.')
+  ],
+  m3: [
+    Q('A decomposition of R into R1 and R2 is lossless if and only if...', ['R1 ∩ R2 determines R1 − R2 or R2 − R1', 'R1 and R2 have the same number of attributes', 'R1 ∩ R2 is empty', 'Every attribute appears in both'], 0, 'The shared attributes must be a key of at least one piece.'),
+    Q('Booking(guest, hotel, city) has hotel → city. Is the split (guest, city) and (hotel, city) lossless?', ['Yes', 'No: city determines neither guest nor hotel', 'Yes, because city is shared', 'Only if guest is unique'], 1, 'Several hotels share a city and several guests visit it, so the join invents combinations.'),
+    Q('Same table, split instead into (guest, hotel) and (hotel, city). Is it lossless?', ['No', 'Yes: hotel → city makes hotel a key of the second table', 'Only for one guest', 'It depends on the data'], 1, 'The shared attribute hotel determines the other columns of (hotel, city).'),
+    Q('What does dependency preservation mean?', ['Every FD of F can be enforced within single decomposed tables, or follows from the ones that can', 'No table has a primary key', 'The decomposition has fewer tables', 'Data types are unchanged'], 0, 'If not, checking a rule requires joining tables on every write.'),
+    Q('Address(street, city, zip) has street, city → zip and zip → city. After the BCNF split into (zip, city) and (street, zip), which dependency is lost?', ['zip → city', 'street, city → zip', 'Both', 'Neither'], 1, 'street and city now live in different tables, so that rule cannot be checked in one place.'),
+    Q('Which normal form can always be reached with both a lossless join and dependency preservation?', ['2NF only', '3NF', 'BCNF', 'None'], 1, '3NF synthesis guarantees both. BCNF decomposition guarantees only lossless.'),
+    Q('Which properties does the 3NF synthesis algorithm guarantee? (Select all that apply.)', ['Lossless join', 'Dependency preservation', 'Every table in 3NF', 'Every table in BCNF'], [0, 1, 2], 'It can leave a table in 3NF but not BCNF.')
+  ],
+  m4: [
+    Q('What is the main cost of a fully normalized schema for reporting queries?', ['More joins at query time', 'More redundancy', 'Weaker constraints', 'Larger tables'], 0, 'Data is spread over more tables, so reports join them.'),
+    Q('What is the main cost of denormalization?', ['Slower reads', 'Redundant copies that must be kept consistent on every write', 'Fewer columns', 'Loss of primary keys'], 1, 'Each copy is a place where data can drift out of sync.'),
+    Q('Where is deliberate denormalization most common?', ['High-volume order entry', 'Read-only analytics such as a star schema', 'Tables with one row', 'Lookup tables'], 1, 'Analytics is read-heavy and loaded on a schedule, so the copies are easy to rebuild.'),
+    Q('What should you do before denormalizing?', ['Measure the slow query, add indexes, and check the plan', 'Delete foreign keys', 'Merge all tables', 'Add triggers everywhere'], 0, 'Many slow joins are missing indexes.'),
+    Q('Which keeps a trigger-maintained summary table correct?', ['Triggers for INSERT, UPDATE, and DELETE on the base table', 'A trigger for INSERT only', 'Telling users to be careful', 'Nothing; it fixes itself'], 0, 'Any change to the base rows must reach the summary.'),
+    Q('Unit price at the time of sale is stored on ORDER_LINE as well as on PRODUCT. Is this redundancy?', ['Yes, always remove it', 'No: it is a different fact (the historical price), not a copy of the current one', 'Yes, unless the price never changes', 'Only in BCNF'], 1, 'Historical snapshots are legitimate data, not duplicated data.'),
+    Q('Which are acceptable ways to speed up reads while keeping the normalized tables as the source of truth? (Select all that apply.)', ['Add indexes', 'A summary table or materialized view rebuilt from the base tables', 'Caching query results', 'Copying the customer name into every order row by hand'], [0, 1, 2], 'The first three leave one authoritative copy. The last creates unmanaged duplicates.')
+  ],
+  m5: [
+    Q('When migrating legacy data into normalized tables, which is the safest approach?', ['INSERT ... SELECT DISTINCT into the new tables, then verify the join reproduces the original', 'Retype the data by hand', 'Drop the old table first', 'Migrate children before parents'], 0, 'Copy parents first, then prove nothing changed with EXCEPT in both directions.'),
+    Q('A column holds the city as "Bowie", "bowie ", and "BOWIE". What should happen before splitting into a CITY table?', ['Clean the spellings so each city is one value', 'Nothing; DISTINCT will merge them', 'Add a foreign key', 'Make city the primary key'], 0, 'DISTINCT treats the three spellings as three cities, which would make three "facts".'),
+    Q('zip → city must always hold after a split. What is the best way to enforce it?', ['A lookup table keyed by zip, referenced by a foreign key', 'A comment in the code', 'A CHECK on the length of zip', 'A trigger that logs mistakes'], 0, 'A primary key plus a foreign key makes the rule structural.'),
+    Q('What does a compatibility view with the old table’s shape give you?', ['Old queries keep working while callers are migrated', 'Faster writes', 'Automatic normalization', 'Smaller storage'], 0, 'It lets the migration proceed in stages.'),
+    Q('Which constraint prevents two customers from having the same email?', ['UNIQUE', 'CHECK', 'FOREIGN KEY', 'DEFAULT'], 0, 'UNIQUE enforces no duplicates on a candidate key that is not the primary key.'),
+    Q('A status field takes values that business users add every few months. What is the better design?', ['A lookup table referenced by a foreign key', 'A CHECK list edited in the schema each time', 'Free text', 'A multivalued column'], 0, 'Allowed values then live in data and can be changed without altering the schema.'),
+    Q('Which are benefits of a normalized, well-constrained schema? (Select all that apply.)', ['A fact can be changed in exactly one place', 'The database rejects inconsistent data', 'Queries never need joins', 'Each table has a clear purpose'], [0, 1, 3], 'Normalization trades joins for consistency, so the third is false.')
+  ],
+  final: [
+    Q('Which statements are true? (Select all that apply.)', ['Every BCNF relation is in 3NF', 'Every 3NF relation is in BCNF', 'BCNF decomposition always preserves dependencies', 'BCNF decomposition is always lossless'], [0, 3], 'BCNF is stricter than 3NF, and BCNF decomposition can lose dependencies (Address, Tutoring).'),
+    Q('R(A, B, C, D, E) has F = {A → B, B, C → E, E, D → A}. How many candidate keys does it have?', ['1', '2', '3', '5'], 2, 'The keys are {A, C, D}, {B, C, D}, and {C, D, E}. C and D appear on no right side, so they are in every key.'),
+    Q('For that same relation, what is the highest normal form?', ['1NF', '2NF', '3NF', 'BCNF'], 2, 'Every attribute is prime, so 3NF holds, but A → B has a determinant that is not a superkey.'),
+    Q('Which dependency is redundant in {A → B, B → C, A → C}?', ['A → B', 'B → C', 'A → C', 'None'], 2, 'A → C follows from A → B and B → C by transitivity.'),
+    Q('R(A, B, C, D) has F = {A → B, C → D}. Is the split (A, B) and (C, D) lossless?', ['Yes', 'No: nothing is shared, so the join is a cross product with spurious rows', 'Yes, because both dependencies are kept', 'Only if A = C'], 1, 'The shared attributes are empty and determine nothing. Neither piece contains the key (A, C).'),
+    Q('An employee table has a column "skills" holding "sql, java, python". What brings it to 1NF?', ['A child table with one row per employee and skill', 'Making the column NOT NULL', 'Adding an index', 'Renaming the column'], 0, 'Atomic values need one skill per row.'),
+    Q('Employee(emp_id, dept_id, dept_name) repeats dept_name for every employee. Which change removes the update anomaly?', ['Move dept_name to a DEPARTMENT table keyed by dept_id', 'Make dept_name UNIQUE', 'Index dept_name', 'Make dept_id nullable'], 0, 'dept_id → dept_name makes a transitive dependency; give it its own table.'),
+    Q('Which is the strongest case for denormalizing?', ['A read-only reporting table rebuilt nightly from the normalized tables', 'Saving typing in application code', 'Copying a frequently changed column into many tables', 'Removing foreign keys to simplify inserts'], 0, 'The copy is disposable and rebuilt, so consistency is easy to guarantee.'),
+    Q('Which statement about FDs and sample data is correct?', ['Sample data can disprove an FD but cannot prove it', 'Sample data can prove an FD', 'FDs are only valid with at least 100 rows', 'An FD holds whenever no two rows are identical'], 0, 'One counterexample disproves an FD; no sample proves it.'),
+    Q('Which techniques can keep a denormalized copy consistent? (Select all that apply.)', ['Triggers on the source table', 'A scheduled rebuild from the source', 'Updating both in one application transaction', 'Hoping people remember'], [0, 1, 2], 'Each is a deliberate mechanism. Hope is not.'),
+    Q('After a BCNF split loses a dependency, how can the original rule still be enforced?', ['With a trigger or check across the tables, or by joining on write', 'It cannot be enforced', 'By removing the foreign keys', 'By making every column unique'], 0, 'This is the practical cost of choosing BCNF over 3NF.'),
+    Q('Which is the safest order for refactoring a live table?', ['Audit and clean, create new tables, copy data, verify, add a compatibility view, then switch callers', 'Drop the old table, then create the new ones', 'Create the view first, then guess the data', 'Add triggers, then audit'], 0, 'Each step is checkable and reversible until the last.')
+  ]
+};
+function renderQuiz(host) {
+  const key = host.dataset.quiz, items = QUIZ[key];
+  host.innerHTML = '';
+  let done = 0, score = 0;
+  const summary = h('div', 'score');
+  const finish = () => {
+    summary.innerHTML = '';
+    summary.append(h('span', null, `Score: ${score} of ${items.length}`));
+    summary.append(h('span', null, score === items.length ? 'Perfect.' : score >= Math.ceil(items.length * 0.7) ? 'Solid. Review the explanations you missed.' : 'Revisit the theory above, then try again.'));
+    const rb = h('button', 'btn alt', 'Try again'); rb.type = 'button'; rb.addEventListener('click', () => renderQuiz(host)); summary.append(rb);
+    saveScore(key, score, items.length);
+  };
+  items.forEach((it, qi) => {
+    const multi = Array.isArray(it.a), box = h('div', 'q');
+    box.append(h('p', 'qtext', `${qi + 1}. ${it.q}`));
+    const list = h('div', 'opts'), btns = [];
+    shuffle(it.o.map((_, i) => i)).forEach(oi => { const b = h('button', 'opt', it.o[oi]); b.type = 'button'; b.dataset.i = oi; btns.push(b); list.append(b); });
+    box.append(list);
+    const why = h('div', 'why'); why.hidden = true; why.textContent = it.why;
+    const lock = ok => { btns.forEach(b => b.disabled = true); why.hidden = false; why.prepend(h('b', null, ok ? 'Correct. ' : 'Not quite. ')); done++; if (ok) score++; if (done === items.length) finish(); };
+    if (!multi) {
+      btns.forEach(b => b.addEventListener('click', () => { const ok = +b.dataset.i === it.a; b.classList.add(ok ? 'right' : 'wrong'); if (!ok) btns.find(x => +x.dataset.i === it.a).classList.add('right'); lock(ok); }));
+    } else {
+      btns.forEach(b => b.addEventListener('click', () => b.classList.toggle('picked')));
+      const cb = h('button', 'btn', 'Check answer'); cb.type = 'button'; cb.style.marginTop = '10px';
+      cb.addEventListener('click', () => {
+        const sel = btns.filter(b => b.classList.contains('picked')).map(b => +b.dataset.i).sort((x, y) => x - y);
+        if (!sel.length) return;
+        const want = [...it.a].sort((x, y) => x - y), ok = sel.length === want.length && sel.every((v, i) => v === want[i]);
+        btns.forEach(b => { const i = +b.dataset.i, isC = it.a.includes(i), isS = sel.includes(i); b.classList.remove('picked'); if (isC && isS) b.classList.add('right'); else if (!isC && isS) b.classList.add('wrong'); else if (isC) b.classList.add('missed'); });
+        cb.remove(); lock(ok);
+      });
+      box.append(h('small', null, 'Select all that apply.'));
+      box.lastChild.style.color = 'var(--soft)';
+      box.append(cb);
+    }
+    box.append(why); host.append(box);
+  });
+  host.append(summary);
+}
+$$('.quiz[data-quiz]').forEach(renderQuiz);
+
+/* ---------- nav ---------- */
+refreshNav();
+$('#resetAll').addEventListener('click', () => { if (confirm('Clear your saved scores in this browser?')) { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); } });
+const links = $$('#navlist a'), secs = links.map(a => $(a.getAttribute('href')));
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-20% 0px -70% 0px' });
+  secs.forEach(s => s && io.observe(s));
+}
+})();
+</script>
+<noscript><p style="padding:20px">This tutorial needs JavaScript for the dependency diagrams, workbench, and quizzes.</p></noscript>
+</body>
+</html>
