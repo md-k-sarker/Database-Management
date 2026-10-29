@@ -1,0 +1,1559 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database Connectivity: Interactive Tutorial</title>
+<meta name="description" content="Connect to a relational database from Java or Python, run queries and read result sets, stop SQL injection with parameterized queries, and compare drivers, pools, and ORMs. Runnable labs, simulators, and knowledge checks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF1F6; --surface:#FFFFFF; --ink:#0F1F33; --soft:#475C75; --line:#C7D3E1;
+  --accent:#1F5FBF; --accent-tint:#E1EBFA; --accent-ink:#123F86;
+  --teal-tint:#DFEAF5;
+  --c-full:#0F766E; --c-part:#C2410C; --c-trans:#BE185D; --c-bcnf:#6D28D9;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1;
+  --code-bg:#0C1A2B; --code-bar:#152C47; --code-ink:#DDEBE7;
+  --code-kw:#C9BEFF; --code-st:#8FE0C0; --code-nu:#F2C77B; --code-cm:#7C9A93;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1320; --surface:#111F33; --ink:#E6EEF8; --soft:#9DB2CC; --line:#283D58;
+    --accent:#7FB0FF; --accent-tint:#1B3358; --accent-ink:#C9DDFF;
+    --teal-tint:#15294A;
+    --c-full:#4FD1C5; --c-part:#FB923C; --c-trans:#F472B6; --c-bcnf:#A78BFA;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D;
+    --code-bg:#07101C; --code-bar:#12294A;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,h4{font-family:"Familjen Grotesk","Public Sans",system-ui,sans-serif;line-height:1.15;letter-spacing:-.005em;margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1320px;margin:0 auto}
+/* sidebar */
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:700 20px "Familjen Grotesk",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+header.hero{padding:44px 40px 30px;border-bottom:1px solid var(--line)}
+header.hero h1{font-size:clamp(34px,5vw,58px);font-weight:700;max-width:16ch}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:62ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(170px,100%),1fr));gap:10px;margin:22px 0 26px;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Familjen Grotesk",sans-serif;font-size:17px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:56px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:700}
+section.mod>.goal{color:var(--soft);font-size:18px;max-width:68ch;margin:10px 0 6px}
+.block{margin-top:30px}
+.chip{display:inline-block;font:700 13px "Public Sans",sans-serif;padding:2px 10px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink);border:1px solid var(--accent);margin-bottom:8px}
+.block h3{font-size:24px;margin-bottom:6px}
+.prose{max-width:74ch}
+.prose ul,.prose ol{padding-left:1.25em}
+.prose li{margin:.3em 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.callout{border-left:4px solid var(--accent);background:var(--surface);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;max-width:74ch}
+.callout.warn{border-color:var(--bad)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px}
+.wb-grid>*,.grid2>*,.tbls>*,.tabs2>*{min-width:0}
+.card{min-width:0}
+table{border-collapse:collapse;width:100%;background:var(--surface);border:1px solid var(--line);font-size:15.5px}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--teal-tint);font-family:"Familjen Grotesk",sans-serif}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto;margin:14px 0;border-radius:var(--radius)}
+kbd,.inl{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--teal-tint);padding:1px 6px;border-radius:5px}
+.fdtxt{font-family:"IBM Plex Mono",monospace;font-size:.92em}
+/* FD diagram */
+figure.fig{margin:16px 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+figure.fig .scroll{overflow-x:auto;padding:6px}
+figure.fig svg{display:block;min-width:640px;width:100%;height:auto}
+figure.fig figcaption{border-top:1px solid var(--line);padding:10px 16px;background:var(--bg);font-size:15.5px}
+.fdbox{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.fdbox.key{fill:var(--accent-tint);stroke:var(--accent);stroke-width:2}
+.fdtext{fill:var(--ink);font:600 12.5px "Public Sans",sans-serif;text-anchor:middle;dominant-baseline:central}
+svg g.fd{transition:opacity .15s}
+svg.dim g.fd{opacity:.14}
+svg.dim g.fd.on{opacity:1}
+ul.fdlegend{list-style:none;margin:0;padding:0;display:grid;gap:4px}
+ul.fdlegend li{display:flex;gap:10px;align-items:baseline;padding:4px 6px;border-radius:7px;cursor:default}
+ul.fdlegend li:hover,ul.fdlegend li:focus{background:var(--surface)}
+ul.fdlegend .sw{flex:none;width:26px;height:0;border-top:3px solid;transform:translateY(-3px)}
+ul.fdlegend .tag{color:var(--soft);font-size:14px}
+/* labs */
+.lab{border-radius:var(--radius);overflow:hidden;border:1px solid var(--code-bar);margin:14px 0;background:var(--code-bg)}
+.labbar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--code-bar);color:#CBDAEC;font-size:14px;font-weight:600}
+.labbar button{margin-left:auto;background:var(--accent);color:#fff;border:0;border-radius:7px;padding:5px 12px;font:700 13.5px "Public Sans",sans-serif;cursor:pointer}
+@media (prefers-color-scheme: dark){.labbar button{color:#08162b}}
+.lab pre{margin:0;padding:14px 16px;overflow-x:auto;color:var(--code-ink);font-size:13.5px;line-height:1.55;tab-size:2}
+.lab pre.scroll-y{max-height:560px;overflow-y:auto}
+.lab .kw{color:var(--code-kw);font-weight:600}.lab .cm{color:var(--code-cm);font-style:italic}.lab .st{color:var(--code-st)}.lab .nu{color:var(--code-nu)}
+.lab details{border-top:1px solid var(--code-bar);color:#CBDAEC}
+.lab summary{cursor:pointer;padding:8px 14px;font-weight:600;font-size:14px}
+.lab pre.out{background:#07101C;color:#BFE3D4;border-top:1px dashed #254563;max-height:520px;overflow:auto}
+/* quiz / duel */
+.quiz{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:6px 20px 18px}
+.q{padding:16px 0;border-bottom:1px solid var(--line)}
+.q:last-of-type{border-bottom:0}
+.qtext{font-weight:700;margin:0 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;cursor:pointer;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt.picked{border-color:var(--accent);background:var(--accent-tint)}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.opt.missed{border-style:dashed;border-color:var(--ok)}
+.opt:disabled{cursor:default}
+.why{margin-top:10px;padding:10px 14px;border-radius:9px;background:var(--teal-tint);font-size:15.5px}
+.btn{font:700 15px "Public Sans",sans-serif;background:var(--ink);color:var(--surface);border:0;border-radius:9px;padding:9px 16px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.score{margin-top:14px;font-weight:700;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.duel{grid-template-columns:1fr}}
+.duel button{text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer}
+.duel button b{display:block;font-family:"Familjen Grotesk",sans-serif}
+.duel button.right{border-color:var(--ok);background:var(--ok-tint)}.duel button.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.duel-item{padding:16px 0;border-bottom:1px solid var(--line)}
+.duel-item:last-child{border-bottom:0}
+/* workbench */
+.wb{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+.wb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:12px 16px;margin-bottom:12px}
+.wb label{display:block;font-weight:700;font-size:14.5px;margin-bottom:3px}
+.wb input[type=text],.wb textarea,.wb select{width:100%;font:inherit;font-family:"IBM Plex Mono",monospace;font-size:14px;padding:8px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink)}
+.wb textarea{min-height:104px;resize:vertical}
+.wb .hint{color:var(--soft);font-size:13.5px;margin-top:3px}
+.wb-actions{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}
+.wb-out{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin-top:14px}
+.wb-card{border:1px solid var(--line);border-radius:var(--radius);padding:12px 16px;background:var(--bg);min-width:0;overflow-x:auto}
+.wb-card h4{font-size:17px;margin-bottom:6px}
+.wb-card ol.trace{margin:6px 0;padding-left:1.3em;font-size:15px}
+.wb-card ul{margin:6px 0;padding-left:1.2em}
+.wb-card li{margin:.2em 0}
+.wb-err{border-color:var(--bad);background:var(--bad-tint)}
+.badge{display:inline-block;font:700 14px "Familjen Grotesk",sans-serif;padding:2px 12px;border-radius:99px;border:1.5px solid}
+.badge.good{color:var(--ok);background:var(--ok-tint);border-color:var(--ok)}
+.badge.bad{color:var(--bad);background:var(--bad-tint);border-color:var(--bad)}
+.badge.mid{color:var(--accent-ink);background:var(--accent-tint);border-color:var(--accent)}
+.relchips{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}
+.relchips span{font:600 13.5px "IBM Plex Mono",monospace;padding:3px 9px;border-radius:7px;background:var(--teal-tint);border:1px solid var(--line)}
+table.tab{width:auto;font-size:13.5px;font-family:"IBM Plex Mono",monospace}
+table.tab th,table.tab td{padding:4px 9px;text-align:center}
+table.tab td.a{background:var(--ok-tint);font-weight:700}
+table.tab td.b{color:var(--soft)}
+.tabs2{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.tabs2 figcaption{font-size:13.5px;color:var(--soft);margin-bottom:4px}
+/* data tables */
+table.dt{width:auto;min-width:0;font-size:14.5px}
+table.dt th,table.dt td{padding:5px 10px;white-space:nowrap}
+table.dt th.pk{text-decoration:underline}
+table.dt tr.bad td{background:var(--bad-tint)}
+table.dt tr.ev td{background:var(--ok-tint)}
+table.dt td.hl{background:var(--accent-tint);font-weight:700}
+.dtwrap{overflow-x:auto;margin:8px 0}
+.dtcap{font:700 15px "Familjen Grotesk",sans-serif;margin:10px 0 2px}
+.tbls{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-start}
+.stepper-nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.stepper-nav button{font:700 15px "Familjen Grotesk",sans-serif;padding:8px 14px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.stepper-nav button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (prefers-color-scheme: dark){.stepper-nav button.on{color:#08162b}}
+.pill{display:inline-block;font:600 13px "IBM Plex Mono",monospace;padding:2px 8px;border-radius:6px;background:var(--teal-tint);border:1px solid var(--line);margin:0 4px 4px 0}
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin:4px 0 10px}
+.seg label{display:flex;gap:8px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer;font-weight:600;margin:0}
+.seg input{accent-color:var(--accent)}
+.seg label:has(input:checked){border-color:var(--accent);background:var(--accent-tint)}
+.tries{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 10px}
+.tries button{font:600 13.5px "IBM Plex Mono",monospace;padding:5px 10px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tries button:hover{border-color:var(--accent)}
+.verdict{padding:10px 14px;border-radius:9px;margin:8px 0;font-weight:600}
+.verdict.good{background:var(--ok-tint);border:1.5px solid var(--ok)}
+.verdict.bad{background:var(--bad-tint);border:1.5px solid var(--bad)}
+.verdict.mid{background:var(--accent-tint);border:1.5px solid var(--accent)}
+pre.ddl{background:var(--code-bg);color:var(--code-ink);border-radius:var(--radius);padding:8px 0;margin:10px 0;font-size:13.5px;overflow-x:auto}
+.ddl .line{display:block;padding:2px 16px;border-left:4px solid transparent;cursor:pointer;white-space:pre}
+.ddl .line.static{cursor:default}
+.ddl .line:hover:not(.static){background:#152C47}
+.ddl .line.flag{border-left-color:var(--code-nu);background:#243b34}
+.ddl .line.hit{border-left-color:#4CC9A0;background:#12382d}
+.ddl .line.miss{border-left-color:#FB923C;background:#3b2a1a}
+.ddl .line.false{border-left-color:#FF8B82;background:#3d1f1d}
+.ddl-notes{display:grid;gap:8px;margin-top:8px}
+.ddl-notes div{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:8px 12px;font-size:15px}
+textarea.free{width:100%;min-height:120px;font:inherit;font-size:16px;padding:10px 12px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+footer{padding:28px 40px;border-top:1px solid var(--line);color:var(--soft);font-size:15px}
+@media (max-width:980px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:14px 16px}
+  nav.side ol{display:flex;overflow-x:auto;gap:6px}
+  nav.side a{white-space:nowrap}
+  nav.side .sub,nav.side button{display:none}
+  header.hero,main,footer{padding-left:18px;padding-right:18px}
+}
+
+/* connectivity-specific */
+.opt,.qtext,.why,.verdict,.callout{overflow-wrap:anywhere}
+.lab .fn{color:#9CD3FF}.lab .ty{color:#F7A8C8}
+.lab.untested{border-color:var(--c-part)}
+.tag-untested{margin-left:8px;font:700 12px "Public Sans",sans-serif;padding:1px 8px;border-radius:99px;background:#FBE9D6;color:#8A3A06;border:1px solid #C2410C}
+.tag-ran{margin-left:8px;font:700 12px "Public Sans",sans-serif;padding:1px 8px;border-radius:99px;background:var(--ok-tint);color:var(--ok);border:1px solid var(--ok)}
+.tag-comp{margin-left:8px;font:700 12px "Public Sans",sans-serif;padding:1px 8px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink);border:1px solid var(--accent)}
+.layer{cursor:pointer}
+.layer rect{fill:var(--surface);stroke:var(--ink);stroke-width:1.5;transition:fill .12s}
+.layer:hover rect,.layer.on rect,.layer:focus rect{fill:var(--accent-tint);stroke:var(--accent);stroke-width:2.5}
+.layer text{fill:var(--ink);font:600 13.5px "Public Sans",sans-serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.layer text.small{font-weight:400;font-size:11.5px;fill:var(--soft)}
+.flow{stroke:var(--soft);stroke-width:2;fill:none}
+.layerinfo{padding:12px 16px;border-top:1px solid var(--line);background:var(--bg);font-size:15.5px;min-height:3.6em}
+.sqlview{font:500 14px/1.7 "IBM Plex Mono",monospace;background:var(--code-bg);color:var(--code-ink);padding:12px 14px;border-radius:9px;overflow-x:auto;white-space:pre-wrap;word-break:break-word}
+.sqlview .in{background:#2c3f63;border-radius:3px;padding:1px 0}
+.sqlview .esc{background:#7a1f1a;color:#fff;border-radius:3px;padding:1px 0}
+.sqlview .cmt{color:#7C9AB8;text-decoration:line-through}
+.cursorbox td.cur{outline:2px solid var(--accent);background:var(--accent-tint);font-weight:700}
+.mono{font-family:"IBM Plex Mono",monospace}
+table.cmp{font-size:14.5px}
+table.cmp th:first-child,table.cmp td:first-child{position:sticky;left:0;background:var(--teal-tint);font-weight:700}
+table.cmp td{min-width:150px}
+details.err{background:var(--surface);border:1px solid var(--line);border-radius:9px;margin:6px 0;padding:0 14px}
+details.err summary{cursor:pointer;padding:10px 0;font-weight:600;font-family:"IBM Plex Mono",monospace;font-size:14px}
+details.err div{padding:0 0 12px}
+</style></head>
+<body>
+<div class="wrap">
+<nav class="side" aria-label="Tutorial sections">
+  <div class="brand">Database connectivity</div>
+  <div class="sub">Java and Python, queries, safe SQL</div>
+  <ol id="navlist">
+    <li><a href="#start">Start here</a></li>
+    <li><a href="#m1" data-key="m1">Connect<span class="tick"></span></a></li>
+    <li><a href="#m2" data-key="m2">Queries and result sets<span class="tick"></span></a></li>
+    <li><a href="#m3" data-key="m3">Parameterized queries<span class="tick"></span></a></li>
+    <li><a href="#m4" data-key="m4">Compare approaches<span class="tick"></span></a></li>
+    <li><a href="#final" data-key="final">Final check<span class="tick"></span></a></li>
+    <li><a href="#readings">Readings</a></li>
+  </ol>
+  <button id="resetAll" type="button">Reset my progress</button>
+</nav>
+
+<div>
+<header class="hero" id="start">
+  <h1>Let your code talk to the database</h1>
+  <p class="lede">Every real application keeps its data in a database and reaches it through a driver. Here is the whole path, from your code to the server and back. Click each layer. By the end you will connect from Java or Python, read results, and write SQL that cannot be hijacked by user input.</p>
+  <figure class="fig" id="heroFig" aria-label="Layers between an application and a database"></figure>
+  <ul class="outcomes">
+    <li><b>Connect</b>Open a connection from Java or Python.</li>
+    <li><b>Query</b>Run SQL and walk the result set.</li>
+    <li><b>Protect</b>Use parameters to stop SQL injection.</li>
+    <li><b>Compare</b>Drivers, placeholders, pools, and ORMs.</li>
+  </ul>
+  <div class="card">
+    <h3 style="font-size:20px">Before you start</h3>
+    <p style="margin-top:6px"><b>Pick a track.</b> The <b>Python track</b> needs only Python 3 and works with no database server, because Python ships with <span class="inl">sqlite3</span>. The <b>Java track</b> needs a JDK, a MySQL server, and the MySQL Connector/J jar. Both tracks teach the same ideas, and every module shows both.</p>
+    <p><b>Labs.</b> Press <b>Copy</b>, paste into a file with the name shown, and run it. The badge on each lab tells you exactly what was tested:</p>
+    <p><span class="tag-ran" style="margin:0">Run here</span> the code was executed and the expected output below it is the real output. Your SQLite version number may differ.<br>
+       <span class="tag-comp" style="margin:0">Compiled only</span> the Java compiler accepted it, but it was not run, because it needs a MySQL server and driver.<br>
+       <span class="tag-untested" style="margin:0">Not run</span> written from the drivers' documented behavior and checked for syntax only. If one fails on your machine, the error message in the errors list in module 1 is the place to start.</p>
+    <p style="margin-bottom:0"><b>Progress.</b> Quiz scores and your answers stay in your own browser.</p>
+  </div>
+</header>
+
+<main>
+<!-- ================= MODULE 1 ================= -->
+<section class="mod" id="m1">
+  <h2>1. Connect to a database</h2>
+  <p class="goal">Say what a driver does, build a connection URL, and open and close a connection safely in Java and Python.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>The five steps every program follows</h3>
+    <ol>
+      <li><b>Connect</b>: open a session with the database, giving it a location and credentials.</li>
+      <li><b>Create a statement or cursor</b>: the object that carries SQL to the server.</li>
+      <li><b>Execute</b> the SQL.</li>
+      <li><b>Process</b> the result: rows for a SELECT, a row count for an INSERT, UPDATE, or DELETE.</li>
+      <li><b>Close</b> everything you opened, even when an error happens.</li>
+    </ol>
+    <p>You do not write the network code yourself. A <b>driver</b> translates your calls into the database's own protocol. Java standardizes the calls as <b>JDBC</b> (<span class="inl">java.sql</span>), and Python standardizes them as the <b>DB-API 2.0</b> (PEP 249). Because the shape is standard, code for MySQL looks almost the same as code for PostgreSQL. Only the driver, the connection details, and the SQL dialect change.</p>
+    <div class="callout"><b>SQLite is the odd one out, which makes it ideal for learning.</b> It has no server. The "database" is a file (or memory) opened by a library inside your own program, so there is no host, port, or password. Everything else in this tutorial works the same way.</div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Interactive</span>
+    <h3>Connection builder</h3>
+    <p>Choose a driver and fill in the details. The code below updates as you type. Notice what changes between drivers: the import, the default port, and the URL shape.</p>
+    <div class="wb" id="connBuilder"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Example</span>
+    <h3>The same idea in both languages</h3>
+    <p>Python first. This lab uses only the standard library, so you can run it right now.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 0: lab0_hello.py</span><span class="tag-ran">Run here</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="py">import sqlite3
+
+# 1. Connect. SQLite needs no server: ":memory:" is a database that lives inside this program.
+conn = sqlite3.connect(":memory:")
+print("connected, SQLite version", sqlite3.sqlite_version)
+
+# 2. Get a cursor, the object that sends statements and holds results.
+cur = conn.cursor()
+
+# 3. Execute statements.
+cur.execute("CREATE TABLE greeting (id INTEGER PRIMARY KEY, text TEXT)")
+cur.execute("INSERT INTO greeting (text) VALUES (?)", ("Hello, database!",))
+conn.commit()
+
+# 4. Process the result.
+cur.execute("SELECT id, text FROM greeting")
+print(cur.fetchone())
+
+# 5. Close what you opened.
+cur.close()
+conn.close()
+print("closed")
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">connected, SQLite version 3.45.1
+(1, 'Hello, database!')
+closed
+</pre></details></div>
+
+  <div class="block prose">
+    <p>Now Java. The connection is a <span class="inl">try-with-resources</span> resource, so it is closed automatically when the block ends, even after an exception.</p>
+  </div>
+  <div class="lab untested"><div class="labbar"><span>ConnectDemo.java</span><span class="tag-comp">Compiled only</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="java">import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public class ConnectDemo {
+    public static void main(String[] args) {
+        // jdbc:&lt;subprotocol&gt;://&lt;host&gt;:&lt;port&gt;/&lt;database&gt;?&lt;options&gt;
+        String url  = "jdbc:mysql://localhost:3306/school";
+        String user = System.getenv("DB_USER");
+        String pass = System.getenv("DB_PASS");
+
+        // No Class.forName(...) needed: a JDBC 4+ driver jar on the classpath registers itself.
+        try (Connection conn = DriverManager.getConnection(url, user, pass)) {
+            System.out.println("Connected: " + conn.getMetaData().getDatabaseProductName()
+                    + " " + conn.getMetaData().getDatabaseProductVersion());
+        } catch (SQLException e) {
+            System.err.println("Could not connect: " + e.getMessage());
+        }   // the connection is closed here, even if an exception was thrown
+    }
+}
+</code></pre>
+<details><summary>How to run it</summary><pre class="out">1. Create the database and a limited account:   mysql -u root -p &lt; setup_mysql.sql   (script in module 4)
+2. Download MySQL Connector/J (the platform-independent .jar) from dev.mysql.com/downloads/connector/j
+3. Compile:   javac ConnectDemo.java
+4. Run (Linux/macOS):   DB_USER=app_user DB_PASS=change_me java -cp .:mysql-connector-j-X.Y.Z.jar ConnectDemo
+   Run (Windows PowerShell):   $env:DB_USER="app_user"; $env:DB_PASS="change_me"; java -cp ".;mysql-connector-j-X.Y.Z.jar" ConnectDemo
+   (replace X.Y.Z with the version you downloaded; if your database says it needs a public key, add
+    ?allowPublicKeyRetrieval=true&amp;useSSL=false to the URL for a local test server only)</pre></details></div>
+
+  <div class="block prose">
+    <span class="chip">Credentials</span>
+    <h3>Never put a password in source code</h3>
+    <p>Both examples read the user and password from <b>environment variables</b>. Source files get copied, committed to GitHub, and pasted into chat. A password that lives in the code lives everywhere the code does. Create a database account for the application that can do only what the application needs (the setup script in module 4 grants <span class="inl">SELECT, INSERT, UPDATE</span> on one table and nothing else), not the administrator account.</p>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Troubleshooting</span>
+    <h3>Common connection errors</h3>
+    <p>Open each message to see what usually causes it.</p>
+    <div id="errList"></div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 1</h3>
+    <div class="quiz" data-quiz="m1"></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 2 ================= -->
+<section class="mod" id="m2">
+  <h2>2. Run queries and read result sets</h2>
+  <p class="goal">Execute SELECT, INSERT, UPDATE, and DELETE from code, walk the rows that come back, and control when changes become permanent.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Two kinds of statements, two kinds of answers</h3>
+    <div class="tablewrap"><table>
+      <tr><th></th><th>Python (DB-API)</th><th>Java (JDBC)</th></tr>
+      <tr><td>SELECT returns rows</td><td><span class="inl">cur.execute(sql)</span>, then fetch</td><td><span class="inl">ps.executeQuery()</span> returns a <span class="inl">ResultSet</span></td></tr>
+      <tr><td>INSERT / UPDATE / DELETE return a count</td><td><span class="inl">cur.rowcount</span></td><td><span class="inl">ps.executeUpdate()</span> returns an <span class="inl">int</span></td></tr>
+      <tr><td>Next row</td><td><span class="inl">fetchone()</span> returns a tuple, or <span class="inl">None</span> when done</td><td><span class="inl">rs.next()</span> returns <span class="inl">true</span> or <span class="inl">false</span></td></tr>
+      <tr><td>Read a column</td><td>by position <span class="inl">row[0]</span>, or by name with <span class="inl">sqlite3.Row</span></td><td><span class="inl">rs.getString("name")</span> or <span class="inl">rs.getInt(1)</span> (JDBC positions start at <b>1</b>)</td></tr>
+      <tr><td>SQL NULL</td><td>arrives as <span class="inl">None</span></td><td><span class="inl">getInt</span> returns 0 for NULL; call <span class="inl">rs.wasNull()</span> to tell</td></tr>
+    </table></div>
+    <p>A result set is not a list. It is a <b>cursor</b> that moves through rows the server is still delivering. A JDBC <span class="inl">ResultSet</span> starts <b>before the first row</b>, so you must call <span class="inl">next()</span> once before reading anything. Try it:</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Interactive</span>
+    <h3>Cursor stepper</h3>
+    <div class="wb" id="cursorStep"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Transactions</span>
+    <h3>Nothing is permanent until you commit</h3>
+    <p>A <b>transaction</b> groups statements so they all take effect or none do. This is where the languages differ, and where beginners get bitten:</p>
+    <ul>
+      <li><b>Python DB-API:</b> a transaction is opened for you; changes are invisible to others until <span class="inl">conn.commit()</span>. In <span class="inl">sqlite3</span>, <span class="inl">with conn:</span> commits when the block succeeds and rolls back when it raises (it does <b>not</b> close the connection).</li>
+      <li><b>JDBC:</b> every statement is committed immediately (<b>auto-commit is on</b>). For a multi-statement transaction call <span class="inl">conn.setAutoCommit(false)</span>, then <span class="inl">commit()</span> or <span class="inl">rollback()</span>.</li>
+    </ul>
+    <p>Lab 1 proves it with two connections: a second "user" sees 4 rows before the commit and 5 after.</p>
+  </div>
+
+  <div class="lab"><div class="labbar"><span>Lab 1: lab1_basics.py</span><span class="tag-ran">Run here</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="py">import sqlite3
+
+DB = "school.db"          # a file in the current folder; use ":memory:" for a throwaway database
+
+# ---- 1. Connect --------------------------------------------------------------
+conn = sqlite3.connect(DB)            # creates the file if it does not exist
+conn.execute("PRAGMA foreign_keys = ON")
+
+# ---- 2. Create and load (a "with conn" block commits on success, rolls back on error) ----
+with conn:
+    conn.execute("DROP TABLE IF EXISTS student")
+    conn.execute("""
+        CREATE TABLE student (
+            sid   INTEGER PRIMARY KEY,
+            name  TEXT NOT NULL,
+            major TEXT,
+            gpa   REAL,
+            phone TEXT
+        )""")
+    conn.executemany("INSERT INTO student VALUES (?, ?, ?, ?, ?)", [
+        (1, "Ada Lovelace", "Computer Science", 3.9, "555-0101"),
+        (2, "Ben Carter",   "Mathematics",      3.4, None),
+        (3, "Carla Diaz",   "Computer Science", 3.7, "555-0103"),
+        (4, "Dev Patel",    "Data Science",     3.2, None),
+    ])
+
+# ---- 3. Query and walk the result set ----------------------------------------
+cur = conn.execute(
+    "SELECT sid, name, gpa FROM student WHERE major = ? ORDER BY sid", ("Computer Science",))
+print("columns:", [d[0] for d in cur.description])
+for row in cur:                        # a cursor is iterable: one tuple per row
+    print(row)
+
+cur = conn.execute("SELECT sid, name FROM student ORDER BY sid")
+print("fetchone:", cur.fetchone())             # the next single row
+print("fetchall:", cur.fetchall())             # every remaining row, as a list
+print("fetchone again:", cur.fetchone())       # None once the rows are used up
+
+# ---- 4. Access columns by name, and meet NULL --------------------------------
+conn.row_factory = sqlite3.Row
+for row in conn.execute("SELECT name, phone FROM student ORDER BY sid"):
+    print(row["name"], "-&gt;", row["phone"])    # a NULL value arrives as None
+conn.row_factory = None
+
+# ---- 5. One value, and how many rows an UPDATE changed -----------------------
+print("students:", conn.execute("SELECT COUNT(*) FROM student").fetchone()[0])
+with conn:
+    cur = conn.execute("UPDATE student SET gpa = gpa + 0.1 WHERE major = ?", ("Data Science",))
+    print("rows updated:", cur.rowcount)
+
+# ---- 6. Transactions: nothing is permanent until commit ----------------------
+conn.execute("INSERT INTO student VALUES (5, 'Eve Stone', 'Mathematics', 3.5, NULL)")
+other = sqlite3.connect(DB)            # a second connection, like a second user
+print("before commit, the other user sees:", other.execute("SELECT COUNT(*) FROM student").fetchone()[0])
+other.close()
+conn.commit()
+other = sqlite3.connect(DB)
+print("after commit, the other user sees:", other.execute("SELECT COUNT(*) FROM student").fetchone()[0])
+other.close()
+
+# ---- 7. A failed transaction is undone ---------------------------------------
+try:
+    with conn:
+        conn.execute("INSERT INTO student VALUES (6, 'Fay Wu', 'Data Science', 3.8, NULL)")
+        conn.execute("INSERT INTO student VALUES (1, 'Duplicate', 'None', 0.0, NULL)")   # sid 1 already exists
+except sqlite3.IntegrityError as e:
+    print("error:", e)
+print("students after the failed block:", conn.execute("SELECT COUNT(*) FROM student").fetchone()[0])
+
+conn.close()                           # always release the connection when you are done
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">columns: ['sid', 'name', 'gpa']
+(1, 'Ada Lovelace', 3.9)
+(3, 'Carla Diaz', 3.7)
+fetchone: (1, 'Ada Lovelace')
+fetchall: [(2, 'Ben Carter'), (3, 'Carla Diaz'), (4, 'Dev Patel')]
+fetchone again: None
+Ada Lovelace -&gt; 555-0101
+Ben Carter -&gt; None
+Carla Diaz -&gt; 555-0103
+Dev Patel -&gt; None
+students: 4
+rows updated: 1
+before commit, the other user sees: 4
+after commit, the other user sees: 5
+error: UNIQUE constraint failed: student.sid
+students after the failed block: 5
+</pre></details></div>
+
+  <div class="block prose">
+    <p>The same work in Java, against MySQL. Read the structure rather than every line: a <b>query</b>, a loop on <span class="inl">rs.next()</span>, and an <b>update</b> that reports its row count.</p>
+  </div>
+  <div class="lab untested"><div class="labbar"><span>StudentApp.java</span><span class="tag-comp">Compiled only</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="java">import java.sql.*;
+
+public class StudentApp {
+    // Credentials come from environment variables, never from source code.
+    static final String URL  = System.getenv().getOrDefault("DB_URL",
+            "jdbc:mysql://localhost:3306/school?useSSL=false&amp;allowPublicKeyRetrieval=true");
+    static final String USER = System.getenv().getOrDefault("DB_USER", "app_user");
+    static final String PASS = System.getenv().getOrDefault("DB_PASS", "change_me");
+
+    public static void main(String[] args) {
+        // try-with-resources closes Connection, PreparedStatement and ResultSet automatically
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+            System.out.println("Connected to " + conn.getMetaData().getDatabaseProductName());
+
+            String sql = "SELECT sid, name, gpa FROM student WHERE major = ? AND gpa &gt;= ? ORDER BY sid";
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setString(1, "Computer Science");   // placeholders are numbered from 1
+                ps.setDouble(2, 3.5);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {                 // moves the cursor; false when rows run out
+                        int sid = rs.getInt("sid");
+                        String name = rs.getString("name");
+                        double gpa = rs.getDouble("gpa");
+                        System.out.printf("%d  %s  %.2f%n", sid, name, gpa);
+                    }
+                }
+            }
+
+            String upd = "UPDATE student SET gpa = ? WHERE sid = ?";
+            try (PreparedStatement ps = conn.prepareStatement(upd)) {
+                ps.setDouble(1, 3.95);
+                ps.setInt(2, 1);
+                System.out.println("rows updated: " + ps.executeUpdate());
+            }
+        } catch (SQLException e) {
+            System.err.println("SQLState=" + e.getSQLState() + " code=" + e.getErrorCode() + " " + e.getMessage());
+        }
+    }
+}
+</code></pre>
+<details><summary>What you should see (not captured here)</summary><pre class="out">Connected to MySQL
+1  Ada Lovelace  3.90
+3  Carla Diaz  3.70
+rows updated: 1</pre></details></div>
+
+  <div class="block prose">
+    <div class="callout warn"><b>Do not fetch everything by habit.</b> <span class="inl">fetchall()</span> loads every row into memory at once. That is fine for 4 rows and a problem for 40 million. Iterate over the cursor, use <span class="inl">fetchmany(n)</span>, or add a <span class="inl">LIMIT</span>. Also name your columns in the SELECT instead of using <span class="inl">SELECT *</span>, so adding a column later cannot break your positional indexes.</div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 2</h3>
+    <div class="quiz" data-quiz="m2"></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 3 ================= -->
+<section class="mod" id="m3">
+  <h2>3. Parameterized queries and SQL injection</h2>
+  <p class="goal">See exactly how pasting user input into SQL lets an attacker rewrite your query, then fix it with parameters.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>When data becomes code</h3>
+    <p>A SQL statement is a program. If you build it by joining strings, whatever the user types becomes part of that program. Here is a login check written the dangerous way:</p>
+    <pre class="ddl static-code" style="padding:12px 16px"><span class="line static">sql = f"SELECT username, role FROM users WHERE username = '{username}' AND password = '{password}'"</span></pre>
+    <p>A user who types <span class="inl">' OR '1'='1' --</span> as the username changes what the query <i>means</i>:</p>
+    <ol>
+      <li>The leading <span class="inl">'</span> <b>closes</b> the string early.</li>
+      <li><span class="inl">OR '1'='1'</span> adds a condition that is always true.</li>
+      <li><span class="inl">--</span> starts a comment, which silently removes the password check.</li>
+    </ol>
+    <p>The same hole lets an attacker read other tables (<span class="inl">UNION SELECT</span>) or, on drivers that allow several statements in one call, change data. Lab 2 shows all of these on real queries.</p>
+    <div class="callout"><b>The fix is a different channel, not better quoting.</b> With a <b>parameterized query</b> (also called a prepared statement) the SQL text goes to the database with placeholders, and the values travel separately. The database finishes parsing the statement <i>before</i> it sees the values, so a value can never turn into SQL. An apostrophe in the value is just an apostrophe.</div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Interactive</span>
+    <h3>Injection simulator</h3>
+    <p>Type a username and password, or press a preset. The left panel builds the SQL by joining strings. The right panel uses placeholders. In the left panel, the <span style="background:#2c3f63;color:#fff;padding:0 4px;border-radius:3px">blue</span> text is your input working as data, and the <span style="background:#7a1f1a;color:#fff;padding:0 4px;border-radius:3px">red</span> text is input that has escaped its quotes and become SQL.</p>
+    <div class="wb" id="injSim"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>Attack your own code, then fix it</h3>
+    <p>Lab 2 builds a small database with users and products, then runs every attack against a vulnerable function and a safe one, side by side. The password column is plain text <i>only to keep the demo readable</i>. A real system stores salted password hashes.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 2: lab2_injection.py</span><span class="tag-ran">Run here</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="py">import sqlite3
+
+conn = sqlite3.connect(":memory:")
+conn.executescript("""
+    CREATE TABLE users    (id INTEGER PRIMARY KEY, username TEXT UNIQUE, password TEXT, role TEXT);
+    CREATE TABLE products (id INTEGER PRIMARY KEY, name TEXT, price REAL);
+    INSERT INTO users VALUES (1, 'alice', 'alicepw', 'student'),
+                             (2, 'bob',   'bobpw',   'student'),
+                             (3, 'admin', 'S3cret!', 'admin');
+    INSERT INTO products VALUES (1, 'Notebook', 4.00), (2, 'Pen', 1.50), (3, 'Stapler', 9.25);
+""")   # (a real system stores password HASHES, never plain text; this is only a demo)
+
+
+# ===================== Part 1: login =====================
+def login_vulnerable(username, password):
+    # DANGER: user input is pasted into the SQL text
+    sql = f"SELECT username, role FROM users WHERE username = '{username}' AND password = '{password}'"
+    print("   SQL sent  :", sql)
+    try:
+        return conn.execute(sql).fetchone()
+    except sqlite3.Error as e:
+        return f"ERROR: {e}"
+
+
+def login_safe(username, password):
+    # SAFE: the SQL text is fixed; the values travel separately as parameters
+    sql = "SELECT username, role FROM users WHERE username = ? AND password = ?"
+    return conn.execute(sql, (username, password)).fetchone()
+
+
+attempts = [
+    ("alice", "alicepw"),             # a normal, correct login
+    ("alice", "wrong"),               # a normal, wrong password
+    ("' OR '1'='1' --", "anything"),  # ATTACK: always-true condition, the rest commented out
+    ("admin'--", ""),                 # ATTACK: log in as admin with no password
+    ("O'Brien", "pw"),                # NOT an attack: an honest name containing an apostrophe
+]
+for u, p in attempts:
+    print(f"username={u!r} password={p!r}")
+    print("   vulnerable:", login_vulnerable(u, p))
+    print("   safe      :", login_safe(u, p))
+
+
+# ===================== Part 2: search (data theft with UNION) =====================
+def search_vulnerable(term):
+    sql = f"SELECT name, price FROM products WHERE name LIKE '%{term}%'"
+    print("   SQL sent  :", sql)
+    try:
+        return conn.execute(sql).fetchall()
+    except sqlite3.Error as e:
+        return f"ERROR: {e}"
+
+
+def search_safe(term):
+    return conn.execute("SELECT name, price FROM products WHERE name LIKE ?", (f"%{term}%",)).fetchall()
+
+
+print()
+for term in ["pen",
+             "%' UNION SELECT username, password FROM users --",
+             "'; DROP TABLE users; --"]:
+    print(f"search term={term!r}")
+    print("   vulnerable:", search_vulnerable(term))
+    print("   safe      :", search_safe(term))
+print("users table still exists:", conn.execute("SELECT COUNT(*) FROM users").fetchone()[0], "rows")
+
+
+# ===================== Part 3: what a placeholder cannot do =====================
+ALLOWED_SORT = {"name", "price"}
+
+
+def list_products(sort_by):
+    # A ? placeholder holds a VALUE, never a column or table name. For those, check against a fixed list.
+    if sort_by not in ALLOWED_SORT:
+        return f"rejected: {sort_by!r}"
+    return conn.execute(f"SELECT name, price FROM products ORDER BY {sort_by}").fetchall()
+
+
+print()
+print(list_products("price"))
+print(list_products("price; DROP TABLE users"))
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">username='alice' password='alicepw'
+   SQL sent  : SELECT username, role FROM users WHERE username = 'alice' AND password = 'alicepw'
+   vulnerable: ('alice', 'student')
+   safe      : ('alice', 'student')
+username='alice' password='wrong'
+   SQL sent  : SELECT username, role FROM users WHERE username = 'alice' AND password = 'wrong'
+   vulnerable: None
+   safe      : None
+username="' OR '1'='1' --" password='anything'
+   SQL sent  : SELECT username, role FROM users WHERE username = '' OR '1'='1' --' AND password = 'anything'
+   vulnerable: ('alice', 'student')
+   safe      : None
+username="admin'--" password=''
+   SQL sent  : SELECT username, role FROM users WHERE username = 'admin'--' AND password = ''
+   vulnerable: ('admin', 'admin')
+   safe      : None
+username="O'Brien" password='pw'
+   SQL sent  : SELECT username, role FROM users WHERE username = 'O'Brien' AND password = 'pw'
+   vulnerable: ERROR: near "Brien": syntax error
+   safe      : None
+
+search term='pen'
+   SQL sent  : SELECT name, price FROM products WHERE name LIKE '%pen%'
+   vulnerable: [('Pen', 1.5)]
+   safe      : [('Pen', 1.5)]
+search term="%' UNION SELECT username, password FROM users --"
+   SQL sent  : SELECT name, price FROM products WHERE name LIKE '%%' UNION SELECT username, password FROM users --%'
+   vulnerable: [('Notebook', 4.0), ('Pen', 1.5), ('Stapler', 9.25), ('admin', 'S3cret!'), ('alice', 'alicepw'), ('bob', 'bobpw')]
+   safe      : []
+search term="'; DROP TABLE users; --"
+   SQL sent  : SELECT name, price FROM products WHERE name LIKE '%'; DROP TABLE users; --%'
+   vulnerable: ERROR: You can only execute one statement at a time.
+   safe      : []
+users table still exists: 3 rows
+
+[('Pen', 1.5), ('Notebook', 4.0), ('Stapler', 9.25)]
+rejected: 'price; DROP TABLE users'
+</pre></details></div>
+
+  <div class="block prose">
+    <p>Read the output closely:</p>
+    <ul>
+      <li><b>Two attacks log in</b> without a valid password: the first as the first user in the table, the second as the administrator.</li>
+      <li><b>The honest user "O'Brien" breaks the vulnerable function</b> with a syntax error. Injection bugs are also ordinary bugs: any name with an apostrophe crashes the page. The safe function simply finds no such user.</li>
+      <li><b>The UNION attack</b> turned a product search into a password dump.</li>
+      <li><b>The DROP TABLE attempt failed here</b> only because Python's <span class="inl">sqlite3</span> refuses to run two statements in one <span class="inl">execute</span>. Do not count on that: some drivers allow it (MySQL Connector/J with <span class="inl">allowMultiQueries=true</span>, for example).</li>
+    </ul>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Java</span>
+    <h3>The same fix in JDBC</h3>
+    <p>Replace <span class="inl">Statement</span> with <span class="inl">PreparedStatement</span>, put <span class="inl">?</span> where each value goes, and bind values by position starting at 1.</p>
+  </div>
+  <div class="lab untested"><div class="labbar"><span>SafeLogin.java</span><span class="tag-comp">Compiled only</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="java">import java.sql.*;
+
+public class SafeLogin {
+    // VULNERABLE: the input becomes part of the SQL text
+    static boolean loginBad(Connection c, String user, String pass) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE username = '" + user + "' AND password = '" + pass + "'";
+        try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+            return rs.next();
+        }
+    }
+
+    // SAFE: fixed SQL text, values sent separately
+    static boolean loginGood(Connection c, String user, String pass) throws SQLException {
+        String sql = "SELECT 1 FROM users WHERE username = ? AND password = ?";
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setString(1, user);
+            ps.setString(2, pass);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    // A placeholder cannot hold a column name, so check against a fixed list
+    static String sortColumn(String requested) {
+        switch (requested) {
+            case "name": case "price": return requested;
+            default: throw new IllegalArgumentException("bad sort column");
+        }
+    }
+}
+</code></pre></div>
+
+  <div class="block prose">
+    <span class="chip">Beyond the basics</span>
+    <h3>What placeholders can and cannot do</h3>
+    <p>Lab 3 covers the situations that come up the moment you build a real search page.</p>
+    <ul>
+      <li><b>Names, not values.</b> A placeholder stands for a <i>value</i>. It cannot be a table name, a column name, or <span class="inl">ASC/DESC</span>. For "sort by a column the user chose", compare the choice against a fixed allowlist (Lab 2, part 3), then insert the checked name.</li>
+      <li><b>IN lists.</b> Build the string of placeholders (<span class="inl">?,?,?</span>) from the list's length, never the values.</li>
+      <li><b>LIKE wildcards.</b> A <span class="inl">%</span> or <span class="inl">_</span> typed by the user is still a wildcard inside a parameter. It is not an injection, but a user can match more than they should. Escape it if you mean it literally.</li>
+      <li><b>Optional filters.</b> Add fixed SQL fragments (<span class="inl">"major = ?"</span>) and collect the values in a separate list.</li>
+      <li><b>Named parameters.</b> <span class="inl">sqlite3</span> also accepts <span class="inl">:name</span> with a dictionary, which reads better with many values.</li>
+    </ul>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 3: lab3_dynamic.py</span><span class="tag-ran">Run here</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="py">import sqlite3
+
+conn = sqlite3.connect(":memory:")
+conn.execute("CREATE TABLE student (sid INTEGER PRIMARY KEY, name TEXT, major TEXT, gpa REAL, note TEXT)")
+conn.executemany(
+    "INSERT INTO student VALUES (:sid, :name, :major, :gpa, :note)",      # named style: a dict per row
+    [
+        {"sid": 1, "name": "Ada",   "major": "Computer Science", "gpa": 3.9, "note": "100% attendance"},
+        {"sid": 2, "name": "Ben",   "major": "Mathematics",      "gpa": 3.4, "note": "1000 volunteer hours"},
+        {"sid": 3, "name": "Carla", "major": "Computer Science", "gpa": 3.7, "note": None},
+        {"sid": 4, "name": "Dev",   "major": "Data Science",     "gpa": 3.2, "note": None},
+        {"sid": 5, "name": "Eve",   "major": "Mathematics",      "gpa": 3.5, "note": None},
+    ],
+)
+
+# ---- 1. Named parameters ---------------------------------------------------------
+rows = conn.execute(
+    "SELECT name FROM student WHERE major = :major AND gpa &gt;= :min_gpa ORDER BY sid",
+    {"major": "Computer Science", "min_gpa": 3.7}).fetchall()
+print("named:", rows)
+
+# ---- 2. An IN (...) list: build the placeholders, never the values ---------------
+ids = [1, 3, 5]
+placeholders = ",".join("?" * len(ids))                    # "?,?,?"
+sql = f"SELECT name FROM student WHERE sid IN ({placeholders}) ORDER BY sid"
+print("IN:", sql, "-&gt;", conn.execute(sql, ids).fetchall())
+
+# ---- 3. LIKE: a % or _ typed by the user still acts as a wildcard ----------------
+def escape_like(text):
+    return text.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+term = "100%"
+naive = conn.execute("SELECT name FROM student WHERE note LIKE ?", (f"%{term}%",)).fetchall()
+exact = conn.execute("SELECT name FROM student WHERE note LIKE ? ESCAPE '\\'",
+                     (f"%{escape_like(term)}%",)).fetchall()
+print("naive LIKE :", naive, " &lt;- also matches '1000 volunteer hours'")
+print("escaped LIKE:", exact)
+
+# ---- 4. Optional filters: append fixed fragments, collect values separately ------
+def search(major=None, min_gpa=None):
+    conditions, params = [], []
+    if major is not None:
+        conditions.append("major = ?")
+        params.append(major)
+    if min_gpa is not None:
+        conditions.append("gpa &gt;= ?")
+        params.append(min_gpa)
+    where = (" WHERE " + " AND ".join(conditions)) if conditions else ""
+    return conn.execute("SELECT name FROM student" + where + " ORDER BY sid", params).fetchall()
+
+print("no filters   :", search())
+print("major only   :", search(major="Mathematics"))
+print("both filters :", search(major="Mathematics", min_gpa=3.5))
+
+# ---- 5. Bulk update: executemany -------------------------------------------------
+cur = conn.executemany("UPDATE student SET note = ? WHERE sid = ?",
+                       [("dean's list", 1), ("dean's list", 3)])
+print("rows changed by executemany:", cur.rowcount)
+
+# ---- 6. Three mistakes you will meet, and their real error messages --------------
+mistakes = [
+    ("single value not in a tuple",
+     lambda: conn.execute("SELECT * FROM student WHERE major = ?", "Computer Science")),
+    ("too few values",
+     lambda: conn.execute("SELECT * FROM student WHERE major = ? AND gpa &gt; ?", ("Mathematics",))),
+    ("wrong table name",
+     lambda: conn.execute("SELECT * FROM students")),
+]
+for label, attempt in mistakes:
+    try:
+        attempt()
+    except sqlite3.Error as e:
+        print(f"{label}: {type(e).__name__}: {e}")
+print("the fix for the first one: pass a tuple with a trailing comma, e.g. (major,)")
+</code></pre>
+<details><summary>Expected output</summary><pre class="out">named: [('Ada',), ('Carla',)]
+IN: SELECT name FROM student WHERE sid IN (?,?,?) ORDER BY sid -&gt; [('Ada',), ('Carla',), ('Eve',)]
+naive LIKE : [('Ada',), ('Ben',)]  &lt;- also matches '1000 volunteer hours'
+escaped LIKE: [('Ada',)]
+no filters   : [('Ada',), ('Ben',), ('Carla',), ('Dev',), ('Eve',)]
+major only   : [('Ben',), ('Eve',)]
+both filters : [('Eve',)]
+rows changed by executemany: 2
+single value not in a tuple: ProgrammingError: Incorrect number of bindings supplied. The current statement uses 1, and there are 16 supplied.
+too few values: ProgrammingError: Incorrect number of bindings supplied. The current statement uses 2, and there are 1 supplied.
+wrong table name: OperationalError: no such table: students
+the fix for the first one: pass a tuple with a trailing comma, e.g. (major,)
+</pre></details></div>
+
+  <div class="block prose">
+    <span class="chip">Defense in depth</span>
+    <h3>Parameters first, then the safety nets</h3>
+    <ul>
+      <li><b>Least privilege.</b> The application's database account should not be able to <span class="inl">DROP</span> tables or read tables it does not use. If an injection slips through, the damage is capped.</li>
+      <li><b>Validate input</b> for sanity (length, format), as a second layer. It is not a substitute for parameters.</li>
+      <li><b>Do not show raw database errors to users.</b> They reveal table and column names. Log them privately instead.</li>
+      <li><b>Do not hand-escape quotes.</b> Replacing <span class="inl">'</span> with <span class="inl">''</span> is easy to get wrong across encodings and contexts. Let the driver do it by using parameters.</li>
+    </ul>
+    <div class="callout warn"><b>MySQL detail.</b> MySQL requires a space after <span class="inl">--</span> for it to start a comment (<span class="inl">-- </span>), and also accepts <span class="inl">#</span>. The simulator and Lab 2 run on SQLite, where <span class="inl">--</span> alone works. The attack idea is identical; the exact characters vary by database.</div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 3</h3>
+    <div class="quiz" data-quiz="m3"></div>
+  </div>
+</section>
+
+<!-- ================= MODULE 4 ================= -->
+<section class="mod" id="m4">
+  <h2>4. Compare connectivity approaches</h2>
+  <p class="goal">Put the Python drivers and JDBC side by side, and decide when raw SQL, a connection pool, or an ORM is the right tool.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>One shape, small differences that matter</h3>
+    <p>The standards give every driver the same overall flow, but a few details differ, and those details are exactly where code breaks when you switch databases. Choose a driver tab to see its version of each step.</p>
+  </div>
+  <div class="block">
+    <span class="chip">Interactive</span>
+    <h3>Driver comparison</h3>
+    <div class="wb" id="cmpTabs"></div>
+  </div>
+
+  <div class="block prose">
+    <div class="callout"><b>The placeholder trap.</b> <span class="inl">sqlite3</span> uses <span class="inl">?</span>. <span class="inl">mysql.connector</span> and <span class="inl">psycopg2</span> use <span class="inl">%s</span>. That <span class="inl">%s</span> is the <b>driver's</b> placeholder, <i>not</i> Python string formatting. Writing <span class="inl">"... WHERE id = %s" % user_id</span> with the <span class="inl">%</span> operator is the vulnerable pattern wearing the safe pattern's clothes. The safe call has a comma: <span class="inl">cur.execute(sql, (user_id,))</span>.</div>
+    <p>These two files are the MySQL and PostgreSQL versions of the Python lab. Their syntax was checked, but they were not run, because they need a server.</p>
+  </div>
+  <div class="lab untested"><div class="labbar"><span>mysql_connect.py</span><span class="tag-untested">Not run</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="py"># pip install mysql-connector-python
+import os
+import mysql.connector
+
+conn = mysql.connector.connect(
+    host="localhost", port=3306,
+    user=os.environ.get("DB_USER", "app_user"),
+    password=os.environ.get("DB_PASS", "change_me"),
+    database="school",
+)
+try:
+    cur = conn.cursor()
+    # mysql.connector uses %s as the placeholder (it is NOT Python string formatting)
+    cur.execute("SELECT sid, name, gpa FROM student WHERE major = %s AND gpa &gt;= %s ORDER BY sid",
+                ("Computer Science", 3.5))
+    for sid, name, gpa in cur.fetchall():
+        print(sid, name, gpa)
+
+    cur.execute("UPDATE student SET gpa = %s WHERE sid = %s", (3.95, 1))
+    print("rows updated:", cur.rowcount)
+    conn.commit()                      # connectors for MySQL do not auto-commit by default
+finally:
+    conn.close()
+</code></pre></div>
+  <div class="lab untested"><div class="labbar"><span>postgres_connect.py</span><span class="tag-untested">Not run</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="py"># pip install psycopg2-binary
+import os
+import psycopg2
+
+conn = psycopg2.connect(host="localhost", port=5432, dbname="school",
+                        user=os.environ["DB_USER"], password=os.environ["DB_PASS"])
+try:
+    with conn:                          # commits on success, rolls back on error (does NOT close)
+        with conn.cursor() as cur:
+            cur.execute("SELECT sid, name FROM student WHERE major = %s", ("Computer Science",))
+            print(cur.fetchall())
+finally:
+    conn.close()
+</code></pre></div>
+  <div class="lab untested"><div class="labbar"><span>setup_mysql.sql: database, sample data, limited account</span><span class="tag-untested">Not run</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lang="sql">-- Run once as a MySQL administrator (for example:  mysql -u root -p &lt; setup_mysql.sql)
+CREATE DATABASE IF NOT EXISTS school;
+USE school;
+
+DROP TABLE IF EXISTS student;
+CREATE TABLE student (
+  sid   INT PRIMARY KEY,
+  name  VARCHAR(60) NOT NULL,
+  major VARCHAR(40),
+  gpa   DECIMAL(3,2),
+  phone VARCHAR(20)
+);
+INSERT INTO student VALUES
+  (1, 'Ada Lovelace', 'Computer Science', 3.90, '555-0101'),
+  (2, 'Ben Carter',   'Mathematics',      3.40, NULL),
+  (3, 'Carla Diaz',   'Computer Science', 3.70, '555-0103'),
+  (4, 'Dev Patel',    'Data Science',     3.20, NULL);
+
+-- An account for the application: only what it needs, only on this database.
+CREATE USER IF NOT EXISTS 'app_user'@'localhost' IDENTIFIED BY 'change_me';
+GRANT SELECT, INSERT, UPDATE ON school.student TO 'app_user'@'localhost';
+</code></pre></div>
+
+  <div class="block prose">
+    <span class="chip">Beyond one connection</span>
+    <h3>Raw SQL, pools, and ORMs</h3>
+    <div class="tablewrap"><table>
+      <tr><th>Approach</th><th>What it is</th><th>Choose it when</th><th>Watch out for</th></tr>
+      <tr><td><b>Plain driver</b> (JDBC, DB-API)</td><td>You write SQL and manage the connection.</td><td>Scripts, coursework, small tools, and anywhere you need full control of the SQL.</td><td>Boilerplate, and the temptation to build SQL with strings.</td></tr>
+      <tr><td><b>Connection pool</b> (HikariCP, SQLAlchemy's pool)</td><td>A set of already-open connections that your code borrows and returns.</td><td>Any server handling many requests. Opening a connection is slow and databases limit how many they accept.</td><td>You must always return the connection (close it in a <span class="inl">finally</span> or try-with-resources, which returns it to the pool).</td></tr>
+      <tr><td><b>ORM</b> (JPA/Hibernate, SQLAlchemy ORM)</td><td>Maps tables to classes and generates SQL for you.</td><td>Large applications with many tables and mostly standard create, read, update, delete operations.</td><td>Generated SQL can be inefficient (the "N+1 query" problem), and it hides what actually runs. It is still safe only if you do not splice strings into raw fragments.</td></tr>
+    </table></div>
+    <p>An ORM is a layer <i>on top of</i> a driver, not a replacement for one, and a pool sits between the two. Knowing the plain driver is what lets you debug the layers above it.</p>
+    <div class="callout"><b>SQL is still not fully portable.</b> The API is standard, but dialects differ: <span class="inl">LIMIT</span> versus <span class="inl">FETCH FIRST</span>, auto-increment syntax, date functions, and string quoting. An ORM can smooth some of this over. Raw SQL cannot.</div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Apply it</span>
+    <h3>Pick the approach</h3>
+    <p>Each scenario has a best fit. Choose, then read the reason.</p>
+    <div class="quiz" data-quiz="duel"></div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 4</h3>
+    <div class="quiz" data-quiz="m4"></div>
+  </div>
+</section>
+
+<!-- ================= FINAL ================= -->
+<section class="mod" id="final">
+  <h2>Final check</h2>
+  <p class="goal">Twelve mixed questions across all four modules. Some ask for more than one answer.</p>
+  <div class="block"><div class="quiz" data-quiz="final"></div></div>
+
+  <div class="block prose">
+    <span class="chip">Apply it</span>
+    <h3>Capstone: a command-line grade book</h3>
+    <p>Build a small program, in Python (use <span class="inl">sqlite3</span>) or Java (JDBC with MySQL), that manages a course's grades. It needs three tables: <b>student</b>, <b>course</b>, and <b>enrollment</b> (student, course, grade).</p>
+    <ol>
+      <li><b>Connect</b> using settings from environment variables or a function argument, never hard-coded credentials. Close the connection even if something fails.</li>
+      <li><b>Create the schema</b> with primary keys, a foreign key from enrollment to each of the other tables, and a CHECK that a grade is between 0 and 100.</li>
+      <li><b>Add</b> a student, a course, and an enrollment through functions that take parameters.</li>
+      <li><b>Report:</b> list a course's students with grades, highest first, and print each student's average. Handle the case where a student has no grades (NULL).</li>
+      <li><b>Search</b> students by part of a name using LIKE, with the user's text passed as a parameter.</li>
+      <li><b>Record grades in one transaction:</b> adding five grades must succeed or fail together. Prove it by making the fourth grade invalid and checking that none were saved.</li>
+      <li><b>Attack it.</b> Try <span class="inl">' OR '1'='1</span>, an apostrophe name, and a <span class="inl">%</span> search. Write one sentence for each saying what happened and why.</li>
+    </ol>
+    <p><b>Self-check:</b> no SQL string anywhere contains an f-string brace or a <span class="inl">+</span> that joins user input. If you have one, that is the bug.</p>
+  </div>
+</section>
+
+<section class="mod" id="readings">
+  <h2>Readings and references</h2>
+  <p class="goal">These pages go deeper on the same ideas. Required items match the module reading list.</p>
+  <div class="block">
+    <div class="tablewrap"><table>
+      <tr><th>Resource</th><th>Track</th><th>Status</th><th>Time</th></tr>
+      <tr><td><a href="https://www.w3schools.com/python/python_mysql_getstarted.asp" target="_blank" rel="noopener">W3Schools: Python MySQL</a></td><td>Python</td><td>Required</td><td>about 30 min</td></tr>
+      <tr><td><a href="https://www.baeldung.com/java-connect-mysql" target="_blank" rel="noopener">Baeldung: JDBC with MySQL</a></td><td>Java</td><td>Required</td><td>about 30 min</td></tr>
+      <tr><td><a href="https://docs.python.org/3/library/sqlite3.html" target="_blank" rel="noopener">Python sqlite3 module (official docs)</a></td><td>Python</td><td>Required</td><td>about 15 min</td></tr>
+      <tr><td><a href="https://docs.oracle.com/javase/tutorial/jdbc/basics/index.html" target="_blank" rel="noopener">Oracle: JDBC Basics</a></td><td>Java</td><td>Optional</td><td>reference</td></tr>
+      <tr><td><a href="https://dev.mysql.com/doc/connector-j/en/" target="_blank" rel="noopener">MySQL Connector/J documentation</a></td><td>Java</td><td>Optional</td><td>reference</td></tr>
+      <tr><td><a href="https://dev.mysql.com/doc/connector-python/en/" target="_blank" rel="noopener">MySQL Connector/Python documentation</a></td><td>Python</td><td>Optional</td><td>reference</td></tr>
+      <tr><td><a href="https://www.psycopg.org/docs/usage.html" target="_blank" rel="noopener">psycopg2 quickstart (PostgreSQL)</a></td><td>Python</td><td>Optional</td><td>about 15 min</td></tr>
+    </table></div>
+  </div>
+</section>
+</main>
+
+<footer>Connections, result sets, parameterized queries, and driver comparison. Progress stays in your own browser.</footer>
+</div>
+</div>
+
+<script>
+/* Mini SQL evaluator for ONE query shape:  SELECT ... FROM users WHERE <conditions>
+   Understands: 'strings' (with '' escapes), column names, numbers, =, AND, OR, -- comments.
+   Anything else is reported as "unsupported", never guessed. */
+const USERS = [
+  { id: 1, username: 'alice', password: 'alicepw', role: 'student' },
+  { id: 2, username: 'bob',   password: 'bobpw',   role: 'student' },
+  { id: 3, username: 'admin', password: 'S3cret!', role: 'admin' }
+];
+function tokenize(s) {
+  const t = []; let i = 0;
+  while (i < s.length) {
+    const c = s[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (c === '-' && s[i + 1] === '-') { t.push({ k: 'cm', a: i, b: s.length }); break; }
+    if (c === "'") {
+      let j = i + 1, v = '';
+      for (;;) {
+        if (j >= s.length) return { err: 'unterminated', at: i, t };
+        if (s[j] === "'") { if (s[j + 1] === "'") { v += "'"; j += 2; continue; } break; }
+        v += s[j++];
+      }
+      t.push({ k: 'str', v, a: i, b: j + 1 }); i = j + 1; continue;
+    }
+    let m;
+    if ((m = /^[A-Za-z_][A-Za-z0-9_]*/.exec(s.slice(i)))) {
+      const w = m[0], u = w.toUpperCase();
+      t.push({ k: u === 'AND' ? 'and' : u === 'OR' ? 'or' : 'id', v: w, a: i, b: i + w.length }); i += w.length; continue;
+    }
+    if ((m = /^\d+(\.\d+)?/.exec(s.slice(i)))) { t.push({ k: 'num', v: +m[0], a: i, b: i + m[0].length }); i += m[0].length; continue; }
+    if (c === '=') { t.push({ k: 'eq', a: i, b: i + 1 }); i++; continue; }
+    return { err: 'unsupported', at: i, ch: c, t };
+  }
+  return { t };
+}
+/* where = text after the word WHERE.  Returns {rows} or {error, kind} */
+function evalWhere(where) {
+  const tk = tokenize(where);
+  if (tk.err === 'unterminated') return { error: 'unrecognized token (an opening quote is never closed)', kind: 'syntax' };
+  if (tk.err) return { error: 'this mini-evaluator cannot read the character “' + tk.ch + '”', kind: 'unsupported' };
+  const t = tk.t.filter(x => x.k !== 'cm');
+  let p = 0;
+  const operand = () => {
+    const x = t[p]; if (!x || !['str', 'num', 'id'].includes(x.k)) return null; p++; return x;
+  };
+  const cond = () => {
+    const l = operand(); if (!l) return null;
+    if (!t[p] || t[p].k !== 'eq') return null; p++;
+    const r = operand(); if (!r) return null;
+    return row => {
+      const val = o => o.k === 'id' ? row[o.v.toLowerCase()] : o.v;
+      if (o_isCol(l) && !(l.v.toLowerCase() in row)) throw new Error('no such column: ' + l.v);
+      if (o_isCol(r) && !(r.v.toLowerCase() in row)) throw new Error('no such column: ' + r.v);
+      return String(val(l)) === String(val(r));
+    };
+  };
+  const o_isCol = o => o.k === 'id';
+  const andExpr = () => {
+    let a = cond(); if (!a) return null;
+    while (t[p] && t[p].k === 'and') { p++; const b = cond(); if (!b) return null; const a0 = a; a = r => a0(r) && b(r); }
+    return a;
+  };
+  const orExpr = () => {
+    let a = andExpr(); if (!a) return null;
+    while (t[p] && t[p].k === 'or') { p++; const b = andExpr(); if (!b) return null; const a0 = a; a = r => a0(r) || b(r); }
+    return a;
+  };
+  const f = orExpr();
+  if (!f || p < t.length) return { error: 'syntax error', kind: 'syntax' };
+  try { return { rows: USERS.filter(f) }; } catch (e) { return { error: e.message, kind: 'syntax' }; }
+}
+
+</script>
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const NS = 'http://www.w3.org/2000/svg';
+const svgEl = (n, a = {}, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const copyText = async (txt, btn) => {
+  try { await navigator.clipboard.writeText(txt); }
+  catch (e) { const ta = h('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (_) {} ta.remove(); }
+  if (btn) { const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = old, 1500); }
+};
+
+/* ---------- storage (safe) ---------- */
+const KEY = 'db-connectivity-tutorial-v1';
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
+  set(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+};
+function saveScore(key, score, total) { const s = store.get(); s.scores = s.scores || {}; s.scores[key] = [score, total]; store.set(s); refreshNav(); }
+function refreshNav() {
+  const sc = store.get().scores || {};
+  $$('#navlist a[data-key]').forEach(a => { const v = sc[a.dataset.key]; $('.tick', a).textContent = v ? `${v[0]}/${v[1]}` : ''; });
+}
+
+/* ---------- syntax highlight + copy ---------- */
+const SQLKW = 'CREATE|DATABASE|TABLE|VIEW|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|UNIQUE|DEFAULT|CHECK|INSERT|INTO|VALUES|SELECT|FROM|WHERE|JOIN|LEFT|ON|GROUP|BY|ORDER|HAVING|COUNT|AS|DROP|IF|EXISTS|PRAGMA|UPDATE|SET|DELETE|INTEGER|TEXT|REAL|INT|VARCHAR|DECIMAL|AND|OR|IN|LIKE|USE|USER|GRANT|TO|IDENTIFIED|DISTINCT|UNION|LIMIT|DESC|ASC';
+const PYKW = 'import|from|as|def|return|if|elif|else|for|while|in|not|and|or|is|None|True|False|try|except|finally|with|lambda|class|pass|raise|print|len|range|sorted|str|int|float';
+const JKW = 'import|public|private|static|final|class|void|new|return|if|else|for|while|try|catch|finally|throws|throw|null|true|false|int|double|long|boolean|String|Connection|DriverManager|PreparedStatement|Statement|ResultSet|SQLException|System|switch|case|default|break|IllegalArgumentException|this';
+const LANG = {
+  sql: new RegExp(`(--[^\\n]*)|('(?:[^']|'')*')|\\b(${SQLKW})\\b|\\b(\\d+(?:\\.\\d+)?)\\b`, 'gi'),
+  py: new RegExp(`(#[^\\n]*)|([fF]?"""[\\s\\S]*?"""|[fF]?"(?:\\\\.|[^"\\\\\\n])*"|[fF]?'(?:\\\\.|[^'\\\\\\n])*')|\\b(${PYKW})\\b|\\b(\\d+(?:\\.\\d+)?)\\b`, 'g'),
+  java: new RegExp(`(//[^\\n]*|/\\*[\\s\\S]*?\\*/)|("(?:\\\\.|[^"\\\\\\n])*")|\\b(${JKW})\\b|\\b(\\d+(?:\\.\\d+)?)\\b`, 'g')
+};
+function highlight(code, lang, text) {
+  const src = text != null ? text : code.textContent;
+  const e = src.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const re = LANG[lang] || LANG.sql; re.lastIndex = 0;
+  code.innerHTML = e.replace(re, (m, cm, st, kw) => cm ? `<span class="cm">${m}</span>` : st ? `<span class="st">${m}</span>` : kw ? `<span class="kw">${m}</span>` : `<span class="nu">${m}</span>`);
+}
+$$('.lab code[data-lang]').forEach(c => { c.dataset.raw = c.textContent; highlight(c, c.dataset.lang); });
+$$('.lab .copy').forEach(btn => btn.addEventListener('click', () => { const code = $('code', btn.closest('.lab')); copyText(code.dataset.raw || code.textContent, btn); }));
+
+/* ---------- hero: layers diagram ---------- */
+(() => {
+  const host = $('#heroFig'); if (!host) return;
+  const L = [
+    ['Your code', 'Java / Python', 'Your program decides what to ask for: a SELECT, an INSERT. It should never need to know how the database talks on the network.'],
+    ['Standard API', 'JDBC · DB-API', 'The shared vocabulary: connect, create a statement or cursor, execute, fetch, commit, close. Code written to the API moves between databases with few changes.'],
+    ['Driver', 'Connector/J · psycopg2', 'A library for one specific database. It turns API calls into that database’s own protocol and converts values (numbers, dates, NULL) both ways. This is the .jar or package you install.'],
+    ['Network', 'TCP · host:port', 'Usually TCP: MySQL listens on port 3306 and PostgreSQL on 5432 by default. A stopped server, wrong port, or firewall shows up here as “connection refused” or “communications link failure”. SQLite skips this layer.'],
+    ['Database server', 'MySQL · PostgreSQL', 'Checks your credentials, parses and plans the SQL, runs it, and sends rows back. With SQLite this “server” is a library inside your own process and the database is a file.']
+  ];
+  const bw = 138, gap = 30, pad = 14, W = pad * 2 + L.length * bw + (L.length - 1) * gap, H = 112;
+  const scroll = h('div', 'scroll'); host.append(scroll);
+  const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, role: 'group', 'aria-label': 'Five layers from your code to the database server' }, scroll);
+  const defs = svgEl('defs', {}, svg);
+  const m = svgEl('marker', { id: 'ah-flow', viewBox: '0 0 10 10', refX: '8', refY: '5', markerWidth: '8', markerHeight: '8', orient: 'auto-start-reverse' }, defs);
+  svgEl('path', { d: 'M0,0 L10,5 L0,10 z', style: 'fill:var(--soft)' }, m);
+  const info = h('div', 'layerinfo'); info.setAttribute('aria-live', 'polite');
+  const gs = [];
+  L.forEach((l, i) => {
+    const x = pad + i * (bw + gap);
+    if (i) svgEl('line', { class: 'flow', x1: x - gap + 3, y1: 52, x2: x - 3, y2: 52, 'marker-start': 'url(#ah-flow)', 'marker-end': 'url(#ah-flow)' }, svg);
+    const g = svgEl('g', { class: 'layer', tabindex: '0', role: 'button', 'aria-label': `${l[0]}: ${l[1]}` }, svg);
+    svgEl('rect', { x, y: 20, width: bw, height: 64, rx: 10 }, g);
+    const t1 = svgEl('text', { x: x + bw / 2, y: 44 }, g); t1.textContent = l[0];
+    const t2 = svgEl('text', { x: x + bw / 2, y: 64, class: 'small' }, g); t2.textContent = l[1];
+    const pick = () => { gs.forEach(o => o.classList.remove('on')); g.classList.add('on'); info.innerHTML = `<b>${esc(l[0])}.</b> ${esc(l[2])}`; };
+    g.addEventListener('click', pick);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+    gs.push(g);
+    if (i === 0) setTimeout(pick, 0);
+  });
+  const note = svgEl('text', { x: W / 2, y: 106, style: 'fill:var(--soft);font:12.5px "Public Sans",sans-serif;text-anchor:middle' }, svg);
+  note.textContent = 'Requests travel left to right, results come back right to left. Click a layer.';
+  host.append(info);
+})();
+
+/* ---------- connection builder ---------- */
+(() => {
+  const host = $('#connBuilder'); if (!host) return;
+  const D = {
+    jmy: { label: 'Java · MySQL (Connector/J)', port: 3306, server: true, needs: 'mysql-connector-j .jar on the classpath (or a Maven/Gradle dependency)' },
+    jpg: { label: 'Java · PostgreSQL', port: 5432, server: true, needs: 'postgresql .jar on the classpath (or a Maven/Gradle dependency)' },
+    pmy: { label: 'Python · mysql-connector-python', port: 3306, server: true, needs: 'pip install mysql-connector-python' },
+    ppg: { label: 'Python · psycopg2 (PostgreSQL)', port: 5432, server: true, needs: 'pip install psycopg2-binary' },
+    psq: { label: 'Python · sqlite3', port: 0, server: false, needs: 'nothing: sqlite3 ships with Python' }
+  };
+  const st = { d: 'jmy', host: 'localhost', port: '3306', db: 'school', user: 'app_user' };
+  const grid = h('div', 'wb-grid');
+  const field = (id, label, hint) => { const w = h('div'); const l = h('label', null, label); l.htmlFor = id; const i = h('input'); i.type = 'text'; i.id = id; i.autocomplete = 'off'; i.spellcheck = false; w.append(l, i); if (hint) w.append(h('div', 'hint', hint)); grid.append(w); return i; };
+  const selW = h('div'); const selL = h('label', null, 'Driver'); selL.htmlFor = 'cbDriver';
+  const sel = h('select'); sel.id = 'cbDriver';
+  Object.entries(D).forEach(([k, v]) => { const o = h('option', null, v.label); o.value = k; sel.append(o); });
+  selW.append(selL, sel); grid.append(selW);
+  const iHost = field('cbHost', 'Host'), iPort = field('cbPort', 'Port'), iDb = field('cbDb', 'Database name'), iUser = field('cbUser', 'User');
+  host.append(grid);
+  const msg = h('div', 'hint'); msg.style.margin = '0 0 8px'; host.append(msg);
+  const need = h('p'); need.style.margin = '4px 0 8px'; host.append(need);
+  const lab = h('div', 'lab'); const bar = h('div', 'labbar'); bar.append(h('span', null, 'Generated code'));
+  const cp = h('button', null, 'Copy'); cp.type = 'button'; bar.append(cp);
+  const pre = h('pre'); const code = h('code'); pre.append(code); lab.append(bar, pre); host.append(lab);
+  const q = s => JSON.stringify(String(s));
+  function render() {
+    const d = D[st.d], warns = [];
+    const p = st.port.trim(), hst = st.host.trim(), db = st.db.trim(), u = st.user.trim();
+    for (const [n, v] of [['host', hst], ['database', db]]) if (/[\s\/?#]/.test(v)) warns.push(`The ${n} contains a space or one of / ? #, which will break the URL.`);
+    if (d.server) {
+      if (!/^\d+$/.test(p) || +p < 1 || +p > 65535) warns.push('The port must be a whole number from 1 to 65535.');
+      if (!hst) warns.push('Enter a host (use localhost for your own machine).');
+      if (!db) warns.push('Enter a database name.');
+    } else if (!db) warns.push('Enter a file name, or :memory: for a throwaway database.');
+    msg.textContent = warns.join(' ') || (d.server ? `Default port for this driver: ${d.port}.` : 'SQLite has no host, port, or user: the “database” is a file.');
+    msg.style.color = warns.length ? 'var(--bad)' : 'var(--soft)';
+    need.innerHTML = `<b>You need:</b> ${esc(d.needs)}`;
+    const port = p || d.port, ok = !warns.length;
+    let t;
+    if (st.d === 'jmy' || st.d === 'jpg') {
+      const sub = st.d === 'jmy' ? 'mysql' : 'postgresql';
+      t = `// import java.sql.*;\nString url  = "jdbc:${sub}://${hst}:${port}/${db}";\nString user = ${q(u)};              // or System.getenv("DB_USER")\nString pass = System.getenv("DB_PASS");   // never type the password in code\n\ntry (Connection conn = DriverManager.getConnection(url, user, pass)) {\n    // use conn here; it is closed automatically\n} catch (SQLException e) {\n    System.err.println(e.getMessage());\n}`;
+    } else if (st.d === 'pmy') {
+      t = `import os\nimport mysql.connector\n\nconn = mysql.connector.connect(\n    host=${q(hst)}, port=${port},\n    user=${q(u)}, password=os.environ["DB_PASS"],\n    database=${q(db)},\n)\ntry:\n    cur = conn.cursor()\n    # use cur here\nfinally:\n    conn.close()`;
+    } else if (st.d === 'ppg') {
+      t = `import os\nimport psycopg2\n\nconn = psycopg2.connect(\n    host=${q(hst)}, port=${port},\n    dbname=${q(db)}, user=${q(u)},\n    password=os.environ["DB_PASS"],\n)\ntry:\n    cur = conn.cursor()\n    # use cur here\nfinally:\n    conn.close()`;
+    } else {
+      t = `import sqlite3\n\nconn = sqlite3.connect(${q(db || 'school.db')})   # creates the file if it does not exist\ntry:\n    cur = conn.cursor()\n    # use cur here\nfinally:\n    conn.close()`;
+    }
+    if (!ok) t = '// Fix the problem above to get a working snippet.\n' + t;
+    code.dataset.raw = t; highlight(code, st.d.startsWith('j') ? 'java' : 'py', t);
+    iHost.disabled = iPort.disabled = iUser.disabled = !d.server;
+    $('label[for=cbDb]', host).textContent = d.server ? 'Database name' : 'File name';
+  }
+  [[iHost, 'host'], [iPort, 'port'], [iDb, 'db'], [iUser, 'user']].forEach(([el, k]) => { el.value = st[k]; el.addEventListener('input', () => { st[k] = el.value; render(); }); });
+  sel.addEventListener('change', () => {
+    st.d = sel.value; const d = D[st.d];
+    if (d.server) { st.port = String(d.port); iPort.value = st.port; if (st.db.endsWith('.db')) { st.db = 'school'; } if (!st.host) st.host = 'localhost'; }
+    else { st.db = 'school.db'; }
+    iDb.value = st.db; iHost.value = st.host; render();
+  });
+  cp.addEventListener('click', () => copyText(code.dataset.raw, cp));
+  render();
+})();
+
+/* ---------- common errors ---------- */
+(() => {
+  const host = $('#errList'); if (!host) return;
+  const E = [
+    ['java.sql.SQLException: No suitable driver found for jdbc:mysql://localhost:3306/school', 'Java could not find a driver that accepts this URL. Either the Connector/J .jar is not on the classpath, or the URL prefix is misspelled.', 'Add the jar to the classpath (-cp) or to your Maven/Gradle dependencies, and check the URL starts exactly with jdbc:mysql:'],
+    ['Communications link failure', 'The program could not reach the server at all. The server is stopped, the host or port is wrong, or a firewall is in the way.', 'Start the MySQL service. Confirm the port. Test from a terminal with the mysql command-line client using the same host and port.'],
+    ['Access denied for user \'app_user\'@\'localhost\' (using password: YES)', 'The server was reached, but the user name or password is wrong, or that account is not allowed to connect from this host.', 'Re-run the setup script. Make sure DB_USER and DB_PASS are set in the same terminal that runs the program.'],
+    ['Unknown database \'school\'', 'You connected, but the database name does not exist on this server (or is misspelled).', 'Run the setup script, or check the name with SHOW DATABASES;'],
+    ['Public Key Retrieval is not allowed', 'MySQL 8 account authentication needs a public key or a secure connection, and the driver was told to do neither.', 'For a local test server only, add ?allowPublicKeyRetrieval=true&useSSL=false to the URL. For anything real, use an SSL connection.'],
+    ['mysql.connector.errors.DatabaseError: 2003 (HY000): Can\'t connect to MySQL server on \'localhost:3306\'', 'The Python equivalent of a communications failure: nothing is listening at that host and port.', 'Start the server, and check the host and port arguments.'],
+    ['ModuleNotFoundError: No module named \'mysql\'', 'The package is not installed for the Python interpreter that is running your script.', 'Run python -m pip install mysql-connector-python using the same python you run the script with.'],
+    ['sqlite3.OperationalError: unable to open database file', 'SQLite could not create or open the file: the folder does not exist, or you cannot write there.', 'Use a path in a folder that exists and is writable, or use ":memory:".'],
+    ['sqlite3.OperationalError: database is locked', 'Another connection is holding an uncommitted write on the same file.', 'Commit or roll back, and close connections you no longer need.']
+  ];
+  E.forEach(([m, why, fix]) => {
+    const d = h('details', 'err'); const s = h('summary', null, m); const b = h('div');
+    b.innerHTML = `<p style="margin:0 0 6px"><b>Why:</b> ${esc(why)}</p><p style="margin:0"><b>Fix:</b> ${esc(fix)}</p>`;
+    d.append(s, b); host.append(d);
+  });
+  host.append(Object.assign(h('p'), { textContent: 'These are typical messages. The exact wording changes between driver versions.' }));
+  host.lastChild.style.cssText = 'color:var(--soft);font-size:14.5px';
+})();
+
+/* ---------- cursor stepper ---------- */
+(() => {
+  const host = $('#cursorStep'); if (!host) return;
+  const ROWS = [[1, 'Ada Lovelace', 'Computer Science', 3.9], [2, 'Ben Carter', 'Mathematics', 3.4], [3, 'Carla Diaz', 'Computer Science', 3.7], [4, 'Dev Patel', 'Data Science', 3.2]];
+  const n = ROWS.length;
+  let mode = 'jdbc', c = 0, k = 0, log = [];
+  const seg = h('div', 'seg');
+  [['jdbc', 'Java · ResultSet'], ['py', 'Python · cursor']].forEach(([v, t]) => {
+    const l = h('label'); const i = h('input'); i.type = 'radio'; i.name = 'cmode'; i.value = v; i.checked = v === mode;
+    i.addEventListener('change', () => { mode = v; c = 0; k = 0; log = []; draw(); });
+    l.append(i, document.createTextNode(t)); seg.append(l);
+  });
+  host.append(seg);
+  const sqlLine = h('p'); sqlLine.innerHTML = 'Query: <span class="inl">SELECT sid, name, major, gpa FROM student ORDER BY sid</span>'; host.append(sqlLine);
+  const tw = h('div', 'dtwrap'); host.append(tw);
+  const acts = h('div', 'wb-actions'); host.append(acts);
+  const out = h('div', 'wb-card'); out.setAttribute('aria-live', 'polite'); host.append(out);
+  const addLog = (call, res, bad) => { log.unshift({ call, res, bad }); log = log.slice(0, 6); };
+  const T = (txt) => txt;
+  const jdbc = {
+    'rs.next()': () => { if (c <= n) c++; if (c > n) { c = n + 1; return ['false', 'The cursor moved past the last row. The loop ends.']; } return ['true', `The cursor is now on row ${c}.`]; },
+    'rs.getString("name")': () => (c < 1 ? ['SQLException', 'Before start of result set. You must call next() first.', 1] : c > n ? ['SQLException', 'After end of result set.', 1] : [`"${ROWS[c - 1][1]}"`, 'Column read by name.']),
+    'rs.getInt(1)': () => (c < 1 ? ['SQLException', 'Before start of result set. You must call next() first.', 1] : c > n ? ['SQLException', 'After end of result set.', 1] : [String(ROWS[c - 1][0]), 'Column read by position. JDBC positions start at 1, not 0.']),
+    'start over': null
+  };
+  const py = {
+    'cur.fetchone()': () => k >= n ? ['None', 'No rows left.'] : (k++, [`(${fmt(ROWS[k - 1])})`, 'One tuple. The cursor moved forward by one.']),
+    'cur.fetchmany(2)': () => { const r = ROWS.slice(k, k + 2); k += r.length; return ['[' + r.map(x => '(' + fmt(x) + ')').join(', ') + ']', r.length ? 'Up to 2 rows, as a list.' : 'No rows left: an empty list.']; },
+    'cur.fetchall()': () => { const r = ROWS.slice(k); k = n; return ['[' + r.map(x => '(' + fmt(x) + ')').join(', ') + ']', r.length ? 'Every remaining row, all in memory at once.' : 'Nothing left, so an empty list (not None).']; },
+    'start over': null
+  };
+  const fmt = r => r.map(v => typeof v === 'string' ? `'${v}'` : v).join(', ');
+  function draw() {
+    tw.innerHTML = ''; acts.innerHTML = '';
+    const t = h('table', 'dt cursorbox'); t.innerHTML = '<tr><th>sid</th><th>name</th><th>major</th><th>gpa</th></tr>';
+    const mark = (label, on) => { const tr = h('tr'); const td = h('td'); td.colSpan = 4; td.textContent = label; td.style.cssText = 'color:var(--soft);font-style:italic'; if (on) td.className = 'cur'; tr.append(td); t.append(tr); };
+    if (mode === 'jdbc') {
+      mark('▸ cursor starts here: before the first row', c === 0);
+      ROWS.forEach((r, i) => { const tr = h('tr'); r.forEach(v => { const td = h('td', c === i + 1 ? 'cur' : ''); td.textContent = v; tr.append(td); }); t.append(tr); });
+      mark('▸ after the last row', c === n + 1);
+    } else {
+      ROWS.forEach((r, i) => { const tr = h('tr'); r.forEach(v => { const td = h('td', i < k ? '' : 'cur'); td.textContent = v; if (i < k) td.style.cssText = 'color:var(--soft);text-decoration:line-through'; tr.append(td); }); t.append(tr); });
+      mark(`${n - k} row${n - k === 1 ? '' : 's'} not yet fetched (highlighted). Struck-through rows are gone from the cursor.`, false);
+    }
+    tw.append(t);
+    Object.keys(mode === 'jdbc' ? jdbc : py).forEach(name => {
+      const b = h('button', name === 'start over' ? 'btn alt' : 'btn', name); b.type = 'button';
+      b.addEventListener('click', () => {
+        if (name === 'start over') { c = 0; k = 0; log = []; draw(); return; }
+        const r = (mode === 'jdbc' ? jdbc : py)[name](); addLog(name, r[0] + ' — ' + r[1], r[2]); draw();
+      });
+      acts.append(b);
+    });
+    out.innerHTML = '<h4>What came back</h4>';
+    if (!log.length) out.append(Object.assign(h('p'), { textContent: mode === 'jdbc' ? 'Press rs.getString("name") first to see what happens before calling next().' : 'Press cur.fetchall(), then cur.fetchone() to see what an exhausted cursor returns.' }));
+    log.forEach(l => { const p = h('p'); p.style.margin = '3px 0'; p.innerHTML = `<span class="inl">${esc(l.call)}</span> → <b style="color:${l.bad ? 'var(--bad)' : 'var(--ok)'}">${esc(l.res.split(' — ')[0])}</b> <span style="color:var(--soft)">${esc(l.res.split(' — ')[1] || '')}</span>`; out.append(p); });
+    if (mode === 'jdbc') { const p = h('p'); p.style.cssText = 'color:var(--soft);font-size:14px;margin-top:8px'; p.textContent = 'Error wording varies between drivers.'; out.append(p); }
+  }
+  draw();
+})();
+
+/* ---------- injection simulator ---------- */
+(() => {
+  const host = $('#injSim'); if (!host) return;
+  const PRESETS = [['normal login', 'alice', 'alicepw'], ['wrong password', 'alice', 'wrong'], ['always-true', "' OR '1'='1' --", 'x'], ['become admin', "admin'--", ''], ['honest apostrophe', "O'Brien", 'pw'], ['pick a victim', "x' OR username='admin' --", 'z']];
+  const grid = h('div', 'wb-grid');
+  const mk = (id, lab) => { const w = h('div'); const l = h('label', null, lab); l.htmlFor = id; const i = h('input'); i.type = 'text'; i.id = id; i.autocomplete = 'off'; i.spellcheck = false; w.append(l, i); grid.append(w); return i; };
+  const iu = mk('injU', 'Username'), ip = mk('injP', 'Password'); host.append(grid);
+  const tries = h('div', 'tries'); PRESETS.forEach(([t, u, p]) => { const b = h('button', null, t); b.type = 'button'; b.addEventListener('click', () => { iu.value = u; ip.value = p; run(); }); tries.append(b); }); host.append(tries);
+  const cols = h('div', 'grid2'); host.append(cols);
+  const A = h('div', 'wb-card'), B = h('div', 'wb-card'); cols.append(A, B);
+  const tbl = h('div', 'dtwrap'); tbl.innerHTML = '<div class="dtcap">The users table</div><table class="dt"><tr><th>id</th><th>username</th><th>password</th><th>role</th></tr>' + USERS.map(u => `<tr><td>${u.id}</td><td>${u.username}</td><td>${esc(u.password)}</td><td>${u.role}</td></tr>`).join('') + '</table><div class="hint">Plain-text passwords are for the demo only. Real systems store salted hashes.</div>';
+  host.append(tbl);
+  const PRE = 'SELECT username, role FROM users WHERE ';
+  const T1 = "username = '", T2 = "' AND password = '", T3 = "'";
+  function run() {
+    const u = iu.value, p = ip.value;
+    const where = T1 + u + T2 + p + T3;
+    const s1 = T1.length, e1 = s1 + u.length, s2 = e1 + T2.length, e2 = s2 + p.length;
+    const tk = tokenize(where), kind = new Array(where.length).fill('x');
+    (tk.t || []).forEach(t => { for (let i = t.a; i < t.b; i++) kind[i] = t.k === 'cm' ? 'c' : (t.k === 'str' ? ((i === t.a || i === t.b - 1) ? 'd' : 's') : 'x'); });
+    if (tk.err === 'unterminated') for (let i = tk.at; i < where.length; i++) kind[i] = 'x';
+    let html = esc(PRE), cur = '', cls = null;
+    const flush = () => { if (cur) html += cls ? `<span class="${cls}">${esc(cur)}</span>` : esc(cur); cur = ''; };
+    let danger = false;
+    for (let i = 0; i < where.length; i++) {
+      const inInput = (i >= s1 && i < e1) || (i >= s2 && i < e2);
+      let c = null;
+      if (inInput) { c = kind[i] === 's' ? 'in' : 'esc'; if (c === 'esc') danger = true; }
+      else if (kind[i] === 'c') c = 'cmt';
+      if (c !== cls) { flush(); cls = c; } cur += where[i];
+    }
+    flush();
+    const r = evalWhere(where);
+    const exact = USERS.filter(x => x.username === u && x.password === p);
+    A.innerHTML = '<h4>Built with string joining <span class="badge bad">unsafe</span></h4>';
+    const sv = h('div', 'sqlview'); sv.innerHTML = html; A.append(sv);
+    const va = h('div', 'verdict');
+    if (r.error) {
+      va.classList.add(r.kind === 'unsupported' ? 'mid' : 'bad');
+      va.textContent = r.kind === 'unsupported' ? `${r.error}. A real database would decide; this simulator only reads quotes, =, AND, OR, and --.` : `Database error: ${r.error}. A quote in the input ended the string early, so the statement no longer makes sense.`;
+      if (r.kind === 'syntax' && /^[A-Za-z' ]+$/.test(u + p)) va.textContent += ' No attack was needed: an ordinary apostrophe in a name was enough to crash it.';
+    } else if (!r.rows.length) { va.classList.add('good'); va.textContent = 'No rows: login fails.'; }
+    else {
+      const first = r.rows[0], ok = exact.length && exact[0].id === first.id && !danger;
+      va.classList.add(ok ? 'good' : 'bad');
+      va.textContent = ok ? `Login succeeds as ${first.username} (${first.role}). Correct: the credentials were right.` : `Login succeeds as ${first.username} (${first.role}) without the right credentials. ${r.rows.length > 1 ? r.rows.length + ' rows matched.' : ''}`;
+    }
+    A.append(va);
+    B.innerHTML = '<h4>Built with placeholders <span class="badge good">safe</span></h4>';
+    const sv2 = h('div', 'sqlview'); sv2.innerHTML = esc(PRE + 'username = ? AND password = ?') + '\n<span class="in">?1 = ' + esc(JSON.stringify(u)) + '</span>\n<span class="in">?2 = ' + esc(JSON.stringify(p)) + '</span>'; B.append(sv2);
+    const vb = h('div', 'verdict ' + (exact.length ? 'good' : 'good'));
+    vb.textContent = exact.length ? `Login succeeds as ${exact[0].username} (${exact[0].role}).` : 'No rows: login fails. Your text was compared as a plain value.';
+    B.append(vb);
+    B.append(Object.assign(h('p'), { textContent: 'The statement text never changes, so there is nothing to break out of. The database compares the whole value, apostrophes and all.' }));
+    B.lastChild.style.cssText = 'font-size:14.5px;color:var(--soft)';
+  }
+  iu.addEventListener('input', run); ip.addEventListener('input', run);
+  iu.value = PRESETS[2][1]; ip.value = PRESETS[2][2]; run();
+})();
+
+/* ---------- driver comparison ---------- */
+(() => {
+  const host = $('#cmpTabs'); if (!host) return;
+  const COLS = ['sqlite3', 'mysql.connector', 'psycopg2', 'JDBC (MySQL)'];
+  const R = [
+    ['Install', 'Built into Python', 'pip install mysql-connector-python', 'pip install psycopg2-binary', 'Add Connector/J (.jar, or a Maven/Gradle dependency)'],
+    ['Needs a server', 'No: a file or memory', 'Yes (MySQL)', 'Yes (PostgreSQL)', 'Yes (MySQL)'],
+    ['Connect', 'sqlite3.connect("school.db")', 'mysql.connector.connect(host=…, user=…, password=…, database=…)', 'psycopg2.connect(host=…, dbname=…, user=…, password=…)', 'DriverManager.getConnection(url, user, pass)'],
+    ['Placeholder', '?  or  :name', '%s  or  %(name)s', '%s  or  %(name)s', '?  (numbered from 1)'],
+    ['Bind values', 'execute(sql, (a, b))', 'execute(sql, (a, b))', 'execute(sql, (a, b))', 'ps.setString(1, a); ps.setInt(2, b)'],
+    ['Run a SELECT', 'cur.execute(sql, params)', 'cur.execute(sql, params)', 'cur.execute(sql, params)', 'ps.executeQuery()'],
+    ['Read rows', 'fetchone() / fetchall() / loop', 'fetchone() / fetchall() / loop', 'fetchone() / fetchall() / loop', 'while (rs.next()) { rs.getString("c") }'],
+    ['Transactions by default', 'Implicit transaction before data changes; you commit()', 'Auto-commit off; you commit()', 'Starts on first statement; you commit()', 'Auto-commit ON; setAutoCommit(false) to group statements'],
+    ['Close', 'conn.close()  (with conn: does not close)', 'conn.close()', 'conn.close()  (with conn: does not close)', 'try-with-resources, or close()'],
+    ['Error class', 'sqlite3.Error', 'mysql.connector.Error', 'psycopg2.Error', 'java.sql.SQLException']
+  ];
+  const seg = h('div', 'seg');
+  let hi = -1;
+  const lab0 = h('label'); const i0 = h('input'); i0.type = 'radio'; i0.name = 'cmpc'; i0.checked = true; i0.addEventListener('change', () => { hi = -1; paint(); }); lab0.append(i0, document.createTextNode('Show all')); seg.append(lab0);
+  COLS.forEach((c, i) => { const l = h('label'); const x = h('input'); x.type = 'radio'; x.name = 'cmpc'; x.addEventListener('change', () => { hi = i; paint(); }); l.append(x, document.createTextNode('Highlight ' + c)); seg.append(l); });
+  host.append(seg);
+  const wrap = h('div', 'tablewrap'); host.append(wrap);
+  const t = h('table', 'cmp'); wrap.append(t);
+  t.innerHTML = '<tr><th></th>' + COLS.map(c => `<th>${esc(c)}</th>`).join('') + '</tr>' + R.map(r => `<tr><td>${esc(r[0])}</td>` + r.slice(1).map(v => `<td class="mono" style="font-size:13px">${esc(v)}</td>`).join('') + '</tr>').join('');
+  function paint() { $$('tr', t).forEach((tr, ri) => $$('th,td', tr).forEach((c, ci) => { if (ci === 0) return; const on = hi < 0 || ci - 1 === hi; c.style.opacity = on ? '1' : '.35'; c.style.background = hi >= 0 && on ? 'var(--accent-tint)' : ''; })); }
+  host.append(Object.assign(h('p', 'hint'), { textContent: 'Behavior shown is each driver’s documented default. Check the version you install.' }));
+})();
+
+/* ---------- quizzes ---------- */
+const Q = (q, o, a, why) => ({ q, o, a, why });
+const QUIZ = {
+  m1: [
+    Q('What does a database driver do?', ['Translates API calls into the database’s own network protocol, and converts values both ways', 'Designs the tables for you', 'Stores the query results on disk', 'Encrypts the source code'], 0, 'The driver is the adapter between the standard API (JDBC or DB-API) and one specific database.'),
+    Q('Which JDBC URL connects to MySQL on this machine, port 3306, database school?', ['jdbc:mysql://localhost:3306/school', 'mysql://school@localhost:3306', 'jdbc:school:localhost/3306', 'jdbc://mysql.localhost/school:3306'], 0, 'The shape is jdbc:<database>://<host>:<port>/<database name>.'),
+    Q('Which Python database module needs no installation and no server?', ['sqlite3', 'mysql.connector', 'psycopg2', 'pymongo'], 0, 'sqlite3 is in Python’s standard library, and the database is a local file or memory.'),
+    Q('Why read the password from an environment variable?', ['Source code gets copied, committed, and shared; secrets should not travel with it', 'Environment variables are faster', 'JDBC requires it', 'It encrypts the connection'], 0, 'Keeping credentials out of code means a shared or published file does not leak them.'),
+    Q('A long-running program opens a connection for every request and never closes any. What eventually happens?', ['The server hits its connection limit and refuses new ones', 'Nothing; the garbage collector always closes them instantly', 'Queries get faster', 'The tables are dropped'], 0, 'Servers allow a limited number of connections. Leaked connections use them up.'),
+    Q('With a JDBC 4+ driver jar on the classpath, do you need Class.forName("com.mysql.cj.jdbc.Driver")?', ['No: the driver registers itself', 'Yes, always', 'Only on Windows', 'Only for SELECT'], 0, 'Modern drivers register automatically through the service-provider mechanism.'),
+    Q('Which of these does a Java program need to connect to MySQL? (Select all that apply.)', ['The Connector/J jar on the classpath', 'A JDBC URL', 'A user name and password', 'A Python installation'], [0, 1, 2], 'The driver, the address, and credentials. Python is irrelevant to a Java program.')
+  ],
+  m2: [
+    Q('A new JDBC ResultSet is positioned...', ['Before the first row, so call next() before reading', 'On the first row', 'After the last row', 'At a random row'], 0, 'The cursor starts before the first row. Reading without calling next() throws an exception.'),
+    Q('In Python, what does cur.fetchone() return when no rows are left?', ['None', 'An empty tuple', 'It raises an exception', '0'], 0, 'fetchone returns None when the result is exhausted. fetchall returns an empty list.'),
+    Q('Which JDBC call runs an UPDATE, and what does it return?', ['executeUpdate(), the number of rows changed', 'executeQuery(), a ResultSet', 'executeUpdate(), a ResultSet', 'next(), true or false'], 0, 'executeUpdate is for INSERT, UPDATE, and DELETE and returns the affected row count.'),
+    Q('A column holds SQL NULL. What does Python’s sqlite3 return?', ['None', 'An empty string', '0', 'The word "NULL"'], 0, 'NULL maps to None. In Java, getInt returns 0 for NULL, so you check rs.wasNull().'),
+    Q('In JDBC, what is the index of the first column in rs.getString(index)?', ['1', '0', '-1', 'It depends on the table'], 0, 'JDBC column and parameter positions start at 1.'),
+    Q('In Python, you INSERT a row with conn.execute(...) and never commit or use "with conn:". Another connection runs a SELECT. What does it see?', ['The old data: the insert is not committed', 'The new row', 'An error', 'Both versions'], 0, 'Uncommitted changes are invisible to other connections. Lab 1 shows 4 rows before the commit and 5 after.'),
+    Q('JDBC is in auto-commit mode by default. What does that mean?', ['Each statement is committed as soon as it runs', 'The program commits when it exits', 'Nothing is ever committed', 'Only SELECTs are committed'], 0, 'To group several statements into one transaction, call setAutoCommit(false), then commit() or rollback().')
+  ],
+  m3: [
+    Q('What is the root cause of SQL injection?', ['User input becomes part of the SQL text, so it can change the statement’s meaning', 'The database stores passwords', 'Using SELECT instead of INSERT', 'Connecting over the network'], 0, 'Data and code share one string. Whoever controls the data controls part of the code.'),
+    Q('Why does the username  \' OR \'1\'=\'1\' --  log an attacker in against string-joined SQL?', ['It closes the quote, adds an always-true condition, and comments out the password check', 'It deletes the users table', 'It guesses the password', 'It crashes the database so the check is skipped'], 0, 'Each of the three parts has a job: break out of the string, make the condition true, and remove the rest.'),
+    Q('How does a parameterized query stop injection?', ['The SQL is parsed with placeholders first; values are sent separately and are never parsed as SQL', 'It removes all quotes from the input', 'It encrypts the input', 'It blocks the words OR and DROP'], 0, 'Values and code travel through separate channels, so a value cannot become code.'),
+    Q('Which of these can NOT be supplied through a ? placeholder?', ['A column name in ORDER BY', 'A string to compare against', 'A number in a WHERE clause', 'A date to insert'], 0, 'Placeholders hold values, not identifiers. Check the column name against a fixed allowlist.'),
+    Q('A developer replaces each \' in input with \'\' and calls it safe. Is that a good approach?', ['No: hand-escaping is error-prone; use parameters', 'Yes, it is the recommended method', 'Yes, but only for numbers', 'It works in every database and encoding'], 0, 'Manual escaping depends on the database, the character set, and the context. Parameters remove the problem.'),
+    Q('A user types  50%  into a search box. Your query is  LIKE ?  with the value "%" + text + "%". What happens?', ['The % is still a wildcard, so it can match more than intended; it is not an injection', 'The database runs the % as a command', 'The query fails with a syntax error', 'The % is automatically escaped'], 0, 'Wildcards inside a parameter keep their LIKE meaning. Escape them if you want a literal match.'),
+    Q('Which of these reduce the risk from SQL injection? (Select all that apply.)', ['Parameterized queries', 'An application account with the fewest privileges it needs', 'An allowlist for column names used in ORDER BY', 'Only hiding the error messages from users'], [0, 1, 2], 'Hiding errors is good hygiene, but on its own it does not stop the injection, it only hides the evidence.')
+  ],
+  m4: [
+    Q('Which placeholder does Python’s sqlite3 use?', ['?', '%s', '$1', '@param'], 0, 'sqlite3 uses ? (and :name). mysql.connector and psycopg2 use %s.'),
+    Q('In psycopg2, cur.execute("... WHERE id = %s", (5,)) uses %s. Is that Python string formatting?', ['No: it is the driver’s placeholder, and the values travel separately', 'Yes, the % operator fills it in', 'Yes, but safely', 'It depends on the data type'], 0, 'The danger is writing "..." % value, which formats the string yourself. The safe call passes a tuple as a second argument.'),
+    Q('What is the main benefit of a connection pool?', ['Reusing open connections avoids paying the connection setup cost on every request', 'It encrypts data', 'It writes the SQL for you', 'It makes queries use indexes'], 0, 'Opening a connection is slow and servers limit them. A pool keeps some open and lends them out.'),
+    Q('What is a common drawback of an ORM?', ['The generated SQL can be inefficient or hard to see, so you may need to inspect it', 'It cannot connect to databases', 'It removes primary keys', 'It only works with SQLite'], 0, 'Examples include the N+1 query problem. Knowing the plain driver helps you diagnose it.'),
+    Q('Even with a standard API such as JDBC, which part stays vendor-specific?', ['The driver, the connection URL, and the SQL dialect', 'The names of the Java methods', 'The use of try-with-resources', 'The idea of a cursor'], 0, 'The API is shared, but each database has its own driver, URL format, and dialect differences.'),
+    Q('In JDBC, which statement about transactions is true by default?', ['Auto-commit is on', 'Auto-commit is off', 'Transactions are not supported', 'Commit happens when the program exits'], 0, 'Contrast with the Python DB-API drivers shown here, where you commit explicitly.'),
+    Q('Which statements about ORMs and injection are true? (Select all that apply.)', ['ORMs normally send values as parameters for ordinary operations', 'Raw SQL fragments built from strings inside an ORM can still be injectable', 'Using an ORM makes injection impossible', 'ORMs never run SQL'], [0, 1], 'The ORM is safe for the paths it generates. Splicing user text into a raw fragment brings the old hole back.')
+  ],
+  duel: [
+    Q('A 30-line script loads a CSV into a local database file, once.', ['Plain driver (sqlite3)', 'Connection pool', 'ORM'], 0, 'One connection, one run, no server. A pool or ORM would add setup for no benefit.'),
+    Q('A web service handles hundreds of short requests per second.', ['Connection pool (over a driver)', 'Open a new connection per request', 'A single shared connection for everyone'], 0, 'Reusing pooled connections avoids setup cost, and the pool also caps how many the database sees. One shared connection would serialize everything.'),
+    Q('A 60-table business application whose screens mostly create, read, update, and delete objects.', ['ORM', 'Hand-written JDBC for every query', 'Spreadsheets'], 0, 'Standard CRUD across many tables is where an ORM saves the most code. You can still drop to raw SQL for the hard queries.'),
+    Q('One report needs a carefully tuned query with window functions and a vendor-specific hint.', ['Raw SQL through the plain driver', 'Let the ORM generate it', 'Split it into many simple queries and join in code'], 0, 'When you need exact control of the SQL, write it yourself, with parameters for any user-supplied values.')
+  ],
+  final: [
+    Q('Which statements about the five steps of database access are in the correct order?', ['Connect, create statement or cursor, execute, process results, close', 'Execute, connect, close, fetch, commit', 'Close, connect, execute, fetch', 'Fetch, execute, connect, close'], 0, 'Connect first, close last, and always close even when an error occurs.'),
+    Q('A Java program prints "No suitable driver found for jdbc:mysql://...". What is the most likely cause?', ['The Connector/J jar is not on the classpath', 'The password is wrong', 'The table does not exist', 'The server is full'], 0, 'A wrong password gives “Access denied”. A missing driver gives “No suitable driver”.'),
+    Q('You call rs.getString("name") right after executeQuery(), without calling next(). What happens?', ['An SQLException: the cursor is before the first row', 'It returns the first name', 'It returns null', 'It returns the last name'], 0, 'Call next() first, usually in a while loop.'),
+    Q('In Python, cur.execute("SELECT * FROM student WHERE major = ?", "Math") raises "Incorrect number of bindings supplied" (the string "Math" counts as 4 values). What is the fix?', ['Pass a tuple: ("Math",)', 'Use two question marks', 'Use f-strings', 'Call commit()'], 0, 'A lone string is treated as a sequence of characters. A one-item tuple needs the trailing comma.'),
+    Q('Which Python call is vulnerable to injection?', ['cur.execute("SELECT * FROM t WHERE n = \'%s\'" % name)', 'cur.execute("SELECT * FROM t WHERE n = %s", (name,))', 'cur.execute("SELECT * FROM t WHERE n = ?", (name,))', 'cur.execute("SELECT * FROM t WHERE n = :n", {"n": name})'], 0, 'The first one formats the string with the % operator before the driver ever sees it. The others pass the value separately.'),
+    Q('A sort-by-column feature takes the column name from the URL. How do you make it safe?', ['Allow only names from a fixed list, then insert the checked name', 'Pass the name as a ? parameter', 'Remove spaces from the input', 'Wrap it in quotes'], 0, 'Placeholders cannot stand in for identifiers, so the allowlist is the right tool.'),
+    Q('An honest user named O\'Brien crashes your login page. What does that tell you?', ['The query is built by string joining, so it is also injectable', 'The user typed something wrong', 'The database does not support apostrophes', 'Names should not be allowed to contain apostrophes'], 0, 'If a normal apostrophe breaks the statement, an attacker’s apostrophe can rewrite it.'),
+    Q('You run INSERT in Python without commit() or "with conn:", then close the connection. What happens to the row?', ['It is lost: the transaction was never committed', 'It is saved automatically', 'It is saved after a minute', 'It is saved only for SQLite'], 0, 'Closing a connection without committing discards the open transaction.'),
+    Q('Which is the best use of fetchall()?', ['A small, bounded result you need as a list', 'Reading a table with millions of rows', 'Running an INSERT', 'Replacing commit()'], 0, 'It loads everything into memory. For large results, iterate or use fetchmany or LIMIT.'),
+    Q('Why are connection pools used in server applications?', ['Opening connections is costly and databases limit how many they accept', 'They make SQL injection impossible', 'They replace the driver', 'They are required by JDBC'], 0, 'A pool lends out already-open connections. It still needs a driver underneath.'),
+    Q('Which are true about JDBC compared with Python’s DB-API? (Select all that apply.)', ['JDBC placeholders are numbered from 1', 'JDBC auto-commit is on by default', 'Both use a driver specific to the database', 'Both use the %s placeholder'], [0, 1, 2], 'JDBC uses ?, not %s. Python’s sqlite3 uses ? as well, while mysql.connector and psycopg2 use %s.'),
+    Q('Which choices protect a login query? (Select all that apply.)', ['Placeholders for username and password', 'A database account that cannot DROP tables', 'Storing salted password hashes instead of plain text', 'Rejecting usernames that contain the word “select”'], [0, 1, 2], 'Word blocklists are easy to bypass and reject legitimate input. The other three are sound practice.')
+  ]
+};
+function renderQuiz(host) {
+  const key = host.dataset.quiz, items = QUIZ[key];
+  host.innerHTML = '';
+  let done = 0, score = 0;
+  const summary = h('div', 'score');
+  const finish = () => {
+    summary.innerHTML = '';
+    summary.append(h('span', null, `Score: ${score} of ${items.length}`));
+    summary.append(h('span', null, score === items.length ? 'Perfect.' : score >= Math.ceil(items.length * 0.7) ? 'Solid. Review the explanations you missed.' : 'Revisit the theory above, then try again.'));
+    const rb = h('button', 'btn alt', 'Try again'); rb.type = 'button'; rb.addEventListener('click', () => renderQuiz(host)); summary.append(rb);
+    saveScore(key, score, items.length);
+  };
+  items.forEach((it, qi) => {
+    const multi = Array.isArray(it.a), box = h('div', 'q');
+    box.append(h('p', 'qtext', `${qi + 1}. ${it.q}`));
+    const list = h('div', 'opts'), btns = [];
+    shuffle(it.o.map((_, i) => i)).forEach(oi => { const b = h('button', 'opt', it.o[oi]); b.type = 'button'; b.dataset.i = oi; btns.push(b); list.append(b); });
+    box.append(list);
+    const why = h('div', 'why'); why.hidden = true; why.textContent = it.why;
+    const lock = ok => { btns.forEach(b => b.disabled = true); why.hidden = false; why.prepend(h('b', null, ok ? 'Correct. ' : 'Not quite. ')); done++; if (ok) score++; if (done === items.length) finish(); };
+    if (!multi) {
+      btns.forEach(b => b.addEventListener('click', () => { const ok = +b.dataset.i === it.a; b.classList.add(ok ? 'right' : 'wrong'); if (!ok) btns.find(x => +x.dataset.i === it.a).classList.add('right'); lock(ok); }));
+    } else {
+      btns.forEach(b => b.addEventListener('click', () => b.classList.toggle('picked')));
+      const cb = h('button', 'btn', 'Check answer'); cb.type = 'button'; cb.style.marginTop = '10px';
+      cb.addEventListener('click', () => {
+        const sel = btns.filter(b => b.classList.contains('picked')).map(b => +b.dataset.i).sort((x, y) => x - y);
+        if (!sel.length) return;
+        const want = [...it.a].sort((x, y) => x - y), ok = sel.length === want.length && sel.every((v, i) => v === want[i]);
+        btns.forEach(b => { const i = +b.dataset.i, isC = it.a.includes(i), isS = sel.includes(i); b.classList.remove('picked'); if (isC && isS) b.classList.add('right'); else if (!isC && isS) b.classList.add('wrong'); else if (isC) b.classList.add('missed'); });
+        cb.remove(); lock(ok);
+      });
+      const sm = h('small', null, 'Select all that apply.'); sm.style.color = 'var(--soft)'; box.append(sm);
+      box.append(cb);
+    }
+    box.append(why); host.append(box);
+  });
+  host.append(summary);
+}
+$$('.quiz[data-quiz]').forEach(renderQuiz);
+
+/* ---------- nav ---------- */
+refreshNav();
+$('#resetAll').addEventListener('click', () => { if (confirm('Clear your saved scores in this browser?')) { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); } });
+const links = $$('#navlist a'), secs = links.map(a => $(a.getAttribute('href')));
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-20% 0px -70% 0px' });
+  secs.forEach(s => s && io.observe(s));
+}
+})();
+
+</script>
+<noscript><p style="padding:20px">This tutorial needs JavaScript for the diagrams, simulators, and quizzes.</p></noscript>
+</body>
+</html>

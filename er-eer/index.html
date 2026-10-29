@@ -1,0 +1,1301 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ER and EER Design: Interactive Tutorial</title>
+<meta name="description" content="Learn to design Entity-Relationship and Enhanced ER diagrams, convert them to relational schemas, and justify your design choices. Theory, worked examples, diagrams, runnable SQL, and knowledge checks.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=JetBrains+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF0F6; --surface:#FFFFFF; --ink:#12263A; --soft:#4A5E73; --line:#C7D4E2;
+  --gold:#D9A400; --gold-ink:#6B5000; --gold-tint:#FFF4CC;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1; --info-tint:#E3EEF9;
+  --code-bg:#0F2236; --code-ink:#DCE8F5; --code-kw:#F2C230; --code-cm:#7F95AB; --code-st:#8FD3B6; --code-nu:#9CC4F5;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0C1621; --surface:#142130; --ink:#E7EFF8; --soft:#9DB0C4; --line:#29405A;
+    --gold:#F2C230; --gold-ink:#F6DE8F; --gold-tint:#3A3010;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D; --info-tint:#183049;
+    --code-bg:#0A1522;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque","Source Sans 3",system-ui,sans-serif;line-height:1.15;letter-spacing:-.01em;margin:0}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:4px}
+code,pre{font-family:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:0;max-width:1320px;margin:0 auto}
+/* sidebar */
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:800 19px "Bricolage Grotesque",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--gold)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+/* hero */
+header.hero{padding:44px 40px 34px;border-bottom:1px solid var(--line)}
+header.hero h1{font-size:clamp(34px,5vw,58px);font-weight:800;max-width:15ch}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:60ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(210px,100%),1fr));gap:10px;margin:22px 0 28px;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:16px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:56px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:800}
+section.mod>.goal{color:var(--soft);font-size:18px;max-width:68ch;margin:10px 0 6px}
+.block{margin-top:30px}
+.chip{display:inline-block;font:700 13px "Source Sans 3",sans-serif;padding:2px 10px;border-radius:99px;background:var(--gold-tint);color:var(--gold-ink);border:1px solid var(--gold);margin-bottom:8px}
+.block h3{font-size:24px;margin-bottom:6px}
+.prose{max-width:74ch}
+.prose ul,.prose ol{padding-left:1.25em}
+.prose li{margin:.3em 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px}
+.callout{border-left:4px solid var(--gold);background:var(--surface);padding:12px 16px;border-radius:0 var(--radius) var(--radius) 0;margin:16px 0;max-width:74ch}
+.callout.warn{border-color:var(--bad)}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(280px,100%),1fr));gap:14px}
+table{border-collapse:collapse;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;font-size:15.5px}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--info-tint);font-family:"Bricolage Grotesque",sans-serif}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto;margin:14px 0}
+kbd,.inl{font-family:"JetBrains Mono",monospace;font-size:.88em;background:var(--info-tint);padding:1px 6px;border-radius:5px}
+/* figure/diagram */
+figure.fig{margin:16px 0;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+figure.fig .scroll{overflow-x:auto;padding:6px}
+figure.fig svg{display:block;min-width:660px;width:100%;height:auto}
+figure.fig figcaption{border-top:1px solid var(--line);padding:10px 16px;min-height:60px;font-size:15.5px;background:var(--bg)}
+figure.fig figcaption b{font-family:"Bricolage Grotesque",sans-serif}
+.node{cursor:pointer}
+.node .sh{fill:var(--surface);stroke:var(--ink);stroke-width:1.6;transition:fill .15s}
+.node:hover .sh,.node:focus-visible .sh{stroke:var(--gold);stroke-width:2.6}
+.node.sel .sh{fill:var(--gold-tint);stroke:var(--gold);stroke-width:2.6}
+.node text{fill:var(--ink);font:600 12.5px "Source Sans 3",sans-serif;text-anchor:middle;dominant-baseline:central;pointer-events:none}
+.node.e text,.node.we text{font:700 14px "Bricolage Grotesque",sans-serif}
+.node.r text,.node.ir text{font:700 12px "Bricolage Grotesque",sans-serif}
+.node.k text{text-decoration:underline}
+.node.p text{text-decoration:underline dashed}
+.node.d .sh{stroke-dasharray:5 3}
+.node.c text{font:800 14px "Bricolage Grotesque",sans-serif}
+.edge{stroke:var(--ink);stroke-width:1.5;fill:none}
+.edge.tot{stroke-width:6}
+.edge.in{stroke:var(--surface);stroke-width:2.4}
+.card-lab{fill:var(--ink);font:800 14px "Bricolage Grotesque",sans-serif;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.subsym{fill:var(--ink);font:700 18px sans-serif;text-anchor:middle;dominant-baseline:central;paint-order:stroke;stroke:var(--surface);stroke-width:4px}
+.plain{fill:var(--soft);font:600 13.5px "Source Sans 3",sans-serif;dominant-baseline:central}
+/* code lab */
+.lab{border-radius:var(--radius);overflow:hidden;border:1px solid #1d3550;margin:14px 0;background:var(--code-bg)}
+.labbar{display:flex;align-items:center;gap:10px;padding:8px 12px;background:#173049;color:#BFD2E6;font-size:14px;font-weight:600}
+.labbar button{margin-left:auto;background:var(--gold);color:#2b2000;border:0;border-radius:7px;padding:5px 12px;font:700 13.5px "Source Sans 3",sans-serif;cursor:pointer}
+.lab pre{margin:0;padding:14px 16px;overflow-x:auto;color:var(--code-ink);font-size:13.5px;line-height:1.55;tab-size:2}
+.lab .kw{color:var(--code-kw);font-weight:600}.lab .cm{color:var(--code-cm);font-style:italic}.lab .st{color:var(--code-st)}.lab .nu{color:var(--code-nu)}
+.lab details{border-top:1px solid #1d3550;color:#BFD2E6}
+.lab summary{cursor:pointer;padding:8px 14px;font-weight:600;font-size:14px}
+.lab pre.out{background:#0A1826;color:#B7E3CF;border-top:1px dashed #254563}
+/* quiz */
+.quiz{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:6px 20px 18px}
+.q{padding:16px 0;border-bottom:1px solid var(--line)}
+.q:last-of-type{border-bottom:0}
+.qtext{font-weight:700;margin:0 0 10px}
+.opts{display:grid;gap:8px}
+.opt{text-align:left;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:9px;padding:10px 14px;cursor:pointer;transition:border-color .12s,background .12s}
+.opt:hover:not(:disabled){border-color:var(--gold)}
+.opt.picked{border-color:var(--gold);background:var(--gold-tint)}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.opt.missed{border-style:dashed;border-color:var(--ok)}
+.opt:disabled{cursor:default}
+.why{margin-top:10px;padding:10px 14px;border-radius:9px;background:var(--info-tint);font-size:15.5px}
+.btn{font:700 15px "Source Sans 3",sans-serif;background:var(--ink);color:var(--surface);border:0;border-radius:9px;padding:9px 16px;cursor:pointer}
+.btn.alt{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.score{margin-top:14px;font-weight:700;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+/* widgets */
+.seg{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 12px}
+.seg label{display:flex;gap:8px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:9px;padding:8px 12px;cursor:pointer;font-weight:600}
+.seg input{accent-color:var(--gold)}
+.seg label:has(input:checked){border-color:var(--gold);background:var(--gold-tint)}
+select{font:inherit;font-size:15px;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+select.good{border-color:var(--ok);background:var(--ok-tint)}select.bad{border-color:var(--bad);background:var(--bad-tint)}
+.req{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;font-size:17px;max-width:78ch}
+.an-row{display:grid;grid-template-columns:minmax(150px,1fr) minmax(190px,1fr);gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.an-row small{grid-column:1/-1;color:var(--soft)}
+.stepper{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px;align-items:start}
+@media (max-width:900px){.stepper{grid-template-columns:1fr}}
+.steps-nav{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.steps-nav button{width:38px;height:38px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink);font:700 15px "Bricolage Grotesque",sans-serif;cursor:pointer}
+.steps-nav button.on{background:var(--gold);border-color:var(--gold);color:#2b2000}
+.steps-nav button.seen{border-color:var(--ok)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chips span{font:600 13px "JetBrains Mono",monospace;padding:3px 9px;border-radius:7px;background:var(--info-tint);border:1px solid var(--line)}
+.chips span.new{background:var(--gold-tint);border-color:var(--gold)}
+.duel{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:700px){.duel{grid-template-columns:1fr}}
+.duel button{text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer}
+.duel button b{display:block;font-family:"Bricolage Grotesque",sans-serif}
+.duel button.right{border-color:var(--ok);background:var(--ok-tint)}.duel button.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.duel-item{padding:16px 0;border-bottom:1px solid var(--line)}
+textarea{width:100%;min-height:130px;font:inherit;font-size:16px;padding:10px 12px;border-radius:9px;border:1.5px solid var(--line);background:var(--surface);color:var(--ink)}
+.checks{display:grid;gap:6px;margin:10px 0}
+.checks label{display:flex;gap:8px;align-items:flex-start}
+.checks input{accent-color:var(--gold);margin-top:6px}
+footer{padding:28px 40px;border-top:1px solid var(--line);color:var(--soft);font-size:15px}
+@media (max-width:980px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:14px 16px}
+  nav.side ol{display:flex;overflow-x:auto;gap:6px}
+  nav.side a{white-space:nowrap}
+  nav.side .sub,nav.side button{display:none}
+  header.hero,main,footer{padding-left:18px;padding-right:18px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav class="side" aria-label="Tutorial sections">
+  <div class="brand">ER and EER design</div>
+  <div class="sub">From requirements to tables</div>
+  <ol id="navlist">
+    <li><a href="#start">Start here</a></li>
+    <li><a href="#m1" data-key="m1">Entities and relationships<span class="tick"></span></a></li>
+    <li><a href="#m2" data-key="m2">Extended ER (EER)<span class="tick"></span></a></li>
+    <li><a href="#m3" data-key="m3">ER to relational<span class="tick"></span></a></li>
+    <li><a href="#m4" data-key="m4">Justify your design<span class="tick"></span></a></li>
+    <li><a href="#final" data-key="final">Final check<span class="tick"></span></a></li>
+  </ol>
+  <button id="resetAll" type="button">Reset my progress</button>
+</nav>
+
+<div>
+<header class="hero" id="start">
+  <h1>Draw it before you build it</h1>
+  <p class="lede">A good database starts as a picture. In this tutorial you will read requirements, sketch ER and EER diagrams, turn them into relational tables, and defend every choice you made.</p>
+  <figure class="fig" id="heroFig" aria-label="Interactive ER diagram of students enrolling in courses"></figure>
+  <ul class="outcomes">
+    <li><b>Model</b>Identify entities, attributes, relationships, and participation constraints.</li>
+    <li><b>Extend</b>Use specialization and generalization in EER diagrams.</li>
+    <li><b>Convert</b>Map ER and EER diagrams to relational schemas.</li>
+    <li><b>Justify</b>Defend choices with sound design principles.</li>
+  </ul>
+  <div class="card">
+    <h3 style="font-size:20px">Before you start: run the SQL labs</h3>
+    <p style="margin-top:6px">Each lab is a complete script. Press <b>Copy</b>, paste it into any SQLite tool, and run it. Good options: the <span class="inl">sqlite3</span> command line, <b>DB Browser for SQLite</b>, or the <b>SQLite</b> extension for VS Code. Every lab starts by dropping its own tables, so you can run it again safely.</p>
+    <p style="margin-bottom:0">SQLite only enforces foreign keys when you run <span class="inl">PRAGMA foreign_keys = ON;</span>, which is the first line of each lab. Using MySQL or PostgreSQL? The logic is identical; change <span class="inl">INTEGER PRIMARY KEY</span> to your system's auto-number syntax if you want generated keys.</p>
+  </div>
+</header>
+
+<main>
+<!-- ============ MODULE 1 ============ -->
+<section class="mod" id="m1">
+  <h2>1. Entities, attributes, relationships, and participation</h2>
+  <p class="goal">By the end you can read a paragraph of requirements and sketch a correct ER diagram, including how many and how strongly things relate.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Why we model before we build</h3>
+    <p>Database design moves through four stages. ER diagrams belong to the second one, the <b>conceptual design</b>: a picture that people who do not write SQL can still check against reality.</p>
+    <ol>
+      <li><b>Requirements</b>: what the organization needs to store and ask.</li>
+      <li><b>Conceptual design</b>: the ER or EER diagram.</li>
+      <li><b>Logical design</b>: the relational schema (tables, keys).</li>
+      <li><b>Physical design</b>: indexes, storage, tuning.</li>
+    </ol>
+    <p>A mistake caught in stage 2 costs a pencil eraser. The same mistake caught after the application ships costs a migration.</p>
+    <div class="callout"><b>Reading trick.</b> In requirement text, <b>nouns</b> usually become entities, <b>verbs</b> become relationships, and <b>descriptive details</b> become attributes. Numbers like "exactly one" and "at least one" become constraints.</div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Picture</span>
+    <h3>The notation (Chen style)</h3>
+    <p class="prose">Click any shape to see what it means. We use Chen notation throughout because it makes every concept visible.</p>
+    <figure class="fig" id="legendFig"></figure>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Entities and attributes</h3>
+    <p>An <b>entity</b> is a thing we keep facts about (a student, a course). An <b>entity type</b> is the template; an <b>entity instance</b> is one real student. An <b>attribute</b> is a fact about the entity.</p>
+    <div class="tablewrap"><table>
+      <tr><th>Attribute kind</th><th>Meaning</th><th>Example</th><th>Drawn as</th></tr>
+      <tr><td>Simple</td><td>Cannot be divided further</td><td>email</td><td>Oval</td></tr>
+      <tr><td>Composite</td><td>Made of sub-parts</td><td>name = first + last</td><td>Oval with child ovals</td></tr>
+      <tr><td>Multivalued</td><td>Several values at once</td><td>phone numbers</td><td>Double oval</td></tr>
+      <tr><td>Derived</td><td>Computed from other data</td><td>age from date of birth</td><td>Dashed oval</td></tr>
+      <tr><td>Key</td><td>Uniquely identifies an instance</td><td>student ID</td><td>Underlined text</td></tr>
+    </table></div>
+    <p>A <b>key</b> must be unique, stable, and as small as possible. An email is unique but people change it; a name is not unique at all. That is why a system-assigned ID usually wins.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Example</span>
+    <h3>One entity, every attribute kind</h3>
+    <figure class="fig" id="attrFig"></figure>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Relationships, cardinality, and participation</h3>
+    <p>A <b>relationship</b> associates entities. Its <b>degree</b> is how many entity types take part: unary (one, e.g. an employee supervises an employee), binary (two, the most common), ternary (three).</p>
+    <p><b>Cardinality ratio</b> says how many instances can be on each side:</p>
+    <ul>
+      <li><b>1:1</b>: one student has at most one ID card, and each card belongs to one student.</li>
+      <li><b>1:N</b>: one department has many instructors, but each instructor works in one department.</li>
+      <li><b>M:N</b>: students take many courses, and courses have many students.</li>
+    </ul>
+    <p><b>Participation</b> says whether taking part is required. <b>Total</b> (double line): every instance must participate, for example every instructor must work in a department. <b>Partial</b> (single line): participation is optional, for example a department may exist before it has any instructors.</p>
+    <div class="callout"><b>Where attributes of a relationship live.</b> A grade depends on <i>both</i> the student and the course. It belongs to the relationship ENROLLS_IN, not to STUDENT or COURSE.</div>
+    <p>Some textbooks write cardinality as a <b>(min, max)</b> pair on each line, such as (1, N). Min 1 means total participation, min 0 means partial. Same information, different handwriting.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Example</span>
+    <h3>Weak entities and identifying relationships</h3>
+    <p class="prose">A <b>weak entity</b> has no key of its own. A dependent's name is only unique within one instructor's family, so a DEPENDENT is identified by the owner's key plus a <b>partial key</b>. The relationship that connects them is an <b>identifying relationship</b> (double diamond), and the weak entity always participates totally.</p>
+    <figure class="fig" id="weakFig"></figure>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Requirement analyzer</h3>
+    <p class="prose">Read the requirements, then classify each highlighted phrase. Press <b>Check</b> when you are done.</p>
+    <div class="req" id="reqText"></div>
+    <div id="analyzer" style="margin-top:12px"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>See participation and cardinality enforced</h3>
+    <p>Total participation becomes <span class="inl">NOT NULL</span> on a foreign key. A 1:N relationship becomes a foreign key on the N side. Run the lab, then un-comment the last two lines one at a time and watch the database refuse them.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 1: WORKS_FOR (1:N, total on INSTRUCTOR)</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lab="lab1">PRAGMA foreign_keys = ON;
+DROP TABLE IF EXISTS instructor;
+DROP TABLE IF EXISTS department;
+
+CREATE TABLE department (
+  dno   INTEGER PRIMARY KEY,
+  dname TEXT NOT NULL UNIQUE
+);
+
+CREATE TABLE instructor (
+  iid  INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  dno  INTEGER NOT NULL REFERENCES department(dno)   -- NOT NULL = total participation
+);
+
+INSERT INTO department VALUES (1, 'Computer Science'), (2, 'Mathematics');
+INSERT INTO instructor VALUES (10, 'Dr. Rivera', 1), (11, 'Dr. Okafor', 1), (12, 'Dr. Chen', 2);
+
+-- 1:N: one department, many instructors
+SELECT d.dname, COUNT(*) AS instructors
+FROM department d JOIN instructor i ON i.dno = d.dno
+GROUP BY d.dname ORDER BY d.dname;
+
+-- Try to break the rules (un-comment ONE line at a time; each should fail):
+-- INSERT INTO instructor VALUES (13, 'Dr. Lee', NULL);   -- violates total participation
+-- INSERT INTO instructor VALUES (14, 'Dr. Kim', 99);     -- department 99 does not exist</code></pre>
+<details><summary>Expected output</summary><pre class="out">dname             instructors
+----------------  -----------
+Computer Science  2
+Mathematics       1
+
+Un-commented line 1 error: NOT NULL constraint failed: instructor.dno
+Un-commented line 2 error: FOREIGN KEY constraint failed</pre></details></div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 1</h3>
+    <div class="quiz" data-quiz="m1"></div>
+  </div>
+</section>
+
+<!-- ============ MODULE 2 ============ -->
+<section class="mod" id="m2">
+  <h2>2. Extended ER: specialization and generalization</h2>
+  <p class="goal">Model "is a" hierarchies: when a group of entities shares some facts but also has facts of its own.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Superclasses, subclasses, and inheritance</h3>
+    <p>Sometimes one entity type hides several flavors. Every STUDENT and every INSTRUCTOR is a PERSON, but only students have a GPA and only instructors have a salary. EER lets us draw that.</p>
+    <ul>
+      <li><b>Superclass</b>: the general type (PERSON).</li>
+      <li><b>Subclass</b>: a specific type (STUDENT). Each subclass instance <i>is</i> one instance of the superclass.</li>
+      <li><b>Inheritance</b>: a subclass automatically has all attributes <i>and</i> relationships of its superclass, plus its own <b>local</b> ones.</li>
+    </ul>
+    <p><b>Specialization</b> works top-down: you start with PERSON and notice that subgroups need their own attributes. <b>Generalization</b> works bottom-up: you start with CAR and TRUCK, notice they share plate number and year, and factor out VEHICLE. Same diagram, different direction of thought.</p>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Two constraints on every specialization</h3>
+    <div class="grid2">
+      <div class="card"><b>Disjointness</b><br>Can one entity belong to more than one subclass?<br><b>Disjoint (d)</b>: at most one. <b>Overlapping (o)</b>: possibly several.</div>
+      <div class="card"><b>Completeness</b><br>Must every superclass entity belong to some subclass?<br><b>Total</b> (double line): yes. <b>Partial</b> (single line): no.</div>
+    </div>
+    <p>That gives four combinations. A subclass can also have subclasses of its own, forming a hierarchy (below, STUDENT splits into UNDERGRAD and GRADUATE). When a subclass has several superclasses, you have a <b>lattice</b>. A <b>category</b> (union type) is the opposite situation: one subclass whose members come from <i>different</i> superclasses, such as an OWNER that can be a PERSON or a COMPANY.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Picture</span>
+    <h3>A two-level hierarchy</h3>
+    <p class="prose">Click the circles and the ⊂ symbols. The <b>o</b> circle under PERSON means a person can be both student and instructor (a graduate teaching assistant). The <b>d</b> circle under STUDENT, with a double line, means every student is exactly one of undergraduate or graduate.</p>
+    <figure class="fig" id="eerFig"></figure>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Specialization explorer</h3>
+    <p class="prose">Choose a constraint combination. The diagram and the recommended relational mapping update together.</p>
+    <div class="grid2" style="margin-bottom:8px">
+      <div><b>Disjointness</b><div class="seg" id="segDis">
+        <label><input type="radio" name="dis" value="d" checked> Disjoint</label>
+        <label><input type="radio" name="dis" value="o"> Overlapping</label></div></div>
+      <div><b>Completeness</b><div class="seg" id="segCom">
+        <label><input type="radio" name="com" value="t" checked> Total</label>
+        <label><input type="radio" name="com" value="p"> Partial</label></div></div>
+    </div>
+    <figure class="fig" id="exploreFig"></figure>
+    <div class="card" id="exploreOut"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Four ways to map a specialization</h3>
+    <p>Mapping is a design decision, not a formula. These are the standard options (we number them 8A to 8D, following the usual textbook rule 8):</p>
+    <div class="tablewrap"><table>
+      <tr><th>Option</th><th>How it works</th><th>Best when</th><th>Watch out for</th></tr>
+      <tr><td>8A: superclass and subclass tables</td><td>One table for the superclass; one per subclass whose key is also a foreign key to the superclass.</td><td>Any case, and the only clean choice for overlapping, partial hierarchies.</td><td>Reading a full subclass row needs a join.</td></tr>
+      <tr><td>8B: subclass tables only</td><td>No superclass table; every subclass table repeats the superclass attributes.</td><td>Disjoint and total, with queries that rarely span subclasses.</td><td>Duplicated columns; overlapping entities are stored twice.</td></tr>
+      <tr><td>8C: single table with a type column</td><td>One wide table; a <span class="inl">type</span> column says which subclass.</td><td>Disjoint, few subclass-specific attributes.</td><td>Many NULLs when subclasses differ a lot.</td></tr>
+      <tr><td>8D: single table with Boolean flags</td><td>One wide table with one yes/no column per subclass.</td><td>Overlapping, few local attributes.</td><td>Lots of NULLs; flags and local columns can drift out of sync.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>Option 8A and 8C in one schema</h3>
+    <p>PERSON, STUDENT, and INSTRUCTOR use <b>8A</b> because they overlap and are partial. Inside STUDENT, the disjoint and total split into UG and GR uses <b>8C</b> with a type column and a CHECK constraint that keeps the local attributes honest.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 2: specialization mapping</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lab="lab2">PRAGMA foreign_keys = ON;
+DROP TABLE IF EXISTS instructor;
+DROP TABLE IF EXISTS student;
+DROP TABLE IF EXISTS person;
+
+CREATE TABLE person (
+  pid   INTEGER PRIMARY KEY,
+  name  TEXT NOT NULL,
+  email TEXT UNIQUE
+);
+
+-- 8A subclass tables: key is also a foreign key to the superclass
+CREATE TABLE student (
+  pid          INTEGER PRIMARY KEY REFERENCES person(pid) ON DELETE CASCADE,
+  gpa          REAL CHECK (gpa BETWEEN 0 AND 4),
+  level        TEXT NOT NULL CHECK (level IN ('UG', 'GR')),  -- 8C: disjoint + total
+  class_year   INTEGER,        -- UG only
+  thesis_title TEXT,           -- GR only
+  CHECK ( (level = 'UG' AND thesis_title IS NULL)
+       OR (level = 'GR' AND class_year   IS NULL) )
+);
+
+CREATE TABLE instructor (
+  pid      INTEGER PRIMARY KEY REFERENCES person(pid) ON DELETE CASCADE,
+  job_rank TEXT,
+  salary   INTEGER
+);
+
+INSERT INTO person VALUES (1, 'Ada',   'ada@example.edu'),
+                          (2, 'Ben',   'ben@example.edu'),
+                          (3, 'Carla', 'carla@example.edu'),
+                          (4, 'Dev',   'dev@example.edu');
+INSERT INTO student    VALUES (1, 3.8, 'UG', 3, NULL),
+                              (2, 3.6, 'GR', NULL, 'Explainable GNNs');
+INSERT INTO instructor VALUES (2, 'Teaching assistant', 18000),   -- Ben is BOTH: overlapping
+                              (3, 'Associate', 90000);
+
+-- Dev is neither student nor instructor: the specialization is partial
+SELECT p.name,
+       (s.pid IS NOT NULL) AS is_student,
+       (i.pid IS NOT NULL) AS is_instructor
+FROM person p
+LEFT JOIN student s    ON s.pid = p.pid
+LEFT JOIN instructor i ON i.pid = p.pid
+ORDER BY p.pid;
+
+-- Un-comment to see the CHECK protect the disjoint split (should fail):
+-- INSERT INTO student VALUES (4, 3.0, 'UG', 1, 'A thesis an undergrad cannot have');</code></pre>
+<details><summary>Expected output</summary><pre class="out">name   is_student  is_instructor
+-----  ----------  -------------
+Ada    1           0
+Ben    1           1
+Carla  0           1
+Dev    0           0
+
+Un-commented line error: CHECK constraint failed</pre></details></div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 2</h3>
+    <div class="quiz" data-quiz="m2"></div>
+  </div>
+</section>
+
+<!-- ============ MODULE 3 ============ -->
+<section class="mod" id="m3">
+  <h2>3. Converting ER and EER diagrams to relational schemas</h2>
+  <p class="goal">Apply the standard mapping algorithm step by step, and finish with a runnable schema of a whole campus.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>The big idea</h3>
+    <p>Every ER construct has a standard relational home. Learn these eight rules and you can convert any diagram.</p>
+    <div class="tablewrap"><table>
+      <tr><th>ER construct</th><th>Relational result</th></tr>
+      <tr><td>Regular entity</td><td>A table; simple attributes become columns; the key becomes the primary key.</td></tr>
+      <tr><td>Weak entity</td><td>A table with a foreign key to its owner; primary key = owner key + partial key.</td></tr>
+      <tr><td>1:1 relationship</td><td>Foreign key (UNIQUE) on one side, preferably the total-participation side.</td></tr>
+      <tr><td>1:N relationship</td><td>Foreign key on the N side.</td></tr>
+      <tr><td>M:N relationship</td><td>New table holding both keys (plus relationship attributes); primary key = both keys.</td></tr>
+      <tr><td>Multivalued attribute</td><td>New table: owner key + the value; primary key = both.</td></tr>
+      <tr><td>N-ary relationship</td><td>New table with a foreign key to every participant.</td></tr>
+      <tr><td>Specialization</td><td>Options 8A to 8D (module 2).</td></tr>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Picture</span>
+    <h3>The campus ER diagram we will convert</h3>
+    <p class="prose">Seven entities, six relationships. To keep it readable, the diagram shows only key attributes plus a few that trigger special rules. STUDENT also specializes into UNDERGRAD and GRADUATE (see module 2).</p>
+    <figure class="fig" id="campusFig"></figure>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Walk through the mapping, one rule at a time</h3>
+    <div class="steps-nav" id="stepsNav"></div>
+    <div class="stepper">
+      <div class="card" id="stepRule"></div>
+      <div>
+        <div class="lab" style="margin-top:0"><div class="labbar"><span id="stepSqlTitle">SQL</span></div><pre><code id="stepSql"></code></pre></div>
+        <div class="chips" id="stepChips" aria-label="Tables created so far"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>The complete campus schema</h3>
+    <p>This is every step above in one script, plus sample data and four queries. Read the comments: each one names the rule that produced the line.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 3: campus schema (all eight rules)</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lab="lab3">PRAGMA foreign_keys = ON;
+DROP TABLE IF EXISTS teaches;       DROP TABLE IF EXISTS enrollment;
+DROP TABLE IF EXISTS student_phone; DROP TABLE IF EXISTS undergrad;
+DROP TABLE IF EXISTS graduate;      DROP TABLE IF EXISTS id_card;
+DROP TABLE IF EXISTS dependent;     DROP TABLE IF EXISTS semester;
+DROP TABLE IF EXISTS course;        DROP TABLE IF EXISTS student;
+DROP TABLE IF EXISTS instructor;    DROP TABLE IF EXISTS department;
+
+-- Rule 1: regular entities
+CREATE TABLE department (dno INTEGER PRIMARY KEY, dname TEXT NOT NULL UNIQUE, office TEXT);
+CREATE TABLE student    (sid INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE);
+CREATE TABLE course     (code TEXT PRIMARY KEY, title TEXT NOT NULL,
+                         credits INTEGER NOT NULL CHECK (credits > 0));
+CREATE TABLE semester   (term_id TEXT PRIMARY KEY, start_date TEXT);
+
+-- Rule 4: WORKS_FOR is 1:N, so the foreign key goes on the N side (total => NOT NULL)
+CREATE TABLE instructor (
+  iid INTEGER PRIMARY KEY, name TEXT NOT NULL, job_rank TEXT,
+  dno INTEGER NOT NULL REFERENCES department(dno)
+);
+
+-- Rule 2: weak entity. PK = owner key + partial key; delete the owner, delete the dependents
+CREATE TABLE dependent (
+  iid INTEGER NOT NULL REFERENCES instructor(iid) ON DELETE CASCADE,
+  dep_name TEXT NOT NULL, relationship TEXT,
+  PRIMARY KEY (iid, dep_name)
+);
+
+-- Rule 3: 1:1 HAS. FK on the total side (every card has a student), UNIQUE enforces 1:1
+CREATE TABLE id_card (
+  card_no INTEGER PRIMARY KEY, issued_on TEXT,
+  sid INTEGER NOT NULL UNIQUE REFERENCES student(sid)
+);
+
+-- Rule 5: M:N ENROLLS_IN becomes a table; the relationship attribute (grade) rides along
+CREATE TABLE enrollment (
+  sid  INTEGER REFERENCES student(sid),
+  code TEXT    REFERENCES course(code),
+  grade TEXT,
+  PRIMARY KEY (sid, code)
+);
+
+-- Rule 6: multivalued attribute phone
+CREATE TABLE student_phone (
+  sid INTEGER REFERENCES student(sid) ON DELETE CASCADE,
+  phone TEXT,
+  PRIMARY KEY (sid, phone)
+);
+
+-- Rule 7: ternary TEACHES (instructor, course, semester)
+CREATE TABLE teaches (
+  iid INTEGER REFERENCES instructor(iid),
+  code TEXT REFERENCES course(code),
+  term_id TEXT REFERENCES semester(term_id),
+  PRIMARY KEY (iid, code, term_id)
+);
+
+-- Rule 8 (option 8A): specialization of STUDENT
+CREATE TABLE undergrad (sid INTEGER PRIMARY KEY REFERENCES student(sid) ON DELETE CASCADE, class_year INTEGER);
+CREATE TABLE graduate  (sid INTEGER PRIMARY KEY REFERENCES student(sid) ON DELETE CASCADE, thesis_title TEXT);
+
+-- Sample data
+INSERT INTO department VALUES (1, 'Computer Science', 'Room 301'), (2, 'Mathematics', 'Room 210');
+INSERT INTO instructor VALUES (10, 'Dr. Rivera', 'Associate', 1), (11, 'Dr. Okafor', 'Assistant', 1),
+                              (12, 'Dr. Chen', 'Professor', 2);
+INSERT INTO student VALUES (1, 'Ada Lovelace', 'ada@example.edu'), (2, 'Ben Carter', 'ben@example.edu'),
+                           (3, 'Carla Diaz', 'carla@example.edu');
+INSERT INTO course VALUES ('COSC214', 'Data Structures', 3), ('COSC431', 'Database Management', 3),
+                          ('MATH201', 'Linear Algebra', 4);
+INSERT INTO semester VALUES ('F2026', '2026-08-24'), ('S2027', '2027-01-18');
+INSERT INTO enrollment VALUES (1, 'COSC214', 'A'), (1, 'COSC431', 'B'), (2, 'COSC214', 'A'), (3, 'MATH201', NULL);
+INSERT INTO student_phone VALUES (1, '555-0101'), (1, '555-0102'), (2, '555-0199');
+INSERT INTO id_card VALUES (9001, '2026-08-20', 1), (9002, '2026-08-21', 2);
+INSERT INTO dependent VALUES (10, 'Maya', 'daughter'), (10, 'Leo', 'son');
+INSERT INTO teaches VALUES (10, 'COSC214', 'F2026'), (11, 'COSC431', 'F2026'), (12, 'MATH201', 'F2026');
+INSERT INTO undergrad VALUES (1, 3), (3, 2);
+INSERT INTO graduate  VALUES (2, 'Neuro-symbolic explanations');
+
+-- Query 1: M:N through the junction table (LEFT JOIN keeps students with no courses)
+SELECT s.name, COUNT(e.code) AS courses
+FROM student s LEFT JOIN enrollment e ON e.sid = s.sid
+GROUP BY s.sid ORDER BY s.sid;
+
+-- Query 2: the ternary relationship
+SELECT i.name, c.title, t.term_id
+FROM teaches t JOIN instructor i ON i.iid = t.iid JOIN course c ON c.code = t.code
+ORDER BY i.iid;
+
+-- Query 3: reading the specialization
+SELECT s.name, CASE WHEN g.sid IS NOT NULL THEN 'graduate' ELSE 'undergraduate' END AS level
+FROM student s LEFT JOIN graduate g ON g.sid = s.sid ORDER BY s.sid;
+
+-- Query 4: the 1:1 relationship (Carla has no card yet: partial participation)
+SELECT s.name, c.card_no
+FROM student s LEFT JOIN id_card c ON c.sid = s.sid ORDER BY s.sid;
+
+-- Un-comment ONE at a time; each should fail:
+-- INSERT INTO id_card VALUES (9003, '2026-09-01', 1);   -- Ada already has a card (UNIQUE)
+-- INSERT INTO enrollment VALUES (1, 'COSC214', 'C');    -- duplicate (sid, code) pair
+-- DELETE FROM instructor WHERE iid = 10;                -- teaches still references Dr. Rivera</code></pre>
+<details><summary>Expected output</summary><pre class="out">Query 1                    Query 2
+name          courses      name        title                 term_id
+------------  -------      ----------  --------------------  -------
+Ada Lovelace  2            Dr. Rivera  Data Structures       F2026
+Ben Carter    1            Dr. Okafor  Database Management   F2026
+Carla Diaz    1            Dr. Chen    Linear Algebra        F2026
+
+Query 3                    Query 4
+name          level        name          card_no
+------------  -----------  ------------  -------
+Ada Lovelace  undergraduate  Ada Lovelace  9001
+Ben Carter    graduate       Ben Carter    9002
+Carla Diaz    undergraduate  Carla Diaz    (NULL)
+
+Un-commented line errors: UNIQUE constraint failed: id_card.sid
+                          UNIQUE constraint failed: enrollment.sid, enrollment.code
+                          FOREIGN KEY constraint failed</pre></details></div>
+
+  <div class="block prose">
+    <div class="callout warn"><b>Common mistakes.</b> (1) Putting the foreign key on the 1 side of a 1:N. (2) Forgetting that a junction table's primary key must be the <i>pair</i>, not each key alone. (3) Storing a multivalued attribute as a comma-separated string. (4) Giving a weak entity its own auto-number key and dropping the owner link. (5) Treating a ternary relationship as three binary ones, which loses which combination actually happened.</div>
+    <p><b>When the pair is not enough.</b> If a student could take the same course twice (a retake), <span class="inl">(sid, code)</span> would block the second row. Add the semester to the key, or turn ENROLLMENT into an entity with its own ID. Requirements decide, not habit.</p>
+  </div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 3</h3>
+    <div class="quiz" data-quiz="m3"></div>
+  </div>
+</section>
+
+<!-- ============ MODULE 4 ============ -->
+<section class="mod" id="m4">
+  <h2>4. Justifying design choices</h2>
+  <p class="goal">A diagram is an argument. Learn the principles that make one design better than another, and how to say why.</p>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>Principles you can cite</h3>
+    <ol>
+      <li><b>Faithfulness.</b> The model says what the requirements say, no more and no less. Every entity, line, and constraint traces back to a sentence.</li>
+      <li><b>No redundancy.</b> Store each fact once. Duplicated facts cause <b>update</b>, <b>insertion</b>, and <b>deletion anomalies</b> (you will run all three below).</li>
+      <li><b>Entity or attribute?</b> Promote an attribute to an entity when it has attributes of its own, takes part in relationships, or has several values. A city with a state and a population is an entity; a street number is an attribute.</li>
+      <li><b>Entity or relationship?</b> If a "relationship" needs its own relationships (a registration that has payments), turn it into an entity.</li>
+      <li><b>Binary or ternary?</b> Use a ternary relationship only when the three-way combination carries meaning that three binary ones would lose.</li>
+      <li><b>Key choice.</b> Prefer stable, unique, short keys. Use a <b>surrogate key</b> (system-generated ID) when the natural key is long, changeable, or not truly unique.</li>
+      <li><b>Normal forms.</b> A faithful ER design converted by the rules above tends to land in 3NF or BCNF: every non-key attribute depends on the key, the whole key, and nothing but the key.</li>
+      <li><b>Trade-offs, stated.</b> Denormalizing can speed up reads, but you owe a note on what you duplicated and how you will keep it consistent.</li>
+    </ol>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Theory</span>
+    <h3>How to write a justification</h3>
+    <p>A strong justification has three parts: <b>requirement</b> (what the situation demands), <b>principle</b> (which rule applies), and <b>trade-off</b> (what you accept in return).</p>
+    <div class="tablewrap"><table>
+      <tr><th>Weak</th><th>Strong</th></tr>
+      <tr><td>"I made ENROLLMENT a table because that is how you do M:N."</td><td>"Students take many courses and courses have many students (M:N), and a grade depends on both. A junction table stores each fact once and keeps the grade with the pair. The cost is one extra join when listing a student's courses."</td></tr>
+    </table></div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Design duel</h3>
+    <p class="prose">Each scenario offers two designs. Pick the better one, then read the reasoning.</p>
+    <div class="card" id="duels"></div>
+  </div>
+
+  <div class="block prose">
+    <span class="chip">Run it</span>
+    <h3>Feel the anomalies, then fix them</h3>
+    <p>First a single "flat" table that mixes students, courses, and enrollments. Watch all three anomalies happen. Then the normalized design that an ER diagram would give you.</p>
+  </div>
+  <div class="lab"><div class="labbar"><span>Lab 4: redundancy vs. a faithful design</span><button type="button" class="copy">Copy</button></div>
+<pre><code data-lab="lab4">DROP TABLE IF EXISTS flat_enrollment;
+CREATE TABLE flat_enrollment (
+  sid INTEGER, student_name TEXT, course_code TEXT, course_title TEXT, instructor_name TEXT, grade TEXT
+);
+INSERT INTO flat_enrollment VALUES
+  (1, 'Ada Lovelace', 'COSC214', 'Data Structures',     'Dr. Rivera', 'A'),
+  (2, 'Ben Carter',   'COSC214', 'Data Structures',     'Dr. Rivera', 'A'),
+  (1, 'Ada Lovelace', 'COSC431', 'Database Management', 'Dr. Okafor', 'B');
+
+-- UPDATE anomaly: rename the course, but only one row gets changed
+UPDATE flat_enrollment SET course_title = 'Data Structures and Algorithms'
+WHERE sid = 1 AND course_code = 'COSC214';
+SELECT DISTINCT course_code, course_title FROM flat_enrollment ORDER BY 1, 2;
+
+-- DELETION anomaly: the last student drops COSC431 and the course itself vanishes
+DELETE FROM flat_enrollment WHERE course_code = 'COSC431';
+SELECT COUNT(*) AS rows_about_cosc431 FROM flat_enrollment WHERE course_code = 'COSC431';
+
+-- INSERTION anomaly: a brand-new course with no students has nowhere to live
+-- (a flat row needs a student; we would have to invent NULL students)
+
+-- The fix: each fact stored once
+DROP TABLE IF EXISTS enrollment_n; DROP TABLE IF EXISTS course_n; DROP TABLE IF EXISTS student_n;
+CREATE TABLE student_n (sid INTEGER PRIMARY KEY, name TEXT NOT NULL);
+CREATE TABLE course_n  (code TEXT PRIMARY KEY, title TEXT NOT NULL);
+CREATE TABLE enrollment_n (
+  sid INTEGER REFERENCES student_n(sid), code TEXT REFERENCES course_n(code), grade TEXT,
+  PRIMARY KEY (sid, code)
+);
+INSERT INTO student_n VALUES (1, 'Ada Lovelace'), (2, 'Ben Carter');
+INSERT INTO course_n  VALUES ('COSC214', 'Data Structures'), ('COSC431', 'Database Management');
+INSERT INTO enrollment_n VALUES (1, 'COSC214', 'A'), (2, 'COSC214', 'A'), (1, 'COSC431', 'B');
+
+UPDATE course_n SET title = 'Data Structures and Algorithms' WHERE code = 'COSC214';   -- ONE place
+INSERT INTO course_n VALUES ('COSC999', 'Brand-new Course');                           -- no students needed
+
+SELECT s.name, c.title, e.grade
+FROM enrollment_n e JOIN student_n s ON s.sid = e.sid JOIN course_n c ON c.code = e.code
+ORDER BY s.sid, c.code;</code></pre>
+<details><summary>Expected output</summary><pre class="out">course_code  course_title
+-----------  ------------------------------
+COSC214      Data Structures                 &lt;- two different titles for ONE course
+COSC214      Data Structures and Algorithms
+COSC431      Database Management
+
+rows_about_cosc431
+------------------
+0                                            &lt;- the course's facts are gone
+
+name          title                           grade
+------------  ------------------------------  -----
+Ada Lovelace  Data Structures and Algorithms  A
+Ada Lovelace  Database Management             B
+Ben Carter    Data Structures and Algorithms  A</pre></details></div>
+
+  <div class="block">
+    <span class="chip">Try it</span>
+    <h3>Write and self-check a justification</h3>
+    <p class="prose">Pick any design decision from this tutorial (for example, why TEACHES is ternary). Draft your justification, then tick what it contains. Your text stays in your browser and is not uploaded anywhere.</p>
+    <textarea id="justText" placeholder="Because the requirement says..." aria-label="Draft your justification"></textarea>
+    <div class="checks" id="justChecks">
+      <label><input type="checkbox"> It quotes or paraphrases a specific requirement.</label>
+      <label><input type="checkbox"> It names a design principle (redundancy, key choice, normal form, and so on).</label>
+      <label><input type="checkbox"> It states what the design costs or gives up.</label>
+      <label><input type="checkbox"> It mentions the alternative I rejected.</label>
+    </div>
+    <div class="score" id="justScore"></div>
+  </div>
+
+  <div class="block">
+    <span class="chip">Check yourself</span>
+    <h3>Knowledge check: module 4</h3>
+    <div class="quiz" data-quiz="m4"></div>
+  </div>
+</section>
+
+<!-- ============ FINAL ============ -->
+<section class="mod" id="final">
+  <h2>Final check</h2>
+  <p class="goal">Twelve mixed questions across all four modules. Some ask for more than one answer.</p>
+  <div class="block"><div class="quiz" data-quiz="final"></div></div>
+
+  <div class="block prose">
+    <span class="chip">Apply it</span>
+    <h3>Design challenge</h3>
+    <p>Pick a small organization you know (a library, a food bank, a gym, a student club). Write six to ten sentences of requirements, then:</p>
+    <ol>
+      <li>Draw an EER diagram with at least one weak entity or one specialization, one M:N relationship with an attribute, and at least one total participation.</li>
+      <li>Convert it to a relational schema and run it in SQLite with five rows of sample data.</li>
+      <li>Write three justifications using the requirement, principle, and trade-off pattern.</li>
+    </ol>
+    <p>Free tools for drawing: diagrams.net (draw.io) or pen and paper.</p>
+  </div>
+</section>
+</main>
+
+<footer>Entity-Relationship and Extended ER design. Progress and drafts are stored only in your own browser.</footer>
+</div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const NS = 'http://www.w3.org/2000/svg';
+const svgEl = (n, a = {}, p) => { const e = document.createElementNS(NS, n); for (const k in a) e.setAttribute(k, a[k]); if (p) p.appendChild(e); return e; };
+const h = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ---------- storage (safe) ---------- */
+const KEY = 'er-eer-tutorial-v1';
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } },
+  set(o) { try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} }
+};
+function saveScore(key, score, total) { const s = store.get(); s.scores = s.scores || {}; s.scores[key] = [score, total]; store.set(s); refreshNav(); }
+function refreshNav() {
+  const sc = store.get().scores || {};
+  $$('#navlist a[data-key]').forEach(a => {
+    const v = sc[a.dataset.key]; const t = $('.tick', a);
+    t.textContent = v ? `${v[0]}/${v[1]}` : '';
+  });
+}
+
+/* ---------- diagram engine ---------- */
+const E  = (id, x, y, l, tip) => ({ id, t: 'e', x, y, l, tip });
+const WE = (id, x, y, l, tip) => ({ id, t: 'we', x, y, l, tip });
+const R  = (id, x, y, l, tip) => ({ id, t: 'r', x, y, l, tip });
+const IR = (id, x, y, l, tip) => ({ id, t: 'ir', x, y, l, tip });
+const A  = (id, x, y, l, of, f = '', tip) => ({ id, t: 'a', x, y, l, of, f, tip });
+const C  = (id, x, y, l, tip) => ({ id, t: 'c', x, y, l, tip });
+const T  = (id, x, y, l) => ({ id, t: 't', x, y, l });
+const L  = (a, b, o = {}) => ({ a, b, ...o });
+
+const DEF_TIP = {
+  e: 'A real-world thing we store facts about. Becomes a table.',
+  we: 'A weak entity: it cannot be identified by its own attributes alone. It depends on an owner entity and always participates totally. Drawn as a double rectangle.',
+  r: 'A relationship: how entities are associated, usually named with a verb. Drawn as a diamond.',
+  ir: 'An identifying relationship: it connects a weak entity to its owner and supplies part of the weak entity\u2019s key. Drawn as a double diamond.',
+  a: 'A simple attribute: one fact about the entity. Becomes a column.',
+  k: 'A key attribute (underlined): its value uniquely identifies each instance. Becomes the primary key.',
+  m: 'A multivalued attribute (double oval): one instance can hold several values at once. Becomes its own table.',
+  d: 'A derived attribute (dashed oval): computed from other data, so we usually do not store it.',
+  p: 'A partial key (dashed underline): unique only among the weak entities of one owner.'
+};
+const kind = n => n.t !== 'a' ? n.t : (n.f.includes('k') ? 'k' : n.f.includes('m') ? 'm' : n.f.includes('d') ? 'd' : n.f.includes('p') ? 'p' : 'a');
+
+function dims(n) {
+  switch (n.t) {
+    case 'e': case 'we': return { w: 60, h: 22 };
+    case 'a': return { w: Math.max(34, n.l.length * 4 + 17), h: 17 };
+    case 'r': return { w: Math.max(54, n.l.length * 5.6 + 16), h: 30 };
+    case 'ir': return { w: Math.max(60, n.l.length * 5.6 + 24), h: 34 };
+    case 'c': return { w: 15, h: 15 };
+    default: return { w: 0, h: 0 };
+  }
+}
+function boundary(n, ux, uy) {
+  const { w, h } = dims(n), ax = Math.abs(ux) || 1e-6, ay = Math.abs(uy) || 1e-6;
+  if (n.t === 'e' || n.t === 'we') return Math.min(w / ax, h / ay);
+  if (n.t === 'r' || n.t === 'ir') return 1 / (ax / w + ay / h);
+  return 1 / Math.sqrt((ux / w) ** 2 + (uy / h) ** 2);
+}
+
+function draw(host, spec, opts = {}) {
+  host.innerHTML = '';
+  const scroll = h('div', 'scroll'); host.appendChild(scroll);
+  const svg = svgEl('svg', { viewBox: `0 0 ${spec.w} ${spec.h}`, role: 'group', 'aria-label': opts.label || 'ER diagram. Each shape can be selected to read what it means.' }, scroll);
+  const cap = h('figcaption'); cap.innerHTML = opts.cap || '<b>Tip:</b> tap or click any shape to see what it means.';
+  host.appendChild(cap);
+  const nodes = {}; spec.nodes.forEach(n => nodes[n.id] = n);
+  const edges = spec.edges.slice();
+  spec.nodes.forEach(n => { if (n.t === 'a' && n.of) edges.push({ a: n.of, b: n.id, attr: true }); });
+  const gE = svgEl('g', {}, svg), gN = svgEl('g', {}, svg), gL = svgEl('g', {}, svg);
+
+  edges.forEach(ed => {
+    const a = nodes[ed.a], b = nodes[ed.b];
+    if (!a || !b) { console.warn('bad edge', ed); return; }
+    const attrs = { x1: a.x, y1: a.y, x2: b.x, y2: b.y };
+    if (ed.tot) { svgEl('line', { ...attrs, class: 'edge tot' }, gE); svgEl('line', { ...attrs, class: 'edge in' }, gE); }
+    else svgEl('line', { ...attrs, class: 'edge', ...(ed.dash ? { 'stroke-dasharray': '5 4' } : {}) }, gE);
+    const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
+    if (ed.c) {
+      const from = ed.at === 'b' ? b : a, ux = (ed.at === 'b' ? -dx : dx) / len, uy = (ed.at === 'b' ? -dy : dy) / len;
+      const d = boundary(from, ux, uy) + 15, px = uy, py = -ux, off = 12;
+      svgEl('text', { x: from.x + ux * d + px * off, y: from.y + uy * d + py * off, class: 'card-lab' }, gL).textContent = ed.c;
+    }
+    if (ed.sub) {
+      const mx = a.x + dx * 0.55, my = a.y + dy * 0.55, ang = Math.atan2(dy, dx) * 180 / Math.PI + 180;
+      const t = svgEl('text', { x: mx, y: my, class: 'subsym', transform: `rotate(${ang} ${mx} ${my})` }, gL); t.textContent = '\u2282';
+    }
+  });
+
+  spec.nodes.forEach(n => {
+    if (n.t === 't') { svgEl('text', { x: n.x, y: n.y, class: 'plain' }, gN).textContent = n.l; return; }
+    const k = kind(n);
+    const g = svgEl('g', { class: `node ${n.t} ${k}`, tabindex: 0, role: 'button', 'aria-label': `${n.l}. ${n.tip || DEF_TIP[k] || ''}` }, gN);
+    const { w, h: hh } = dims(n);
+    if (n.t === 'e') svgEl('rect', { class: 'sh', x: n.x - w, y: n.y - hh, width: 2 * w, height: 2 * hh, rx: 3 }, g);
+    if (n.t === 'we') { svgEl('rect', { class: 'sh', x: n.x - w, y: n.y - hh, width: 2 * w, height: 2 * hh, rx: 3 }, g); svgEl('rect', { class: 'sh', x: n.x - w + 5, y: n.y - hh + 5, width: 2 * w - 10, height: 2 * hh - 10, rx: 2 }, g); }
+    if (n.t === 'r') svgEl('polygon', { class: 'sh', points: `${n.x},${n.y - hh} ${n.x + w},${n.y} ${n.x},${n.y + hh} ${n.x - w},${n.y}` }, g);
+    if (n.t === 'ir') { svgEl('polygon', { class: 'sh', points: `${n.x},${n.y - hh} ${n.x + w},${n.y} ${n.x},${n.y + hh} ${n.x - w},${n.y}` }, g); svgEl('polygon', { class: 'sh', points: `${n.x},${n.y - hh + 6} ${n.x + w - 10},${n.y} ${n.x},${n.y + hh - 6} ${n.x - w + 10},${n.y}` }, g); }
+    if (n.t === 'a') { svgEl('ellipse', { class: 'sh', cx: n.x, cy: n.y, rx: w, ry: hh }, g); if (k === 'm') svgEl('ellipse', { class: 'sh', cx: n.x, cy: n.y, rx: w - 5, ry: hh - 4 }, g); }
+    if (n.t === 'c') svgEl('circle', { class: 'sh', cx: n.x, cy: n.y, r: w }, g);
+    svgEl('text', { x: n.x, y: n.y }, g).textContent = n.l;
+    const pick = () => {
+      $$('.node.sel', svg).forEach(s => s.classList.remove('sel')); g.classList.add('sel');
+      const tip = n.tip || DEF_TIP[k] || '';
+      cap.innerHTML = ''; const b = h('b', null, n.l); cap.append(b, document.createTextNode(': ' + tip));
+    };
+    g.addEventListener('click', pick);
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(); } });
+  });
+  return svg;
+}
+
+/* ---------- diagram specs ---------- */
+const heroSpec = {
+  w: 900, h: 440,
+  nodes: [
+    E('student', 150, 225, 'STUDENT', 'The entity type STUDENT. Every real student is an instance. It becomes a table.'),
+    A('sid', 55, 110, 'sid', 'student', 'k'),
+    A('sname', 160, 62, 'name', 'student'),
+    A('email', 268, 112, 'email', 'student'),
+    A('phone', 52, 345, 'phone', 'student', 'm', 'Multivalued: a student can list several phone numbers. In the relational schema this becomes its own table, STUDENT_PHONE.'),
+    A('age', 175, 385, 'age', 'student', 'd', 'Derived: age is computed from date of birth, so storing it would invite stale data.'),
+    R('enrolls', 450, 225, 'ENROLLS_IN', 'A many-to-many relationship: a student takes many courses and a course has many students.'),
+    A('grade', 450, 350, 'grade', 'enrolls', '', 'An attribute of the relationship itself. A grade depends on both the student and the course, so it belongs here.'),
+    E('course', 760, 225, 'COURSE'),
+    A('code', 690, 105, 'code', 'course', 'k'),
+    A('title', 820, 85, 'title', 'course'),
+    A('credits', 810, 350, 'credits', 'course')
+  ],
+  edges: [
+    L('student', 'enrolls', { c: 'N', at: 'a', tot: true }),
+    L('course', 'enrolls', { c: 'M', at: 'a' })
+  ]
+};
+draw($('#heroFig'), heroSpec, { cap: '<b>Try it:</b> click any shape. The double line means every student must be enrolled in at least one course (total participation); the single line means a course may have no students yet (partial).' });
+
+draw($('#legendFig'), {
+  w: 900, h: 250,
+  nodes: [
+    E('l1', 90, 40, 'ENTITY'), WE('l2', 260, 40, 'WEAK ENTITY'), R('l3', 450, 40, 'RELATIONSHIP'), IR('l4', 660, 40, 'IDENTIFYING'),
+    A('l5', 90, 120, 'attribute', null, ''), A('l6', 235, 120, 'key', null, 'k'), A('l7', 370, 120, 'multivalued', null, 'm'),
+    A('l8', 530, 120, 'derived', null, 'd'), A('l9', 680, 120, 'partial key', null, 'p'),
+    E('l10', 90, 205, 'A'), R('l11', 270, 205, 'R'), E('l12', 450, 205, 'B'),
+    T('t1', 540, 205, 'Double line = total participation. Single line = partial.')
+  ],
+  edges: [L('l10', 'l11', { c: 'N', at: 'a', tot: true }), L('l12', 'l11', { c: '1', at: 'a' })]
+}, { cap: '<b>Cheat sheet:</b> click any symbol.' });
+
+draw($('#attrFig'), {
+  w: 900, h: 390,
+  nodes: [
+    E('s', 450, 210, 'STUDENT'),
+    A('sid', 210, 135, 'sid', 's', 'k'),
+    A('nm', 450, 100, 'name', 's', '', 'A composite attribute: it has sub-parts (first, last). You can store the parts separately and still talk about "name" as a whole.'),
+    A('fn', 375, 38, 'first', 'nm'), A('ln', 525, 38, 'last', 'nm'),
+    A('em', 690, 135, 'email', 's'),
+    A('ph', 725, 255, 'phones', 's', 'm'),
+    A('dob', 275, 340, 'date_of_birth', 's'),
+    A('ag', 625, 340, 'age', 's', 'd')
+  ],
+  edges: []
+}, { cap: '<b>Try it:</b> click each attribute. Which would you store, and which would you compute?' });
+
+draw($('#weakFig'), {
+  w: 940, h: 230,
+  nodes: [
+    E('dept', 90, 140, 'DEPARTMENT'), A('dno', 55, 48, 'dno', 'dept', 'k'), A('dn', 150, 48, 'dname', 'dept'),
+    R('wf', 270, 140, 'WORKS_FOR'),
+    E('ins', 450, 140, 'INSTRUCTOR'), A('iid', 420, 48, 'iid', 'ins', 'k'), A('rk', 520, 48, 'rank', 'ins'),
+    IR('hd', 650, 140, 'HAS_DEP', 'The identifying relationship. DEPENDENT cannot exist without its INSTRUCTOR, and its key borrows iid from the owner.'),
+    WE('dep', 835, 140, 'DEPENDENT'), A('dpn', 776, 48, 'dep_name', 'dep', 'p'), A('rel', 888, 48, 'relation', 'dep')
+  ],
+  edges: [
+    L('dept', 'wf', { c: '1', at: 'a' }), L('ins', 'wf', { c: 'N', at: 'a', tot: true }),
+    L('ins', 'hd', { c: '1', at: 'a' }), L('dep', 'hd', { c: 'N', at: 'a', tot: true })
+  ]
+}, { cap: '<b>Notice:</b> DEPENDENT is double-boxed, connected by a double diamond with a double line (total participation), and its dashed-underlined partial key only means something together with iid.' });
+
+draw($('#eerFig'), {
+  w: 900, h: 570,
+  nodes: [
+    E('person', 450, 60, 'PERSON', 'The superclass. Its attributes and relationships are inherited by every subclass below it.'),
+    A('pid', 270, 40, 'pid', 'person', 'k'), A('pn', 630, 40, 'name', 'person'),
+    C('c1', 450, 150, 'o', 'Overlapping (o): one person may be both a student and an instructor. The single line above means partial: some persons (staff, for example) are neither.'),
+    E('stu', 270, 255, 'STUDENT'), A('gpa', 120, 225, 'gpa', 'stu'), A('yr', 110, 285, 'enroll_year', 'stu'),
+    E('ins', 630, 255, 'INSTRUCTOR'), A('sal', 620, 345, 'salary', 'ins'), A('rk', 745, 345, 'rank', 'ins'),
+    C('c2', 270, 365, 'd', 'Disjoint (d): a student is either undergraduate or graduate, never both. The double line above means total: every student must be one of them.'),
+    E('ug', 150, 470, 'UNDERGRAD'), A('cy', 150, 540, 'class_year', 'ug'),
+    E('gr', 390, 470, 'GRADUATE'), A('th', 400, 540, 'thesis_title', 'gr')
+  ],
+  edges: [
+    L('person', 'c1'), L('c1', 'stu', { sub: true }), L('c1', 'ins', { sub: true }),
+    L('stu', 'c2', { tot: true }), L('c2', 'ug', { sub: true }), L('c2', 'gr', { sub: true })
+  ]
+}, { cap: '<b>Local attributes:</b> thesis_title lives on GRADUATE because only graduates have one; gpa lives on STUDENT; pid and name are inherited from PERSON by everyone below.' });
+
+/* explorer */
+const exploreHost = $('#exploreFig'), exploreOut = $('#exploreOut');
+const MAPS = {
+  dt: ['Disjoint and total', 'Every vehicle is exactly one of car or truck.', 'Option 8C (single table with a type column) is the natural fit when the subclasses differ little. Choose 8A if each subclass has many attributes of its own. 8B also works because there is no entity outside the subclasses.', 'type NOT NULL CHECK (type IN (...))'],
+  dp: ['Disjoint and partial', 'An employee is a manager or an engineer, but many employees are neither.', 'Option 8A (superclass table plus subclass tables) is the safe choice. Option 8C works too if you allow the type column to be NULL.', 'type CHECK (type IN (...)) with NULL allowed'],
+  ot: ['Overlapping and total', 'Every contributor is an author, a reviewer, or both.', 'Option 8D (one table with a Boolean flag per subclass) is compact, plus a CHECK that at least one flag is set. Option 8A is better when the subclasses have many local attributes.', 'is_author, is_reviewer BOOLEAN, CHECK (is_author OR is_reviewer)'],
+  op: ['Overlapping and partial', 'A person may be a student, an instructor, both, or neither.', 'Option 8A is the clear winner: it needs no NULL-heavy columns and an entity can appear in several subclass tables.', 'subclass tables keyed by the superclass key']
+};
+function renderExplore() {
+  const dis = $('input[name=dis]:checked').value, com = $('input[name=com]:checked').value;
+  const m = MAPS[dis + (com === 't' ? 't' : 'p')] || MAPS[dis + 'p'];
+  draw(exploreHost, {
+    w: 900, h: 260,
+    nodes: [
+      E('sup', 450, 35, 'SUPERCLASS'), C('c', 450, 125, dis, dis === 'd' ? 'Disjoint: at most one subclass per entity.' : 'Overlapping: an entity may belong to several subclasses.'),
+      E('s1', 300, 220, 'SUBCLASS 1'), E('s2', 600, 220, 'SUBCLASS 2')
+    ],
+    edges: [L('sup', 'c', { tot: com === 't' }), L('c', 's1', { sub: true }), L('c', 's2', { sub: true })]
+  }, { cap: `<b>${m[0]}.</b> ${com === 't' ? 'Double line: every superclass entity must be in some subclass.' : 'Single line: a superclass entity may belong to no subclass.'}` });
+  exploreOut.innerHTML = '';
+  const p1 = h('p'); p1.innerHTML = `<b>Example.</b> ${m[1]}`;
+  const p2 = h('p'); p2.innerHTML = `<b>Suggested mapping.</b> ${m[2]}`;
+  const p3 = h('p'); p3.innerHTML = `<b>Constraint to enforce.</b> <span class="inl"></span>`; $('.inl', p3).textContent = m[3];
+  exploreOut.append(p1, p2, p3);
+}
+$$('input[name=dis],input[name=com]').forEach(i => i.addEventListener('change', renderExplore));
+renderExplore();
+
+/* campus diagram */
+draw($('#campusFig'), {
+  w: 920, h: 600,
+  nodes: [
+    E('dept', 100, 95, 'DEPARTMENT'), A('dno', 100, 28, 'dno', 'dept', 'k'),
+    R('wf', 280, 95, 'WORKS_FOR'),
+    E('ins', 470, 95, 'INSTRUCTOR'), A('iid', 470, 28, 'iid', 'ins', 'k'),
+    IR('hd', 665, 95, 'HAS_DEP'),
+    WE('dep', 840, 95, 'DEPENDENT'), A('dpn', 840, 28, 'dep_name', 'dep', 'p'),
+    E('course', 250, 235, 'COURSE'), A('code', 95, 235, 'code', 'course', 'k'),
+    R('te', 470, 235, 'TEACHES', 'A ternary relationship: it records which instructor taught which course in which semester. Mapping rule 7: one table with a foreign key to each participant.'),
+    E('sem', 690, 235, 'SEMESTER'), A('term', 850, 235, 'term_id', 'sem', 'k'),
+    R('en', 250, 360, 'ENROLLS_IN'), A('grade', 95, 360, 'grade', 'en'),
+    E('stu', 250, 485, 'STUDENT'), A('sid', 95, 485, 'sid', 'stu', 'k'), A('ph', 250, 565, 'phone', 'stu', 'm'),
+    R('has', 430, 485, 'HAS'),
+    E('card', 600, 485, 'ID_CARD'), A('cno', 760, 485, 'card_no', 'card', 'k')
+  ],
+  edges: [
+    L('dept', 'wf', { c: '1', at: 'a' }), L('ins', 'wf', { c: 'N', at: 'a', tot: true }),
+    L('ins', 'hd', { c: '1', at: 'a' }), L('dep', 'hd', { c: 'N', at: 'a', tot: true }),
+    L('ins', 'te', { c: 'M', at: 'a' }), L('course', 'te', { c: 'N', at: 'a' }), L('sem', 'te', { c: 'P', at: 'a' }),
+    L('course', 'en', { c: 'M', at: 'a' }), L('stu', 'en', { c: 'N', at: 'a' }),
+    L('stu', 'has', { c: '1', at: 'a' }), L('card', 'has', { c: '1', at: 'a', tot: true })
+  ]
+}, { cap: '<b>Read it aloud:</b> "Each instructor works for exactly one department." "A student may or may not have an ID card, but every ID card belongs to exactly one student."' });
+
+/* ---------- SQL highlight + copy ---------- */
+const KW = 'CREATE|TABLE|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|UNIQUE|DEFAULT|CHECK|INSERT|INTO|VALUES|SELECT|FROM|WHERE|JOIN|LEFT|ON|GROUP|BY|ORDER|COUNT|AS|DROP|IF|EXISTS|PRAGMA|UPDATE|SET|DELETE|CASCADE|INTEGER|TEXT|REAL|AND|OR|IN|CASE|WHEN|THEN|ELSE|END|DISTINCT|BETWEEN|IS|BOOLEAN';
+const TOK = new RegExp(`(--[^\\n]*)|('(?:[^']|'')*')|\\b(${KW})\\b|\\b(\\d+(?:\\.\\d+)?)\\b`, 'gi');
+function highlight(code) {
+  const esc = code.textContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  code.innerHTML = esc.replace(TOK, (m, cm, st, kw, nu) => cm ? `<span class="cm">${m}</span>` : st ? `<span class="st">${m}</span>` : kw ? `<span class="kw">${m}</span>` : `<span class="nu">${m}</span>`);
+}
+$$('.lab code').forEach(c => { c.dataset.raw = c.textContent; highlight(c); });
+$$('.lab .copy').forEach(btn => btn.addEventListener('click', async () => {
+  const code = $('code', btn.closest('.lab')), txt = code.dataset.raw || code.textContent;
+  try { await navigator.clipboard.writeText(txt); }
+  catch (e) { const ta = h('textarea'); ta.value = txt; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (_) {} ta.remove(); }
+  const old = btn.textContent; btn.textContent = 'Copied'; setTimeout(() => btn.textContent = old, 1500);
+}));
+
+/* ---------- quiz engine ---------- */
+const Q = (q, o, a, why) => ({ q, o, a, why });
+const QUIZ = {
+  m1: [
+    Q('Which attribute is the best candidate for the primary key of STUDENT?', ['name', 'email address', 'student_id assigned by the system', 'phone number'], 2, 'A system-assigned ID is unique, stable, and short. Email is unique but people change it; names and phone numbers are neither unique nor stable.'),
+    Q('Every employee must work in a department, but a department may have no employees yet. What are the participation constraints in WORKS_FOR?', ['EMPLOYEE total, DEPARTMENT partial', 'EMPLOYEE partial, DEPARTMENT total', 'Both total', 'Both partial'], 0, 'Every employee must participate (total, double line). A department with no employees is allowed (partial, single line).'),
+    Q('Age is calculated from date_of_birth. What kind of attribute is age?', ['Multivalued', 'Composite', 'Derived', 'Key'], 2, 'A derived attribute (dashed oval) can be computed from other stored data, so storing it risks stale values.'),
+    Q('A patient can have several phone numbers. How do you draw phone in Chen notation?', ['Double oval', 'Dashed oval', 'Underlined oval', 'Oval with child ovals'], 0, 'A double oval marks a multivalued attribute. Dashed is derived, underlined is a key, and child ovals mean composite.'),
+    Q('Which statement describes a weak entity?', ['It has no primary key of its own and is identified through an owner entity', 'It takes part in no relationships', 'It has only one attribute', 'It is always on the N side of an M:N relationship'], 0, 'A weak entity depends on an owner through an identifying relationship; its key is the owner key plus a partial key.'),
+    Q('Students receive a grade for each course they take. Where does grade belong in the ER diagram?', ['An attribute of STUDENT', 'An attribute of COURSE', 'An attribute of the ENROLLS_IN relationship', 'A separate entity with no relationships'], 2, 'The grade depends on the student and the course together, so it is an attribute of the relationship.')
+  ],
+  m2: [
+    Q('Every vehicle is either a car or a truck, never both, and there are no other kinds. Which specialization constraint is this?', ['Overlapping and partial', 'Disjoint and total', 'Disjoint and partial', 'Overlapping and total'], 1, 'Never both means disjoint; no other kinds means every vehicle belongs to a subclass, so total.'),
+    Q('A graduate student who is also a teaching assistant appears in both the STUDENT and EMPLOYEE subclasses of PERSON. Which constraint allows that?', ['Disjoint', 'Overlapping', 'Total', 'Weak'], 1, 'Overlapping lets one superclass entity belong to several subclasses.'),
+    Q('You notice CAR and TRUCK share plate_number and year, so you create a VEHICLE entity above them. What is this process?', ['Specialization', 'Normalization', 'Generalization', 'Aggregation'], 2, 'Generalization is bottom-up: factoring shared features into a new superclass. Specialization is top-down.'),
+    Q('What does a subclass inherit from its superclass?', ['Only the key attribute', 'Only the attributes, not the relationships', 'All attributes and all relationships', 'Nothing; it must redeclare them'], 2, 'Inheritance covers every attribute and every relationship the superclass participates in.'),
+    Q('Only graduate students have a thesis_title. Where should the attribute go?', ['PERSON', 'STUDENT', 'GRADUATE', 'UNDERGRAD'], 2, 'Put an attribute on the most specific class that all its owners belong to.'),
+    Q('What does partial specialization mean?', ['A superclass entity may belong to no subclass', 'Every entity belongs to exactly one subclass', 'The subclass has no attributes', 'Subclasses cannot overlap'], 0, 'Partial (single line) allows superclass entities that are in none of the subclasses.')
+  ],
+  m3: [
+    Q('DEPARTMENT (1) to EMPLOYEE (N) is a 1:N relationship. How is it mapped?', ['Foreign key dno in EMPLOYEE', 'Foreign key emp_id in DEPARTMENT', 'A new table with both keys', 'Merge both entities into one table'], 0, 'The foreign key always goes on the N side so each employee row stores its single department.'),
+    Q('How is an M:N relationship mapped?', ['Foreign key on either side', 'A new table with a foreign key to each side and a composite primary key', 'A multivalued column', 'It cannot be mapped'], 1, 'A junction table holds one row per pairing and carries any relationship attributes.'),
+    Q('STUDENT has a multivalued attribute phone. What is the mapping?', ['A comma-separated column in STUDENT', 'A table STUDENT_PHONE(sid, phone) with primary key (sid, phone)', 'One column per possible phone', 'Drop the attribute'], 1, 'A multivalued attribute becomes its own table: owner key plus the value.'),
+    Q('What is the primary key of the table for the weak entity DEPENDENT of INSTRUCTOR?', ['dep_name only', 'iid only', 'iid together with dep_name', 'An unrelated auto-number'], 2, 'Owner key plus partial key. iid is also a foreign key (with ON DELETE CASCADE in our lab).'),
+    Q('In a 1:1 relationship where one side participates totally and the other partially, where should the foreign key go?', ['On the partial side', 'On the total side, UNIQUE and NOT NULL', 'In a separate table always', 'Nowhere; 1:1 needs no key'], 1, 'Putting it on the total side avoids NULLs; UNIQUE enforces the one-to-one limit.'),
+    Q('SUPPLIES relates SUPPLIER, PART, and PROJECT. Which mapping fits?', ['Three separate binary tables', 'A table with a foreign key to each of the three, key built from those columns', 'A foreign key in PART only', 'A multivalued attribute on SUPPLIER'], 1, 'An N-ary relationship becomes one table referencing every participant.'),
+    Q('Using option 8A, how is the key of a subclass table defined?', ['A new auto-number', 'The superclass key, which is also a foreign key to the superclass table', 'There is no key', 'The subclass name'], 1, 'The subclass key is the superclass key, used as both primary key and foreign key.')
+  ],
+  m4: [
+    Q('A course title is stored on every enrollment row. Renaming the course requires editing many rows, and one gets missed. What is this?', ['Insertion anomaly', 'Update anomaly', 'Deletion anomaly', 'Referential violation'], 1, 'Duplicated facts that can go out of sync cause update anomalies.'),
+    Q('When should an attribute be promoted to an entity?', ['Never; attributes stay attributes', 'When it has attributes or relationships of its own, or needs several values', 'Whenever it is a string', 'Only when it is a key'], 1, 'An address with city and state, queried and shared, is better modeled as an entity.'),
+    Q('Which is the strongest design justification?', ['"We used a junction table because that is the standard."', '"Students take many courses and the grade depends on both, so a junction table stores each fact once; the cost is one extra join."', '"A junction table looks cleaner."', '"My classmate did it that way."'], 1, 'It cites the requirement, names the principle, and states the trade-off.'),
+    Q('When is denormalization (duplicating data on purpose) acceptable?', ['Whenever it saves typing', 'When measured read performance demands it and you document how consistency is kept', 'Never under any circumstance', 'Only for small tables'], 1, 'It is a deliberate trade-off that must be justified and managed.'),
+    Q('When is a surrogate key a better choice than a natural key?', ['When the natural key is long, changeable, or not truly unique', 'Always', 'Only for weak entities', 'When the table has no rows'], 0, 'Surrogate keys decouple identity from facts that change.')
+  ],
+  final: [
+    Q('Which are valid attribute kinds in an ER diagram? Select all that apply.', ['Composite', 'Multivalued', 'Derived', 'Recursive'], [0, 1, 2], 'Recursive describes a relationship (an entity related to itself), not an attribute kind.'),
+    Q('In total participation, every instance of the entity must take part in the relationship. How is it drawn?', ['Single line', 'Dashed line', 'Double line', 'Arrow'], 2, 'Double line means total; single line means partial.'),
+    Q('You are told: "Each invoice has several line items; a line item number is only unique within its invoice." What is LINE_ITEM?', ['A strong entity', 'A weak entity', 'A derived attribute', 'A ternary relationship'], 1, 'Its key needs the owner (invoice) plus a partial key (line number).'),
+    Q('Which constraints describe "a person may be an author, a reviewer, both, or neither"? Select all that apply.', ['Overlapping', 'Disjoint', 'Partial', 'Total'], [0, 2], 'Both is allowed (overlapping) and neither is allowed (partial).'),
+    Q('Which ER feature produces a new table in the relational schema? Select all that apply.', ['M:N relationship', 'Multivalued attribute', 'Simple attribute', 'Regular entity'], [0, 1, 3], 'A simple attribute is just a column.'),
+    Q('A 1:N relationship between CUSTOMER (1) and ORDER (N). Where does the foreign key go?', ['CUSTOMER', 'ORDER', 'A new table', 'Both tables'], 1, 'The N side holds the foreign key.'),
+    Q('Which design best represents "a doctor can treat many patients and each patient can see many doctors; we record the date of each visit"?', ['A visit_date column in DOCTOR', 'A junction table VISIT(doctor_id, patient_id, visit_date)', 'A visit_date column in PATIENT', 'A multivalued attribute on DOCTOR'], 1, 'M:N with a relationship attribute becomes a junction table. If the same pair can meet twice, include the date in the key.'),
+    Q('Why must the subclass table in option 8A use the superclass key as its own primary key?', ['It saves disk space', 'It guarantees one subclass row per superclass entity and links them', 'SQL requires it', 'It prevents NULLs in the superclass'], 1, 'The same value identifies the same real-world thing in both tables.'),
+    Q('Which is NOT a symptom of redundancy?', ['Update anomaly', 'Deletion anomaly', 'Insertion anomaly', 'A primary key made of two columns'], 3, 'A composite primary key is perfectly normal, for example in a junction table.'),
+    Q('A phone-number list is stored as "555-0101, 555-0102" in one column. What is the main design flaw?', ['It uses too much space', 'It violates first normal form: values are not atomic', 'It makes the key too long', 'Nothing; it is fine'], 1, 'Atomic values are required; use a child table instead.'),
+    Q('Which statements are good reasons to use a ternary relationship rather than three binary ones? Select all that apply.', ['The three-way combination carries meaning that pairs cannot express', 'It always uses less space', 'Knowing which instructor taught which course in which term matters', 'Binary relationships are not allowed in ER'], [0, 2], 'Use ternary relationships only when the triple itself is the fact.'),
+    Q('Your design has an attribute dept_name copied into EMPLOYEE next to dno. What is the best response?', ['Keep it; it is convenient', 'Remove it and join to DEPARTMENT, unless you can justify and manage the duplicate for performance', 'Remove dno instead', 'Make it the primary key'], 1, 'dept_name depends on dno, not on the employee, so it creates a redundancy to justify or remove.')
+  ]
+};
+
+function renderQuiz(host) {
+  const key = host.dataset.quiz, items = QUIZ[key];
+  host.innerHTML = '';
+  let done = 0, score = 0;
+  const summary = h('div', 'score');
+  const finish = () => {
+    summary.innerHTML = '';
+    summary.append(h('span', null, `Score: ${score} of ${items.length}`));
+    const msg = score === items.length ? 'Perfect.' : score >= Math.ceil(items.length * 0.7) ? 'Solid. Review the explanations you missed.' : 'Revisit the theory above, then try again.';
+    summary.append(h('span', null, msg));
+    const rb = h('button', 'btn alt', 'Try again'); rb.type = 'button'; rb.addEventListener('click', () => renderQuiz(host)); summary.append(rb);
+    saveScore(key, score, items.length);
+  };
+  items.forEach((it, qi) => {
+    const multi = Array.isArray(it.a), box = h('div', 'q');
+    box.append(h('p', 'qtext', `${qi + 1}. ${it.q}`));
+    if (multi) { const hintEl = h('div', null, ''); hintEl.innerHTML = '<small style="color:var(--soft)">Select all that apply.</small>'; box.append(hintEl); }
+    const list = h('div', 'opts'), btns = [];
+    shuffle(it.o.map((_, i) => i)).forEach(oi => { const b = h('button', 'opt', it.o[oi]); b.type = 'button'; b.dataset.i = oi; btns.push(b); list.append(b); });
+    box.append(list);
+    const why = h('div', 'why'); why.hidden = true; why.innerHTML = it.why;
+    const lock = (ok) => { btns.forEach(b => b.disabled = true); why.hidden = false; why.prepend(h('b', null, ok ? 'Correct. ' : 'Not quite. ')); done++; if (ok) score++; if (done === items.length) finish(); };
+    if (!multi) {
+      btns.forEach(b => b.addEventListener('click', () => {
+        const ok = +b.dataset.i === it.a;
+        b.classList.add(ok ? 'right' : 'wrong');
+        if (!ok) btns.find(x => +x.dataset.i === it.a).classList.add('right');
+        lock(ok);
+      }));
+    } else {
+      btns.forEach(b => b.addEventListener('click', () => b.classList.toggle('picked')));
+      const cb = h('button', 'btn', 'Check answer'); cb.type = 'button'; cb.style.marginTop = '10px';
+      cb.addEventListener('click', () => {
+        const sel = btns.filter(b => b.classList.contains('picked')).map(b => +b.dataset.i).sort();
+        if (!sel.length) return;
+        const ok = sel.length === it.a.length && sel.every((v, i) => v === [...it.a].sort()[i]);
+        btns.forEach(b => { const i = +b.dataset.i, isC = it.a.includes(i), isS = sel.includes(i); b.classList.remove('picked'); if (isC && isS) b.classList.add('right'); else if (!isC && isS) b.classList.add('wrong'); else if (isC) b.classList.add('missed'); });
+        cb.remove(); lock(ok);
+      });
+      box.append(cb);
+    }
+    box.append(why); host.append(box);
+  });
+  host.append(summary);
+}
+$$('.quiz[data-quiz]').forEach(renderQuiz);
+
+/* ---------- requirement analyzer ---------- */
+const REQ = [
+  ['A clinic stores each ', null], ['patient', 'Entity'], [': a unique ', null], ['patient ID', 'Key attribute'], [', a ', null], ['name (first and last)', 'Composite attribute'],
+  [', ', null], ['several phone numbers', 'Multivalued attribute'], [', and a ', null], ['date of birth', 'Simple attribute'], ['. ', null],
+  ['Doctors', 'Entity'], [' are identified by ', null], ['license number', 'Key attribute'], [' and have a ', null], ['specialty', 'Simple attribute'], ['. A patient ', null],
+  ['books', 'Relationship'], [' visits with doctors; each visit has a ', null], ['date and time', 'Relationship attribute'], ['. Every doctor belongs to ', null],
+  ['exactly one department', 'Constraint (total participation, N:1)'], [', and a ', null], ['department', 'Entity'], [' can have many doctors.', null]
+];
+const REQ_NOTES = {
+  'patient': 'A thing the clinic keeps facts about.', 'patient ID': 'Unique and stable: the key.', 'name (first and last)': 'It has sub-parts, so it is composite.',
+  'several phone numbers': 'More than one value per patient.', 'date of birth': 'A plain single-value fact. (Age would be derived from it.)', 'Doctors': 'An entity type.',
+  'license number': 'Identifies each doctor.', 'specialty': 'A simple attribute.', 'books': 'The verb connecting PATIENT and DOCTOR: an M:N relationship.',
+  'date and time': 'It depends on the pair (patient, doctor), so it belongs to BOOKS. Because the same pair can meet repeatedly, the date and time should be part of the junction table key.',
+  'exactly one department': 'Total participation of DOCTOR in WORKS_IN, cardinality N:1. The foreign key goes in DOCTOR, NOT NULL.', 'department': 'An entity type.'
+};
+(function analyzer() {
+  const rt = $('#reqText'), host = $('#analyzer'), cats = ['Entity', 'Key attribute', 'Composite attribute', 'Multivalued attribute', 'Simple attribute', 'Relationship', 'Relationship attribute', 'Constraint (total participation, N:1)'];
+  const items = REQ.filter(r => r[1]);
+  REQ.forEach(([t, k]) => { if (k) { const m = h('mark', null, t); m.style.cssText = 'background:var(--gold-tint);border-radius:4px;padding:0 3px'; rt.append(m); } else rt.append(document.createTextNode(t)); });
+  const rows = items.map(([t, k]) => {
+    const row = h('div', 'an-row'); row.append(h('span', null, t));
+    const sel = h('select'); sel.setAttribute('aria-label', `Classify: ${t}`);
+    const o0 = h('option', null, 'Choose...'); o0.value = ''; sel.append(o0);
+    cats.forEach(c => { const o = h('option', null, c); o.value = c; sel.append(o); });
+    row.append(sel); const note = h('small'); note.hidden = true; row.append(note); host.append(row); return { t, k, sel, note };
+  });
+  const bar = h('div', 'score'), chk = h('button', 'btn', 'Check'); chk.type = 'button'; const out = h('span');
+  const rst = h('button', 'btn alt', 'Reset'); rst.type = 'button';
+  bar.append(chk, rst, out); host.append(bar);
+  chk.addEventListener('click', () => {
+    let ok = 0;
+    rows.forEach(r => { const good = r.sel.value === r.k; if (good) ok++; r.sel.className = r.sel.value ? (good ? 'good' : 'bad') : ''; r.note.hidden = false; r.note.textContent = (good ? 'Correct. ' : `Answer: ${r.k}. `) + (REQ_NOTES[r.t] || ''); });
+    out.textContent = `${ok} of ${rows.length} correct`;
+  });
+  rst.addEventListener('click', () => { rows.forEach(r => { r.sel.value = ''; r.sel.className = ''; r.note.hidden = true; }); out.textContent = ''; });
+})();
+
+/* ---------- mapping stepper ---------- */
+const STEPS = [
+  { t: 'Regular entities', rule: 'Each regular (strong) entity becomes a table. Simple attributes become columns. A composite attribute is flattened into its parts. The key attribute becomes the PRIMARY KEY.', ex: 'DEPARTMENT, STUDENT, COURSE, and SEMESTER each become a table.', tables: ['department', 'student', 'course', 'semester'],
+    sql: `CREATE TABLE department (dno INTEGER PRIMARY KEY, dname TEXT NOT NULL UNIQUE, office TEXT);
+CREATE TABLE student    (sid INTEGER PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE);
+CREATE TABLE course     (code TEXT PRIMARY KEY, title TEXT NOT NULL, credits INTEGER NOT NULL);
+CREATE TABLE semester   (term_id TEXT PRIMARY KEY, start_date TEXT);` },
+  { t: 'Weak entities', rule: 'The weak entity becomes a table that includes the owner\u2019s primary key as a foreign key. Its primary key is the owner key plus the partial key. Use ON DELETE CASCADE because dependents cannot outlive the owner.', ex: 'DEPENDENT depends on INSTRUCTOR, so we first need INSTRUCTOR (see step 4 for its foreign key to DEPARTMENT).', tables: ['dependent'],
+    sql: `CREATE TABLE dependent (
+  iid INTEGER NOT NULL REFERENCES instructor(iid) ON DELETE CASCADE,
+  dep_name TEXT NOT NULL,
+  relationship TEXT,
+  PRIMARY KEY (iid, dep_name)
+);` },
+  { t: '1:1 relationships', rule: 'Put a foreign key on one side, ideally the side with total participation so the column can be NOT NULL. Add UNIQUE so no two rows can point to the same partner.', ex: 'Every ID_CARD belongs to a student (total); a student may not have a card yet (partial). So the key goes in ID_CARD.', tables: ['id_card'],
+    sql: `CREATE TABLE id_card (
+  card_no INTEGER PRIMARY KEY,
+  issued_on TEXT,
+  sid INTEGER NOT NULL UNIQUE REFERENCES student(sid)
+);` },
+  { t: '1:N relationships', rule: 'Put a foreign key on the N side, referencing the 1 side. If participation of the N side is total, make it NOT NULL.', ex: 'WORKS_FOR: each instructor works for exactly one department, so INSTRUCTOR gets dno NOT NULL.', tables: ['instructor'],
+    sql: `CREATE TABLE instructor (
+  iid INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  job_rank TEXT,
+  dno INTEGER NOT NULL REFERENCES department(dno)
+);` },
+  { t: 'M:N relationships', rule: 'Create a new table with a foreign key to each participant. Its primary key is the pair. Relationship attributes become extra columns.', ex: 'ENROLLS_IN carries grade, so ENROLLMENT(sid, code, grade).', tables: ['enrollment'],
+    sql: `CREATE TABLE enrollment (
+  sid  INTEGER REFERENCES student(sid),
+  code TEXT    REFERENCES course(code),
+  grade TEXT,
+  PRIMARY KEY (sid, code)
+);` },
+  { t: 'Multivalued attributes', rule: 'Create a table holding the owner\u2019s key and the attribute value. The primary key is the combination.', ex: 'STUDENT.phone becomes STUDENT_PHONE(sid, phone).', tables: ['student_phone'],
+    sql: `CREATE TABLE student_phone (
+  sid INTEGER REFERENCES student(sid) ON DELETE CASCADE,
+  phone TEXT,
+  PRIMARY KEY (sid, phone)
+);` },
+  { t: 'N-ary relationships', rule: 'Create a table with a foreign key to every participating entity. The primary key combines them (if one participant has cardinality 1, it can be left out of the key).', ex: 'TEACHES(instructor, course, semester) records the three-way fact.', tables: ['teaches'],
+    sql: `CREATE TABLE teaches (
+  iid INTEGER REFERENCES instructor(iid),
+  code TEXT REFERENCES course(code),
+  term_id TEXT REFERENCES semester(term_id),
+  PRIMARY KEY (iid, code, term_id)
+);` },
+  { t: 'Specialization (EER)', rule: 'Choose among options 8A to 8D. With 8A, each subclass gets a table whose primary key is the superclass key and also a foreign key to it.', ex: 'STUDENT specializes into UNDERGRAD and GRADUATE using 8A.', tables: ['undergrad', 'graduate'],
+    sql: `CREATE TABLE undergrad (
+  sid INTEGER PRIMARY KEY REFERENCES student(sid) ON DELETE CASCADE,
+  class_year INTEGER
+);
+CREATE TABLE graduate (
+  sid INTEGER PRIMARY KEY REFERENCES student(sid) ON DELETE CASCADE,
+  thesis_title TEXT
+);` }
+];
+(function stepper() {
+  const nav = $('#stepsNav'), rule = $('#stepRule'), sql = $('#stepSql'), chips = $('#stepChips'), title = $('#stepSqlTitle');
+  let cur = 0; const seen = new Set([0]);
+  STEPS.forEach((s, i) => { const b = h('button', null, String(i + 1)); b.type = 'button'; b.setAttribute('aria-label', `Rule ${i + 1}: ${s.t}`); b.addEventListener('click', () => go(i)); nav.append(b); });
+  function go(i) {
+    cur = i; seen.add(i); const s = STEPS[i];
+    $$('button', nav).forEach((b, j) => { b.className = (j === i ? 'on ' : '') + (seen.has(j) ? 'seen' : ''); });
+    rule.innerHTML = '';
+    const hd = h('h3', null, `Rule ${i + 1}: ${s.t}`); hd.style.fontSize = '21px';
+    const p1 = h('p', null, s.rule), p2 = h('p'); p2.innerHTML = '<b>In our diagram.</b> '; p2.append(document.createTextNode(s.ex));
+    const row = h('div'); row.style.cssText = 'display:flex;gap:8px;margin-top:12px';
+    const pv = h('button', 'btn alt', 'Previous'), nx = h('button', 'btn', 'Next'); pv.type = nx.type = 'button'; pv.disabled = i === 0; nx.disabled = i === STEPS.length - 1;
+    pv.addEventListener('click', () => go(i - 1)); nx.addEventListener('click', () => go(i + 1)); row.append(pv, nx);
+    rule.append(hd, p1, p2, row);
+    sql.dataset.raw = s.sql; sql.textContent = s.sql; highlight(sql); title.textContent = `SQL for rule ${i + 1}`;
+    chips.innerHTML = '';
+    STEPS.slice(0, i + 1).forEach((st, j) => st.tables.forEach(t => { const c = h('span', j === i ? 'new' : '', t); chips.append(c); }));
+  }
+  go(0);
+})();
+
+/* ---------- design duel ---------- */
+const DUELS = [
+  { t: 'Customer addresses', ctx: 'Requirement: customers have a shipping address with street, city, and state. The business wants to report sales by state.', A: ['Attribute', 'Store one text column "address" on CUSTOMER.'], B: ['Separate attributes or entity', 'Break the address into street, city, state (or an ADDRESS entity) so state can be queried and validated.'], best: 1, why: 'Reporting by state needs the state as its own value. One free-text column would force string parsing and invite inconsistent spellings. Cost: a few more columns, or a join if you choose an ADDRESS entity.' },
+  { t: 'Where the grade lives', ctx: 'Requirement: a student takes many courses and receives a grade in each.', A: ['On STUDENT', 'Add columns grade_course1, grade_course2, and so on.'], B: ['On the relationship', 'Store grade in a junction table ENROLLMENT(sid, code, grade).'], best: 1, why: 'A grade depends on the pair (student, course). Repeating columns break first normal form and cap the number of courses. Cost: one extra join when listing a student\u2019s courses.' },
+  { t: 'Department name', ctx: 'Requirement: every employee works in one department; departments have a unique name.', A: ['Copy the name', 'Store dept_name in EMPLOYEE for fast display.'], B: ['Foreign key only', 'Store dno in EMPLOYEE and join to DEPARTMENT for the name.'], best: 1, why: 'Copying dept_name stores the same fact many times and allows update anomalies. Use the join; consider copying only if measured performance demands it, and then document how you keep copies consistent.' },
+  { t: 'Supplier, part, project', ctx: 'Requirement: record which supplier supplies which part to which project. The same supplier may supply the same part to different projects.', A: ['Three binary relationships', 'SUPPLIER-PART, PART-PROJECT, and SUPPLIER-PROJECT.'], B: ['One ternary relationship', 'SUPPLIES(supplier, part, project).'], best: 1, why: 'Three pairs cannot tell you that supplier S supplied part P to project J; they lose the triple. Use the ternary relationship when the three-way combination is the fact.' }
+];
+(function duels() {
+  const host = $('#duels');
+  DUELS.forEach(d => {
+    const box = h('div', 'duel-item'); box.append(h('b', null, d.t), h('p', null, d.ctx));
+    const grid = h('div', 'duel'), why = h('div', 'why'); why.hidden = true; why.textContent = d.why;
+    [d.A, d.B].forEach((o, i) => {
+      const b = h('button'); b.type = 'button'; b.append(h('b', null, o[0]), document.createTextNode(o[1]));
+      b.addEventListener('click', () => { $$('button', grid).forEach((x, j) => { x.disabled = true; if (j === d.best) x.classList.add('right'); else if (j === i) x.classList.add('wrong'); }); why.prepend(h('b', null, i === d.best ? 'Right call. ' : 'Not the better design. ')); why.hidden = false; });
+      grid.append(b);
+    });
+    box.append(grid, why); host.append(box);
+  });
+})();
+
+/* ---------- justification checker (local only) ---------- */
+(function just() {
+  const ta = $('#justText'), checks = $$('#justChecks input'), out = $('#justScore');
+  const s = store.get(); if (s.just) ta.value = s.just;
+  const upd = () => { const n = checks.filter(c => c.checked).length; out.textContent = n === 4 ? 'All four parts present. That is a strong justification.' : `${n} of 4 parts. Aim for requirement, principle, trade-off, and the rejected alternative.`; };
+  ta.addEventListener('input', () => { const t = store.get(); t.just = ta.value; store.set(t); });
+  checks.forEach(c => c.addEventListener('change', upd)); upd();
+})();
+
+/* ---------- nav ---------- */
+refreshNav();
+$('#resetAll').addEventListener('click', () => { if (confirm('Clear your saved scores and notes in this browser?')) { try { localStorage.removeItem(KEY); } catch (e) {} location.reload(); } });
+const links = $$('#navlist a'), secs = links.map(a => $(a.getAttribute('href')));
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) links.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id)); }), { rootMargin: '-20% 0px -70% 0px' });
+  secs.forEach(s => s && io.observe(s));
+}
+})();
+</script>
+<noscript><p style="padding:20px">This tutorial needs JavaScript for the interactive diagrams and quizzes.</p></noscript>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database Management: Interactive Tutorials</title>
+<style>
+:root{--bg:#EDF1F6;--surface:#FFFFFF;--ink:#0F1F33;--soft:#475C75;--line:#C7D3E1;--accent:#1F5FBF}
+@media (prefers-color-scheme: dark){:root{--bg:#0A1320;--surface:#111F33;--ink:#E6EEF8;--soft:#9DB2CC;--line:#283D58;--accent:#7FB0FF}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:860px;margin:0 auto;padding:48px 18px 72px}
+h1{font-size:clamp(30px,5vw,46px);line-height:1.15;margin:0 0 8px}
+.lede{color:var(--soft);margin:0 0 28px}
+.grid{display:grid;gap:14px}
+a.card{display:block;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+a.card:hover,a.card:focus-visible{border-color:var(--accent);outline:none}
+a.card b{display:block;font-size:20px}
+a.card span{color:var(--soft);font-size:15.5px}
+h2{font-size:20px;margin:34px 0 10px}
+ul{padding-left:1.2em;margin:0}
+li{margin:.3em 0}
+a{color:var(--accent)}
+</style>
+</head>
+<body>
+<main>
+<h1>Database Management</h1>
+<p class="lede">Interactive tutorials with runnable code and knowledge checks. Open one and work through it at your own pace.</p>
+<div class="grid">
+  <a class="card" href="er-eer/"><b>1. ER and EER design</b><span>Entities, relationships, specialization and generalization, and converting diagrams to relational schemas.</span></a>
+  <a class="card" href="normalization/"><b>2. Database normalization</b><span>Functional dependencies, 1NF to BCNF, lossless decomposition, and performance trade-offs.</span></a>
+  <a class="card" href="db-connectivity/"><b>3. Database connectivity</b><span>Connect from Java or Python, run queries, read result sets, and prevent SQL injection with parameterized queries.</span></a>
+</div>
+<h2>Files for instructors</h2>
+<ul>
+  <li>Kahoot import sheets: <a href="kahoot/kahoot-er-eer-quiz.xlsx">ER and EER</a>, <a href="kahoot/kahoot-normalization-quiz.xlsx">normalization</a></li>
+  <li>Code for the connectivity labs: <a href="https://github.com/md-k-sarker/Database-Management/tree/main/db-connectivity/labs">db-connectivity/labs</a></li>
+</ul>
+</main>
+</body>
+</html>
