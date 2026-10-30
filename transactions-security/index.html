@@ -1,0 +1,909 @@
+<!doctype html>
+<html lang="en" data-slug="transactions-security">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transactions and Database Security: Interactive Tutorial</title>
+<meta name="description" content="Interactive tutorial on database transactions (ACID, isolation levels, locking, deadlocks) and security (privileges, roles, SQL injection, password storage, ethics and law), with real MySQL 8.4 recordings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2EF; --surface:#FFFFFF; --surface2:#F4F8F6; --ink:#0E2420; --soft:#46605A; --line:#C5D5CE;
+  --accent:#5B3FD0; --accent-tint:#E9E4FB; --accent-ink:#35208F;
+  --teal:#0F766E; --teal-tint:#DDF1ED; --warn:#9A4A0A; --warn-tint:#FBEBD0;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1;
+  --code-bg:#0D1F1C; --code-bar:#16322D; --code-ink:#DDEBE7;
+  --kw:#C9BEFF; --st:#8FE0C0; --nu:#F2C77B; --cm:#7C9A93; --out-bg:#E4ECE8;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1614; --surface:#12231F; --surface2:#0F1D1A; --ink:#E5F0EC; --soft:#9BB3AC; --line:#274039;
+    --accent:#A99BFF; --accent-tint:#2B2552; --accent-ink:#D4CCFF;
+    --teal:#4FD1C5; --teal-tint:#14332E; --warn:#F0B45A; --warn-tint:#3A2C12;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D;
+    --code-bg:#08130F; --code-bar:#12302A; --out-bg:#0E1C19;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,h4{font-family:"Familjen Grotesk","Public Sans",system-ui,sans-serif;line-height:1.15;letter-spacing:-.005em;margin:0}
+a{color:var(--accent-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre,kbd{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+code{font-size:.88em;background:var(--accent-tint);color:var(--accent-ink);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1320px;margin:0 auto}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:700 20px "Familjen Grotesk",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+header.hero{padding:44px 40px 30px;border-bottom:1px solid var(--line)}
+.eyebrow{font:600 13px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+header.hero h1{font-size:clamp(34px,5vw,56px);font-weight:700;max-width:18ch;margin-top:8px}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:62ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:10px;margin:22px 0 0;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Familjen Grotesk",sans-serif;font-size:17px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:52px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:700}
+section.mod>h2 .num{font:600 14px "IBM Plex Mono",monospace;color:var(--accent-ink);display:block;margin-bottom:6px;letter-spacing:.06em}
+section.mod h3{font-size:22px;margin:30px 0 6px}
+section.mod h4{font-size:17px;margin:20px 0 4px}
+.lead{font-size:18.5px;color:var(--soft);max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:18px 0;min-width:0}
+.card>h3:first-child,.card>h4:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.grid2>*{min-width:0}
+.callout{border-radius:var(--radius);padding:12px 16px;margin:16px 0;border:1px solid var(--line);background:var(--teal-tint)}
+.callout.warn{background:var(--warn-tint);border-color:var(--warn)}
+.callout.bad{background:var(--bad-tint);border-color:var(--bad)}
+.callout b.tag{display:block;font:700 12px "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;color:var(--teal)}
+.callout.warn b.tag{color:var(--warn)} .callout.bad b.tag{color:var(--bad)}
+.callout p:first-of-type{margin-top:0}.callout p:last-child{margin-bottom:0}
+.tested{border:1px dashed var(--line);border-radius:var(--radius);padding:12px 16px;margin:22px 0 0;font-size:15px;color:var(--soft);background:var(--surface2)}
+.tested b{color:var(--ink)}
+.tested table{margin:8px 0 0;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin:14px 0;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font:600 12px "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--soft);background:var(--surface2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.code{border-radius:var(--radius);overflow:hidden;background:var(--code-bg);margin:14px 0;min-width:0}
+.code .bar{display:flex;justify-content:space-between;align-items:center;background:var(--code-bar);color:#9fc2b8;padding:5px 8px 5px 14px;font:600 12px "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase}
+.code button{font:500 12px "Public Sans",sans-serif;background:transparent;color:var(--code-ink);border:1px solid #2c5148;border-radius:6px;padding:3px 10px;cursor:pointer}
+.code button:hover{background:#1d423a}
+pre{margin:0;padding:13px 16px;overflow-x:auto;font-size:14px;line-height:1.6;color:var(--code-ink);tab-size:2}
+.code pre .kw{color:var(--kw);font-weight:600}.code pre .st{color:var(--st)}.code pre .nu{color:var(--nu)}.code pre .cm{color:var(--cm);font-style:italic}
+.out{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);margin:-6px 0 14px;background:var(--out-bg);min-width:0}
+.out .bar{padding:4px 14px;font:600 11.5px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--line)}
+.out pre{color:var(--ink);font-size:13.5px}
+.out.err pre{color:var(--bad)}
+details.sol{border:1px solid var(--line);border-radius:var(--radius);margin:12px 0;background:var(--surface)}
+details.sol>summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:15px;background:var(--surface2);border-radius:var(--radius)}
+details.sol[open]>summary{border-bottom:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0}
+details.sol>div{padding:4px 14px 10px}
+.btn{font:600 14px "Public Sans",sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:600 13px "IBM Plex Mono",monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);cursor:pointer;color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+select,textarea,input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+textarea{width:100%;font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:1.55;min-height:120px;resize:vertical}
+.quiz{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.q{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 18px;margin:0;min-width:0}
+.q legend{font-weight:700;padding:0 6px;font-family:"Familjen Grotesk",sans-serif;font-size:18px}
+.q .opts{display:grid;gap:8px;margin-top:8px}
+.opt{text-align:left;font:inherit;font-size:16px;padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.45}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.fb{font-size:15.5px;color:var(--soft);margin:10px 0 0}
+.fb b.ok{color:var(--ok)}.fb b.no{color:var(--bad)}
+.score{font-weight:700}
+.rs{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rs table{font-size:14px}
+.rs td.null{color:var(--soft);font-style:italic}
+.mono{font-family:"IBM Plex Mono",monospace}
+.muted{color:var(--soft)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-block;font:600 12px "IBM Plex Mono",monospace;padding:2px 9px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.erd{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:14px 0}
+.erd>div{border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:170px;flex:1 1 170px}
+.erd h4{font:700 14px "IBM Plex Mono",monospace;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface2);margin:0}
+.erd ul{list-style:none;margin:0;padding:8px 12px;font:400 13px/1.7 "IBM Plex Mono",monospace}
+.erd b{color:var(--accent-ink)}
+.nav-foot{margin-top:60px;color:var(--soft);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px}
+  nav.side ol{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto}
+  header.hero{padding:30px 18px 24px}
+  main{padding:0 16px 60px}
+}
+.row label{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 220px;font-size:14px;color:var(--soft);font-weight:600}
+.row label select{width:100%;font-weight:400;color:var(--ink)}
+
+
+.tl-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.tl-head .tl-h{font:700 13px "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-ink);padding:4px 2px;border-bottom:2px solid var(--line)}
+.tl-cell{min-width:0}
+.tl-step{border:1px solid var(--line);border-radius:8px;background:var(--surface2);padding:8px 10px;margin-bottom:2px;min-width:0}
+.tl-step.last{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-tint)}
+.tl-step pre{margin:0 0 6px;white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:var(--ink)}
+.tl-res{font:13px "IBM Plex Mono",monospace;overflow-wrap:anywhere}
+.tl-res.bad{color:var(--bad)}
+.tl-res .rs{max-height:200px}
+.tl-note{font-size:13.5px;color:var(--soft);margin-top:6px}
+.tl-blk{font-size:13px;font-style:italic}
+@media (max-width:560px){.tl-grid{grid-template-columns:minmax(0,1fr)}.tl-grid.tl-head{display:none}.tl-cell:empty{display:none}}
+.rs tr.hit td{background:var(--ok-tint)}
+.rs tr.deny td{background:var(--bad-tint)}
+.blk{color:var(--warn);font-weight:700}
+.chip{display:inline-block}
+input[type=text]{width:100%;font:14px "IBM Plex Mono",monospace}
+.row label input[type=text]{min-width:0}
+
+</style>
+
+</head>
+<body>
+<!--dbm-top-->
+<style>
+.dbm-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 20px;background:#0F1F33;color:#E6EEF8;font:600 14.5px/1.3 "Public Sans",system-ui,sans-serif}
+.dbm-bar a{color:#E6EEF8;text-decoration:none;padding:5px 10px;border-radius:8px;border:1px solid #33506f}
+.dbm-bar a:hover,.dbm-bar a:focus-visible{background:#1d3a5c;outline:none}
+.dbm-bar .dbm-where{color:#9DB2CC;font-weight:400;margin-right:auto}
+.dbm-bar .dbm-home{border-color:transparent;padding-left:0}
+.dbm-bar .dbm-home:hover{background:none;text-decoration:underline}
+.dbm-end{max-width:1320px;margin:0 auto;padding:30px 24px 56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-family:"Public Sans",system-ui,sans-serif}
+.dbm-end a{display:block;text-decoration:none;color:inherit;border:1px solid var(--line,#C7D3E1);background:var(--surface,#fff);border-radius:12px;padding:14px 18px;min-width:0}
+.dbm-end a:hover,.dbm-end a:focus-visible{border-color:var(--accent,#1F5FBF);outline:none}
+.dbm-end small{display:block;color:var(--soft,#475C75);font-size:13.5px}
+.dbm-end b{display:block;font-size:18px;overflow-wrap:anywhere}
+.dbm-end .dbm-next{text-align:right;grid-column:2}
+.dbm-end .dbm-hub{grid-column:1/-1;text-align:center}
+@media (max-width:560px){.dbm-end{grid-template-columns:minmax(0,1fr)}.dbm-end .dbm-next{grid-column:auto}.dbm-bar .dbm-where{display:none}.dbm-bar{padding:8px 14px}}
+</style>
+<nav class="dbm-bar" aria-label="Course navigation"><a class="dbm-home" href="../">&larr; All tutorials</a><span class="dbm-where">Module 10 of 10</span><a href="../physical-design-indexing/" rel="prev">&larr; Module 9: Physical design and indexing</a></nav>
+<!--/dbm-top-->
+<div class="wrap">
+<nav class="side" aria-label="Sections"><div class="brand">Transactions and Database Security</div><div class="sub">COSC 431 · Module 10</div>
+<ol><li><a href="#start" data-sec="start"><span>Start here</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#acid" data-sec="acid"><span>ACID</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#control" data-sec="control"><span>Controlling transactions</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#concurrency" data-sec="concurrency"><span>Concurrency problems</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#isolation" data-sec="isolation"><span>Isolation levels and locking</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#deadlocks" data-sec="deadlocks"><span>Deadlocks</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#access" data-sec="access"><span>Access control</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#injection" data-sec="injection"><span>SQL injection</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#protect" data-sec="protect"><span>Protecting the data</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#ethics" data-sec="ethics"><span>Ethics and the law</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#final" data-sec="final"><span>Final check</span><span class="tick" aria-hidden="true"></span></a></li></ol><button type="button" id="tk-reset">Reset my progress</button></nav>
+<div>
+<header class="hero"><div class="eyebrow">COSC 431 · Module 10</div><h1>Transactions and Database Security</h1><p class="lede">See ACID, concurrency and deadlocks on a real MySQL server, then learn to protect a database: privileges and roles, SQL injection, password storage, and the ethical and legal duties of people who handle data.</p>
+<ul class="outcomes"><li><b>ACID</b>Atomicity, consistency, isolation, durability</li><li><b>Concurrency</b>Isolation levels, locks, deadlocks</li><li><b>Access control</b>GRANT, REVOKE, roles, views</li><li><b>Attacks</b>SQL injection and defenses</li><li><b>Responsibility</b>Ethics, privacy law, case studies</li></ul><div class="tested"><b>Tested with.</b> Every command, output and answer in this tutorial was run on real software on <b>October 29, 2026</b>. If you install a newer release, small differences in wording or formatting are normal.<div class="tablewrap"><table><thead><tr><th>Tool</th><th>Version</th><th>Used for</th></tr></thead><tbody><tr><td>MySQL Community Server</td><td><b>8.4.2 (8.4 LTS series), InnoDB</b></td><td>Every output, recorded two-session run and error message shown</td></tr><tr><td>PyMySQL (Python driver)</td><td><b>2.2.8</b></td><td>Recording the concurrency scenarios and the injection examples</td></tr><tr><td>Python</td><td><b>3.13.16</b></td><td>The code samples shown (transfer, password hashing)</td></tr><tr><td>SQLite via sql.js</td><td><b>3.54.0 (sql.js 1.15.2, WebAssembly)</b></td><td>The in-browser SQL injection lab (toy data only)</td></tr></tbody></table></div></div></header>
+<main>
+<section class="mod" id="start"><h2><span class="num">01</span>Start here</h2><p class="lead">A <b>transaction</b> is a group of database operations that must succeed or fail as one unit. Moving money from one account to another is the classic example: if the system stops after taking money out of one account and before putting it into the other, the money has vanished. Transactions are how a database prevents that, even when thousands of users work at the same time.</p>
+<p>The second half of this module is about <b>security</b>: deciding who may see and change which data, defending against attacks such as SQL injection, and acting responsibly with other people's information.</p>
+<h3>What you will be able to do</h3>
+<ul>
+<li>Explain ACID and show each property on a real server.</li>
+<li>Use <code>START TRANSACTION</code>, <code>COMMIT</code>, <code>ROLLBACK</code> and savepoints correctly.</li>
+<li>Predict what two sessions running at the same time will see at each isolation level, and diagnose a deadlock.</li>
+<li>Give a user exactly the privileges they need, using <code>GRANT</code>, <code>REVOKE</code>, roles and views.</li>
+<li>Recognize and prevent SQL injection, and store passwords properly.</li>
+<li>Discuss the ethical and legal duties of a person who handles data.</li>
+</ul>
+<h3>The demo database</h3>
+<p>Four small InnoDB tables in a database called <code>tx_demo</code>. Download <a href="labs/tx_demo.sql">tx_demo.sql</a> and run it in MySQL Workbench to follow along. Running it again resets everything.</p>
+<div class="erd"><div><h4>account</h4><ul><li><b>id</b> (PK)</li><li>owner</li><li>balance (CHECK &gt;= 0)</li></ul></div><div><h4>orders</h4><ul><li><b>id</b> (PK)</li><li>customer</li><li>amount</li></ul></div><div><h4>customers</h4><ul><li><b>id</b> (PK)</li><li>name</li><li>email</li></ul></div><div><h4>employees</h4><ul><li><b>id</b> (PK)</li><li>name</li><li>salary</li></ul></div></div>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> account;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----+-------+---------+
+| id | owner | balance |
++----+-------+---------+
+|  1 | Alice |    1000 |
+|  2 | Bob   |    1000 |
++----+-------+---------+
+2 rows in set</pre></div>
+<h3>Two sessions</h3>
+<p>Many of the experiments need <b>two sessions</b> open at once, called T1 and T2. A session is one connection to the server. In MySQL Workbench, each SQL query tab uses its own connection, so two tabs are two sessions. With the command-line client, open two terminal windows. The outputs in this module were recorded from real pairs of sessions on the server below; you will replay them step by step with a viewer in section 4.</p>
+<div class="callout "><b class="tag">Server settings</b><p>The server used for every example: <b>MySQL 8.4.2</b>, default storage engine <b>InnoDB</b>, default isolation level <b>REPEATABLE-READ</b>, <code>autocommit</code> = 1, <code>innodb_lock_wait_timeout</code> = 50 seconds. Transactions need a transactional storage engine; InnoDB is the default in MySQL 8.4.</p></div>
+<p class="muted">The two halves are linked: a transaction that cannot be trusted corrupts your data by accident; a system without access control lets people corrupt or steal it on purpose.</p><p><button type="button" class="btn" data-markdone="start">Mark section as done</button></p></section>
+<section class="mod" id="acid"><h2><span class="num">02</span>ACID</h2><p class="lead">ACID is the set of four guarantees that a transactional database gives you. Each letter describes a different kind of failure that the database protects you from.</p>
+<div class="tablewrap"><table><thead><tr><th>Letter</th><th>Property</th><th>Plain meaning</th><th>Protects against</th></tr></thead><tbody><tr><td><b>A</b></td><td>Atomicity</td><td>All the statements of a transaction take effect, or none do.</td><td>A crash or error half-way through a transfer</td></tr><tr><td><b>C</b></td><td>Consistency</td><td>A transaction takes the database from one valid state to another; constraints are never left violated.</td><td>Data that breaks the rules (negative balance, orphan rows)</td></tr><tr><td><b>I</b></td><td>Isolation</td><td>Concurrent transactions do not see each other's unfinished work; the result is as if they ran one at a time, to the degree the isolation level promises.</td><td>Two users interfering with each other</td></tr><tr><td><b>D</b></td><td>Durability</td><td>Once <code>COMMIT</code> returns, the change survives a crash or power loss.</td><td>Losing committed work</td></tr></tbody></table></div>
+<h3>Atomicity in action</h3>
+<p>Move 300 from Alice to Bob. This takes two <code>UPDATE</code> statements. The widget below replays what happened on the real server when the connection to the database was lost <em>between</em> the two statements, with and without a transaction.</p>
+<div id="w-xfer" class="card"></div>
+<p>Without a transaction, every statement is committed on its own (this is <code>autocommit</code> mode, the MySQL default), so the debit is permanent even though the credit never happened. With a transaction, the server rolled back the unfinished work as soon as the connection dropped.</p>
+<h3>Consistency in action</h3>
+<p>The <code>account</code> table has a rule: <code>CHECK (balance &gt;= 0)</code>. Watch what happens when a transaction tries to break it. Notice carefully <em>what</em> is undone: only the failing statement. The earlier <code>UPDATE</code> in the same transaction is still in effect until you decide to roll back.</p>
+<div class="out"><div class="bar">Transcript (one session on MySQL 8.4)</div><pre>T1&gt; START TRANSACTION
+    OK
+
+T1&gt; UPDATE account SET balance = balance - 300 WHERE id = 1
+    Query OK, 1 row affected
+
+T1&gt; UPDATE account SET balance = balance - 5000 WHERE id = 2
+    ERROR 3819: Check constraint 'balance_not_negative' is violated.
+
+T1&gt; SELECT id, balance FROM account ORDER BY id
+    id | balance
+    ---+--------
+    1  | 700    
+    2  | 1000   
+
+T1&gt; ROLLBACK
+    OK
+
+T1&gt; SELECT id, balance FROM account ORDER BY id
+    id | balance
+    ---+--------
+    1  | 1000   
+    2  | 1000   </pre></div>
+<div class="callout warn"><b class="tag">Statement versus transaction</b><p>An error does not end a transaction in MySQL. After a failed statement, <b>your code must decide</b> whether to <code>ROLLBACK</code> the whole transaction or carry on. Forgetting this is a common bug. (Deadlocks are different: the server rolls back the whole transaction for you. See section 6.)</p></div>
+<h3>Durability in action</h3>
+<p>When you commit, InnoDB writes the change to its <em>redo log</em> and, with the default setting, forces that log to disk before <code>COMMIT</code> returns. After a crash the server replays the log, so committed work is not lost. The setting that controls it:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> @@innodb_flush_log_at_trx_commit;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----------------------------------+
+| @@innodb_flush_log_at_trx_commit |
++----------------------------------+
+|                                1 |
++----------------------------------+
+1 row in set</pre></div>
+<p>The value <code>1</code> is the default and the only setting that gives full ACID durability. Values <code>0</code> and <code>2</code> are faster but can lose the most recent transactions in a crash. You will not change this in this course, but you should know it exists.</p>
+<h3>Isolation is the tricky one</h3>
+<p>Atomicity, consistency and durability are about one transaction. Isolation is about what happens when several run at once, and it comes in levels because perfect isolation costs performance. Sections 4 to 6 cover it in depth.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="acid"></div><p><button type="button" class="btn" data-markdone="acid">Mark section as done</button></p></section>
+<section class="mod" id="control"><h2><span class="num">03</span>Controlling transactions</h2><p class="lead">Four statements control a transaction. Learn them, and the one setting that decides whether you are in one without knowing it.</p>
+<h3>Autocommit</h3>
+<p>By default MySQL is in <b>autocommit</b> mode: every statement is its own transaction that commits immediately. That is convenient, and it is why a lone <code>UPDATE</code> cannot be undone.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> @@<span class="kw">autocommit</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+
+| @@autocommit |
++--------------+
+|            1 |
++--------------+
+1 row in set</pre></div>
+<h3>The control statements</h3>
+<div class="tablewrap"><table><thead><tr><th>Statement</th><th>What it does</th></tr></thead><tbody><tr><td><code>START TRANSACTION</code> (or <code>BEGIN</code>)</td><td>Starts a transaction. Autocommit is suspended until the transaction ends.</td></tr><tr><td><code>COMMIT</code></td><td>Makes all changes since the start permanent and visible to others.</td></tr><tr><td><code>ROLLBACK</code></td><td>Undoes all changes since the start.</td></tr><tr><td><code>SAVEPOINT name</code> / <code>ROLLBACK TO SAVEPOINT name</code></td><td>Marks a point inside a transaction that you can return to without abandoning the whole transaction.</td></tr><tr><td><code>SET autocommit = 0</code></td><td>Makes every statement part of a transaction until you <code>COMMIT</code> or <code>ROLLBACK</code>. Easy to forget; the next section shows why that is dangerous.</td></tr></tbody></table></div>
+<h3>A savepoint</h3>
+<p>Debit Alice, make a mistake crediting Bob, go back to the savepoint, and credit the right amount. Only the mistake is undone.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">START</span> <span class="kw">TRANSACTION</span>;
+<span class="kw">UPDATE</span> account <span class="kw">SET</span> balance = balance - <span class="nu">100</span> <span class="kw">WHERE</span> id = <span class="nu">1</span>;
+<span class="kw">SAVEPOINT</span> after_debit;
+<span class="kw">UPDATE</span> account <span class="kw">SET</span> balance = balance + <span class="nu">999</span> <span class="kw">WHERE</span> id = <span class="nu">2</span>;   <span class="cm">-- oops, wrong amount</span>
+<span class="kw">ROLLBACK</span> <span class="kw">TO</span> <span class="kw">SAVEPOINT</span> after_debit;
+<span class="kw">UPDATE</span> account <span class="kw">SET</span> balance = balance + <span class="nu">100</span> <span class="kw">WHERE</span> id = <span class="nu">2</span>;
+<span class="kw">SELECT</span> id, owner, balance <span class="kw">FROM</span> account;
+<span class="kw">COMMIT</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----+-------+---------+
+| id | owner | balance |
++----+-------+---------+
+|  1 | Alice |     900 |
+|  2 | Bob   |    1100 |
++----+-------+---------+
+2 rows in set</pre></div>
+<h3>Things that end a transaction when you do not expect it</h3>
+<p>DDL statements such as <code>CREATE TABLE</code> and <code>DROP TABLE</code> cause an <b>implicit commit</b>. Here the <code>ROLLBACK</code> finds nothing to undo, because the insert was already committed:</p>
+<div class="out"><div class="bar">Transcript (one session on MySQL 8.4)</div><pre>T1&gt; START TRANSACTION
+    OK
+
+T1&gt; INSERT INTO orders VALUES (5, 'Cy', 99)
+    Query OK, 1 row affected
+
+T1&gt; CREATE TABLE scratch (x INT)
+    OK
+
+T1&gt; ROLLBACK
+    OK
+
+T1&gt; SELECT id, customer FROM orders WHERE id = 5
+    id | customer
+    ---+---------
+    5  | Cy      
+
+T1&gt; DROP TABLE scratch
+    OK</pre></div>
+<p>Not every table can roll back, either. Only transactional storage engines (InnoDB, the default) can. A table in the old MyISAM engine ignores <code>ROLLBACK</code>, and MySQL warns you:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">TABLE</span> log_myisam (id INT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>, note VARCHAR(<span class="nu">20</span>)) <span class="kw">ENGINE</span>=MyISAM;
+<span class="kw">START</span> <span class="kw">TRANSACTION</span>;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> log_myisam <span class="kw">VALUES</span> (<span class="nu">1</span>, <span class="st">'hello'</span>);
+<span class="kw">ROLLBACK</span>;
+<span class="kw">SHOW</span> <span class="kw">WARNINGS</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> log_myisam;
+<span class="kw">DROP</span> <span class="kw">TABLE</span> log_myisam;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------+------+---------------------------------------------------------------+
+| Level   | Code | Message                                                       |
++---------+------+---------------------------------------------------------------+
+| Warning | 1196 | Some non-transactional changed tables couldn't be rolled back |
++---------+------+---------------------------------------------------------------+
+1 row in set
+
++----+-------+
+| id | note  |
++----+-------+
+|  1 | hello |
++----+-------+
+1 row in set</pre></div>
+<div class="callout bad"><b class="tag">Common mistake</b><p>If you ever see <code>ENGINE=MyISAM</code> in a schema you did not design, remember that transactions silently do not work on it. Foreign keys are also not enforced by MyISAM.</p></div>
+<h3>The pattern in a program</h3>
+<p>Programs follow one shape: do the work, commit if everything worked, roll back and re-raise on any error. This Python function was run against the demo database. A transfer of 300 succeeded; a transfer of 5000 broke the <code>CHECK</code> constraint, so the exception caused a rollback and the first <code>UPDATE</code> did not stick:</p>
+<div class="code"><div class="bar"><span>Python (PyMySQL)</span><button type="button">Copy</button></div><pre>import pymysql
+
+def transfer(conn, src, dst, amount):
+    try:
+        with conn.cursor() as cur:
+            cur.execute("UPDATE account SET balance = balance - %s WHERE id = %s", (amount, src))
+            cur.execute("UPDATE account SET balance = balance + %s WHERE id = %s", (amount, dst))
+        conn.commit()          <span class="cm"># make both changes permanent</span>
+    except Exception:
+        conn.rollback()        <span class="cm"># undo everything since the transaction began</span>
+        raise</pre></div><div class="out"><div class="bar">Output (run against MySQL 8.4)</div><pre>transfer(1 -&gt; 2, 300):    balances [700, 1300]
+transfer(1 -&gt; 2, 5000):   raised an error (CHECK constraint); balances [700, 1300]</pre></div>
+<p>In Java the same shape uses <code>connection.setAutoCommit(false)</code>, <code>commit()</code> and <code>rollback()</code>; Module 8 shows it.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="ctl"></div><p><button type="button" class="btn" data-markdone="control">Mark section as done</button></p></section>
+<section class="mod" id="concurrency"><h2><span class="num">04</span>Concurrency problems</h2><p class="lead">When transactions overlap, strange things can happen. There are four classic problems. For each one you can <b>replay a real recording</b> of two sessions on MySQL 8.4 and see exactly what each session read.</p>
+<h3>The problems</h3>
+<div class="tablewrap"><table><thead><tr><th>Problem</th><th>What happens</th></tr></thead><tbody><tr><td><b>Dirty read</b></td><td>T2 reads a change that T1 has not committed. If T1 rolls back, T2 acted on data that never existed.</td></tr><tr><td><b>Non-repeatable read</b></td><td>T2 reads a row twice in one transaction and gets different values, because T1 committed a change in between.</td></tr><tr><td><b>Phantom read</b></td><td>T2 runs the same range query twice and the second time extra rows appear (or vanish), because T1 inserted or deleted rows in between.</td></tr><tr><td><b>Lost update</b></td><td>T1 and T2 both read a value, both compute a new value from it, and both write. The one who writes last overwrites the other's change.</td></tr></tbody></table></div>
+<h3>Replay a recorded run</h3>
+<p>Choose a scenario and, for the three read problems, an isolation level. Press <b>Next step</b> to reveal one statement at a time. Think about what the next result will be <em>before</em> you press the button.</p>
+<div id="w-tl" class="card"></div>
+<h3>What each isolation level showed</h3>
+<p>The table below was produced by running the three read scenarios at all four levels on the real server. At <b>SERIALIZABLE</b> InnoDB turns ordinary reads inside a transaction into locking reads, so the other session has to wait. For the experiment the wait was limited to 2 seconds (<code>innodb_lock_wait_timeout = 2</code>, instead of the default 50) so that the recording finishes quickly.</p>
+<div class="tablewrap"><table><thead><tr><th>Isolation level</th><th>Dirty read</th><th>Non-repeatable read</th><th>Phantom read</th></tr></thead><tbody><tr><td>READ UNCOMMITTED</td><td><b class="no">Seen</b>: T2 read 500, a value that was rolled back</td><td><b class="no">Seen</b>: 1000 then 1500</td><td><b class="no">Seen</b>: count 2 then 3</td></tr><tr><td>READ COMMITTED</td><td>Not seen: T2 read 1000</td><td><b class="no">Seen</b>: 1000 then 1500</td><td><b class="no">Seen</b>: count 2 then 3</td></tr><tr><td>REPEATABLE READ</td><td>Not seen: T2 read 1000</td><td>Not seen: 1000 both times</td><td>Not seen: count 2 both times</td></tr><tr><td>SERIALIZABLE</td><td><span class="blk">Blocked</span>: the second session waits for a lock and then times out</td><td><span class="blk">Blocked</span>: the second session waits for a lock and then times out</td><td><span class="blk">Blocked</span>: the second session waits for a lock and then times out</td></tr></tbody></table></div>
+<div class="callout "><b class="tag">Detail worth knowing</b><p><b>InnoDB is stricter than the SQL standard.</b> The standard says <code>REPEATABLE READ</code> may still allow phantoms; InnoDB's <code>REPEATABLE READ</code> uses a snapshot, so plain <code>SELECT</code> statements did not see the phantom in the recording above. A transaction does see the new row once it <em>writes</em> to the range itself. In the last scenario of the viewer, an <code>UPDATE</code> by T2 touches the row that T1 inserted, and a later count then includes it (count 2, then 2, then 3). Do not assume other database systems behave the same way at the same level.</p></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="conc"></div><p><button type="button" class="btn" data-markdone="concurrency">Mark section as done</button></p></section>
+<section class="mod" id="isolation"><h2><span class="num">05</span>Isolation levels and locking</h2><p class="lead">The isolation level is a dial between safety and speed. Higher levels prevent more problems but make sessions wait for each other more. MySQL lets you set it per session or per transaction.</p>
+<h3>The four levels</h3>
+<div class="tablewrap"><table><thead><tr><th>Level</th><th>Idea</th><th>Cost</th></tr></thead><tbody><tr><td><code>READ UNCOMMITTED</code></td><td>Reads can see uncommitted changes.</td><td>Almost no protection. Rarely a good idea.</td></tr><tr><td><code>READ COMMITTED</code></td><td>Each statement sees only data committed before it started.</td><td>Non-repeatable reads and phantoms are possible. Common in other databases' defaults.</td></tr><tr><td><code>REPEATABLE READ</code> (InnoDB default)</td><td>The whole transaction sees the snapshot of the data as of its first read.</td><td>Writers can still conflict; lost updates remain possible with read-then-write code.</td></tr><tr><td><code>SERIALIZABLE</code></td><td>As if the transactions ran one after the other.</td><td>Most waiting; lock timeouts and deadlocks are more likely.</td></tr></tbody></table></div>
+<h3>Setting the level</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SET</span> <span class="kw">SESSION</span> <span class="kw">TRANSACTION</span> <span class="kw">ISOLATION</span> <span class="kw">LEVEL</span> <span class="kw">READ</span> <span class="kw">COMMITTED</span>;
+<span class="kw">SELECT</span> @@transaction_isolation;
+<span class="kw">SET</span> <span class="kw">SESSION</span> <span class="kw">TRANSACTION</span> <span class="kw">ISOLATION</span> <span class="kw">LEVEL</span> <span class="kw">REPEATABLE</span> <span class="kw">READ</span>;
+<span class="kw">SELECT</span> @@transaction_isolation;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------------------------+
+| @@transaction_isolation |
++-------------------------+
+| READ-COMMITTED          |
++-------------------------+
+1 row in set
+
++-------------------------+
+| @@transaction_isolation |
++-------------------------+
+| REPEATABLE-READ         |
++-------------------------+
+1 row in set</pre></div>
+<p><code>SET SESSION ...</code> changes the level for the rest of your session. <code>SET TRANSACTION ISOLATION LEVEL ...</code> (without SESSION) applies only to the next transaction. <code>SET GLOBAL ...</code> changes the default for new connections and needs administrator rights.</p>
+<h3>How InnoDB avoids many waits: MVCC</h3>
+<p>InnoDB keeps old versions of changed rows (in the <em>undo log</em>). A plain <code>SELECT</code> reads the version of the row that was current for its snapshot, so <b>readers do not block writers and writers do not block readers</b>. This is called multi-version concurrency control (MVCC). That is why, in the recordings, T2's read was never held up by T1 at the lower levels.</p>
+<h3>Fixing a lost update</h3>
+<p>Plain reads come from the snapshot, so they do not protect a read-then-write sequence. There are two reliable fixes, both recorded on the real server. Replay them in the viewer from section 4 (choose a "Lost update" scenario), or read the outcome here:</p>
+<div class="tablewrap"><table><thead><tr><th>Approach</th><th>How it works</th><th>Final balance (expected 1300)</th></tr></thead><tbody><tr><td>Read, compute in the program, write</td><td>Both sessions read 1000 and write 1100 and 1200. The last writer wins.</td><td><b class="no">1200</b></td></tr><tr><td><b>Fix 1.</b> Let the database compute: <code>SET balance = balance + 100</code></td><td>The update locks the row and uses the current value. The second session waits for the first.</td><td><b class="ok">1300</b></td></tr><tr><td><b>Fix 2.</b> <code>SELECT ... FOR UPDATE</code>, then update</td><td>The first read locks the row. The second session's locking read waits, then sees the committed 1100.</td><td><b class="ok">1300</b></td></tr></tbody></table></div>
+<p><code>SELECT ... FOR UPDATE</code> takes an exclusive lock on the rows it reads (a "locking read"); <code>SELECT ... FOR SHARE</code> takes a shared lock that allows other readers but blocks writers. Whenever a decision in your program depends on data you read, either do the read and write in one statement, or lock the rows when you read them.</p>
+<div class="callout warn"><b class="tag">Locks live until COMMIT or ROLLBACK</b><p>Locks are held until the transaction ends. Keep transactions short, and never wait for a person (a click, a prompt) inside an open transaction.</p></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="iso"></div><p><button type="button" class="btn" data-markdone="isolation">Mark section as done</button></p></section>
+<section class="mod" id="deadlocks"><h2><span class="num">06</span>Deadlocks</h2><p class="lead">A <b>deadlock</b> is a circle of waiting: T1 holds a lock that T2 needs, while T2 holds a lock that T1 needs. Neither can ever continue. Databases detect this and break the circle.</p>
+<h3>Watch one happen</h3>
+<p>Two transfers touch the same two accounts in <em>opposite order</em>. T1 locks Alice, T2 locks Bob, and then each asks for the other row. Replay the recording:</p>
+<div id="w-dl" class="card"></div>
+<p>InnoDB noticed the cycle immediately and rolled back one transaction, the <b>victim</b>. In this recording the victim was <b>T2</b>; the server may choose either one. The victim receives <code>ERROR 1213 (40001): Deadlock found when trying to get lock; try restarting transaction</code>, and its <b>entire</b> transaction has been rolled back. The other transaction then continued and committed. Final balances: Alice 990, Bob 1010 (only the survivor's change remains).</p>
+<h3>Lock wait timeout is different</h3>
+<p>If a session simply waits too long for a lock (no cycle), MySQL gives up after <code>innodb_lock_wait_timeout</code> seconds (default 50) with error 1205. In that case only the waiting <em>statement</em> is rolled back, not the whole transaction. You saw error 1205 in the SERIALIZABLE recordings, where the wait was cut to 2 seconds.</p>
+<h3>How to avoid and handle deadlocks</h3>
+<ul>
+<li><b>Access rows in a consistent order.</b> If both transfers always lock the lower account id first, the circle cannot form.</li>
+<li><b>Keep transactions short</b> and do not hold locks while waiting for users or other systems.</li>
+<li><b>Use indexes</b> on the columns you filter by, so you lock fewer rows.</li>
+<li><b>Expect them and retry.</b> Even careful code gets an occasional deadlock. The standard remedy is to catch error 1213 and run the whole transaction again:</li>
+</ul>
+<div class="code"><div class="bar"><span>Python (PyMySQL)</span><button type="button">Copy</button></div><pre>import time, pymysql
+
+DEADLOCK = 1213   <span class="cm"># ER_LOCK_DEADLOCK</span>
+
+def run_with_retry(conn, work, attempts=3):
+    for attempt in range(1, attempts + 1):
+        try:
+            work(conn)             <span class="cm"># your transaction: statements, then conn.commit()</span>
+            return
+        except pymysql.MySQLError as e:
+            conn.rollback()
+            if e.args[0] == DEADLOCK and attempt &lt; attempts:
+                time.sleep(0.05 * attempt)   <span class="cm"># short pause, then try again</span>
+                continue
+            raise</pre></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="dl"></div><p><button type="button" class="btn" data-markdone="deadlocks">Mark section as done</button></p></section>
+<section class="mod" id="access"><h2><span class="num">07</span>Access control</h2><p class="lead">Security starts with a simple question: <b>who is allowed to do what?</b> A database answers it with accounts and privileges. This section uses real accounts on the server and shows the real error messages you will see when something is not allowed.</p>
+<h3>The goals</h3>
+<div class="tablewrap"><table><thead><tr><th>Goal</th><th>Meaning</th><th>Example failure</th></tr></thead><tbody><tr><td><b>Confidentiality</b></td><td>Only authorized people can read the data.</td><td>A clerk reads every employee's salary.</td></tr><tr><td><b>Integrity</b></td><td>Only authorized people can change the data, and changes are valid.</td><td>Someone edits a grade or a balance.</td></tr><tr><td><b>Availability</b></td><td>Authorized people can use the data when they need it.</td><td>A table is dropped, or the server is overwhelmed.</td></tr></tbody></table></div>
+<p>Two steps protect them. <b>Authentication</b> proves who you are (user name and password). <b>Authorization</b> decides what you may do once you are in (privileges). Different things can go wrong in each, so keep them separate in your head.</p>
+<h3>Create a user</h3>
+<p>MySQL identifies an account by user name <em>and</em> the host it connects from, written <code>'ana'@'localhost'</code>. A user that can connect from anywhere is <code>'ana'@'%'</code>; avoid that unless you need it. A new user can connect but can do almost nothing.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">USER</span> <span class="st">'ana'</span>@<span class="st">'localhost'</span> <span class="kw">IDENTIFIED</span> <span class="kw">BY</span> <span class="st">'Pass#1234'</span>;
+<span class="kw">SELECT</span> <span class="kw">user</span>, host, plugin <span class="kw">FROM</span> mysql.<span class="kw">user</span> <span class="kw">WHERE</span> <span class="kw">user</span> = <span class="st">'ana'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------+-----------+-----------------------+
+| user | host      | plugin                |
++------+-----------+-----------------------+
+| ana  | localhost | caching_sha2_password |
++------+-----------+-----------------------+
+1 row in set</pre></div>
+<div class="callout "><b class="tag">MySQL 8.4 note</b><p>Every example password in this tutorial is for teaching only. Real passwords must be long, unique and kept in a password manager. The default authentication plugin in MySQL 8.4 is <code>caching_sha2_password</code> (shown above). The older <code>mysql_native_password</code> plugin is disabled by default in 8.4 and is removed in MySQL 9.0, so creating a user with it fails on a default 8.4 server:</p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">USER</span> <span class="st">'old'</span>@<span class="st">'localhost'</span> <span class="kw">IDENTIFIED</span> <span class="kw">WITH</span> mysql_native_password <span class="kw">BY</span> <span class="st">'abc'</span>;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4)</div><pre>ERROR 1524 (HY000): Plugin 'mysql_native_password' is not loaded</pre></div></div>
+<h3>GRANT: give exactly what is needed</h3>
+<p>The <b>principle of least privilege</b> says every account gets the minimum it needs, and nothing more. Give Ana read access to one table:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">GRANT</span> <span class="kw">SELECT</span> <span class="kw">ON</span> tx_demo.customers <span class="kw">TO</span> <span class="st">'ana'</span>@<span class="st">'localhost'</span>;
+<span class="kw">SHOW</span> GRANTS <span class="kw">FOR</span> <span class="st">'ana'</span>@<span class="st">'localhost'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------------------------------------------------------+
+| Grants for ana@localhost                                   |
++------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `ana`@`localhost`                    |
+| GRANT SELECT ON `tx_demo`.`customers` TO `ana`@`localhost` |
++------------------------------------------------------------+
+2 rows in set</pre></div>
+<p><code>USAGE</code> means "may connect, no other privileges". Now connect <b>as Ana</b> and see what she can and cannot do. These outputs come from a real session logged in as Ana:</p>
+<div class="code"><div class="bar"><span>SQL (as ana)</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> tx_demo.customers;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> tx_demo.employees;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> tx_demo.customers <span class="kw">VALUES</span> (<span class="nu">3</span>, <span class="st">'Eve'</span>, <span class="st">'eve@example.com'</span>);</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4, connected as ana)</div><pre>+----+-------+-------------------+
+| id | name  | email             |
++----+-------+-------------------+
+|  1 | Alice | alice@example.com |
+|  2 | Bob   | bob@example.com   |
++----+-------+-------------------+
+2 rows in set
+
+ERROR 1142 (42000): SELECT command denied to user 'ana'@'localhost' for table 'employees'
+
+ERROR 1142 (42000): INSERT command denied to user 'ana'@'localhost' for table 'customers'</pre></div>
+<p>The privilege levels you will meet most often: <code>ON *.*</code> (all databases, administrators only), <code>ON tx_demo.*</code> (one database), <code>ON tx_demo.orders</code> (one table), and <code>ON tx_demo.employees (id, name)</code> style column lists.</p>
+<h3>REVOKE: take it back</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">REVOKE</span> <span class="kw">SELECT</span> <span class="kw">ON</span> tx_demo.customers <span class="kw">FROM</span> <span class="st">'ana'</span>@<span class="st">'localhost'</span>;
+<span class="kw">SHOW</span> GRANTS <span class="kw">FOR</span> <span class="st">'ana'</span>@<span class="st">'localhost'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----------------------------------------+
+| Grants for ana@localhost                |
++-----------------------------------------+
+| GRANT USAGE ON *.* TO `ana`@`localhost` |
++-----------------------------------------+
+1 row in set</pre></div><div class="code"><div class="bar"><span>SQL (as ana)</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> tx_demo.customers;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4, connected as ana)</div><pre>ERROR 1142 (42000): SELECT command denied to user 'ana'@'localhost' for table 'customers'</pre></div>
+<h3>Limiting columns: column privileges and views</h3>
+<p>Sometimes a table mixes public and sensitive columns. Two tools help. A <b>column-level grant</b> lists the allowed columns:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">USER</span> <span class="st">'cole'</span>@<span class="st">'localhost'</span> <span class="kw">IDENTIFIED</span> <span class="kw">BY</span> <span class="st">'Pass#1234'</span>;
+<span class="kw">GRANT</span> <span class="kw">SELECT</span> (id, name) <span class="kw">ON</span> tx_demo.employees <span class="kw">TO</span> <span class="st">'cole'</span>@<span class="st">'localhost'</span>;</pre></div><div class="code"><div class="bar"><span>SQL (as cole)</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, name <span class="kw">FROM</span> tx_demo.employees;
+<span class="kw">SELECT</span> id, name, salary <span class="kw">FROM</span> tx_demo.employees;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4, connected as cole)</div><pre>+----+------+
+| id | name |
++----+------+
+|  1 | Dana |
+|  2 | Eli  |
++----+------+
+2 rows in set
+
+ERROR 1143 (42000): SELECT command denied to user 'cole'@'localhost' for column 'salary' in table 'employees'</pre></div>
+<p>A <b>view</b> is a stored query that you can grant access to instead of the table. Because a view runs with its creator's rights by default (<code>SQL SECURITY DEFINER</code>), the user needs no access to the underlying table at all:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">VIEW</span> staff_directory <span class="kw">AS</span> <span class="kw">SELECT</span> id, name <span class="kw">FROM</span> employees;
+<span class="kw">CREATE</span> <span class="kw">USER</span> <span class="st">'vera'</span>@<span class="st">'localhost'</span> <span class="kw">IDENTIFIED</span> <span class="kw">BY</span> <span class="st">'Pass#1234'</span>;
+<span class="kw">GRANT</span> <span class="kw">SELECT</span> <span class="kw">ON</span> tx_demo.staff_directory <span class="kw">TO</span> <span class="st">'vera'</span>@<span class="st">'localhost'</span>;</pre></div><div class="code"><div class="bar"><span>SQL (as vera)</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> tx_demo.staff_directory;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> tx_demo.employees;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4, connected as vera)</div><pre>+----+------+
+| id | name |
++----+------+
+|  1 | Dana |
+|  2 | Eli  |
++----+------+
+2 rows in set
+
+ERROR 1142 (42000): SELECT command denied to user 'vera'@'localhost' for table 'employees'</pre></div>
+<h3>Roles: manage privileges for groups</h3>
+<p>Granting the same ten privileges to fifty users one by one is error-prone. A <b>role</b> is a named bundle of privileges that you grant to users. MySQL 8.0 and later support roles. A granted role is <em>not active</em> until the user switches it on (<code>SET ROLE</code>) or an administrator makes it a default role:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> ROLE <span class="st">'reporting'</span>;
+<span class="kw">GRANT</span> <span class="kw">SELECT</span> <span class="kw">ON</span> tx_demo.* <span class="kw">TO</span> <span class="st">'reporting'</span>;
+<span class="kw">CREATE</span> <span class="kw">USER</span> <span class="st">'rita'</span>@<span class="st">'localhost'</span> <span class="kw">IDENTIFIED</span> <span class="kw">BY</span> <span class="st">'Pass#1234'</span>;
+<span class="kw">GRANT</span> <span class="st">'reporting'</span> <span class="kw">TO</span> <span class="st">'rita'</span>@<span class="st">'localhost'</span>;</pre></div><div class="code"><div class="bar"><span>SQL (as rita)</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> CURRENT_ROLE();
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> n <span class="kw">FROM</span> tx_demo.orders;
+<span class="kw">SET</span> ROLE <span class="st">'reporting'</span>;
+<span class="kw">SELECT</span> CURRENT_ROLE();
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> n <span class="kw">FROM</span> tx_demo.orders;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4, connected as rita)</div><pre>+----------------+
+| CURRENT_ROLE() |
++----------------+
+| NONE           |
++----------------+
+1 row in set
+
+ERROR 1142 (42000): SELECT command denied to user 'rita'@'localhost' for table 'orders'
+
+Query OK, 0 rows affected
+
++-----------------+
+| CURRENT_ROLE()  |
++-----------------+
+| `reporting`@`%` |
++-----------------+
+1 row in set
+
++---+
+| n |
++---+
+| 3 |
++---+
+1 row in set</pre></div>
+<p>To avoid asking every user to run <code>SET ROLE</code>, make it a default role. A new connection then has it active:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SET</span> <span class="kw">DEFAULT</span> ROLE <span class="st">'reporting'</span> <span class="kw">TO</span> <span class="st">'rita'</span>@<span class="st">'localhost'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4, connected as rita)</div><pre>+-----------------+
+| CURRENT_ROLE()  |
++-----------------+
+| `reporting`@`%` |
++-----------------+
+1 row in set
+
++---+
+| n |
++---+
+| 3 |
++---+
+1 row in set</pre></div>
+<h3>Try it: build a privilege set</h3>
+<p>This widget models one user, <code>analyst</code>. Tick the privileges, then see which of eight statements would work. The rules and the error messages were checked against real MySQL: the page's logic was compared with the server on 42 different random privilege sets, with no differences. One result may surprise you: <code>UPDATE ... WHERE</code> and <code>DELETE ... WHERE</code> also need <code>SELECT</code>, because the <code>WHERE</code> clause reads the table.</p>
+<div id="w-priv" class="card"></div>
+<div class="callout warn"><b class="tag">Habits</b><ul><li>Never let an application connect as <code>root</code>. Create an account that has only the privileges the application needs (often <code>SELECT, INSERT, UPDATE, DELETE</code> on one database, never <code>DROP</code> or <code>GRANT</code>).</li><li><code>GRANT ALL ON *.*</code> is almost never the right answer.</li><li>Review accounts regularly. Remove accounts that nobody uses.</li></ul></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="acl"></div><p><button type="button" class="btn" data-markdone="access">Mark section as done</button></p></section>
+<section class="mod" id="injection"><h2><span class="num">08</span>SQL injection</h2><p class="lead"><b>SQL injection</b> happens when a program builds an SQL statement by pasting user input into the text. The input is then parsed as SQL, so a user can change what the query does. It has been among the most common and most damaging web vulnerabilities for over twenty years, and it is entirely preventable.</p>
+<p>This section is about recognizing and preventing the flaw. The lab and the examples run only against a small, made-up database in your own browser or on the course server; never test anything like this on a system you do not own or have written permission to test. Section 10 explains why.</p>
+<h3>The vulnerable pattern</h3>
+<div class="code"><div class="bar"><span>Python (what NOT to do)</span><button type="button">Copy</button></div><pre><span class="cm"># DANGEROUS: do not write code like this</span>
+sql = "SELECT id, username, role FROM app_user " \
+      "WHERE username = '" + username + "' AND password = '" + password + "'"
+cursor.execute(sql)</pre></div>
+<p>If the user types <code>alice</code> and <code>alicepw</code> the text is fine. But the user controls what goes between the quotes. Here are real runs against MySQL 8.4 (the tables <code>app_user</code> and <code>product</code> hold three made-up users and three products):</p>
+<h4>Normal login</h4><p class="muted">What the user typed: <code>username = 'alice', password = 'alicepw'</code></p><div class="code"><div class="bar"><span>SQL sent to MySQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, username, role <span class="kw">FROM</span> app_user <span class="kw">WHERE</span> username = <span class="st">'alice'</span> <span class="kw">AND</span> password = <span class="st">'alicepw'</span></pre></div><div class="out"><div class="bar">Result (MySQL 8.4)</div><pre>2 | alice | user
+(1 row)</pre></div><h4>Wrong password</h4><p class="muted">What the user typed: <code>username = 'alice', password = 'wrong'</code></p><div class="code"><div class="bar"><span>SQL sent to MySQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, username, role <span class="kw">FROM</span> app_user <span class="kw">WHERE</span> username = <span class="st">'alice'</span> <span class="kw">AND</span> password = <span class="st">'wrong'</span></pre></div><div class="out"><div class="bar">Result (MySQL 8.4)</div><pre>(no rows)</pre></div><h4>Attack 1: a condition that is always true</h4><p class="muted">What the user typed: <code>username = 'alice', password = "' OR '1'='1"</code></p><div class="code"><div class="bar"><span>SQL sent to MySQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, username, role <span class="kw">FROM</span> app_user <span class="kw">WHERE</span> username = <span class="st">'alice'</span> <span class="kw">AND</span> password = <span class="st">''</span> <span class="kw">OR</span> <span class="st">'1'</span>=<span class="st">'1'</span></pre></div><div class="out"><div class="bar">Result (MySQL 8.4)</div><pre>1 | admin | admin
+2 | alice | user
+3 | bob | user
+(3 rows)</pre></div><h4>Attack 2: comment out the password check</h4><p class="muted">What the user typed: <code>username = "admin' -- ", password = 'x'</code></p><div class="code"><div class="bar"><span>SQL sent to MySQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, username, role <span class="kw">FROM</span> app_user <span class="kw">WHERE</span> username = <span class="st">'admin'</span> <span class="cm">-- ' AND password = 'x'</span></pre></div><div class="out"><div class="bar">Result (MySQL 8.4)</div><pre>1 | admin | admin
+(1 row)</pre></div><h4>The same comment trick without the space</h4><p class="muted">What the user typed: <code>username = "admin'--", password = 'x'</code></p><div class="code"><div class="bar"><span>SQL sent to MySQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, username, role <span class="kw">FROM</span> app_user <span class="kw">WHERE</span> username = <span class="st">'admin'</span><span class="cm">--' AND password = 'x'</span></pre></div><div class="out err"><div class="bar">Result (MySQL 8.4)</div><pre>ERROR 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'x'' at line 1</pre></div><h4>Attack 3: stacking a second statement</h4><p class="muted">What the user typed: <code>username = "x'; DROP TABLE app_user; -- ", password = 'y'</code></p><div class="code"><div class="bar"><span>SQL sent to MySQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, username, role <span class="kw">FROM</span> app_user <span class="kw">WHERE</span> username = <span class="st">'x'</span>; <span class="kw">DROP</span> <span class="kw">TABLE</span> app_user; <span class="cm">-- ' AND password = 'y'</span></pre></div><div class="out err"><div class="bar">Result (MySQL 8.4)</div><pre>ERROR 1064: You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'DROP TABLE app_user; -- ' AND password = 'y'' at line 1</pre></div><p>The table is still there: <code>SELECT COUNT(*) FROM app_user</code> returns <b>3</b>. MySQL drivers refuse to run more than one statement per call unless you explicitly enable multi-statements, which is why this attack usually fails against MySQL. Other database systems and drivers behave differently, and the first two attacks need no stacking at all, so do not count on this protection.</p><h4>Attack 4: reading another table with UNION</h4><p class="muted">What the user typed: <code>search = "zzz' UNION SELECT username, password FROM app_user -- "</code></p><div class="code"><div class="bar"><span>SQL sent to MySQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, price <span class="kw">FROM</span> product <span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="st">'%zzz'</span> <span class="kw">UNION</span> <span class="kw">SELECT</span> username, password <span class="kw">FROM</span> app_user <span class="cm">-- %'</span></pre></div><div class="out"><div class="bar">Result (MySQL 8.4)</div><pre>admin | s3cret-admin
+alice | alicepw
+bob | bobpw
+(3 rows)</pre></div><h3>The same inputs, safely</h3><p>Now the query text is fixed, and the user's input is passed as <b>parameters</b>. The database never parses the input as SQL, so the quote characters are just characters. Same attack inputs, harmless result:</p><h4>Safe: attack 1</h4><p class="muted">What the user typed: <code>username = 'alice', password = "' OR '1'='1"</code></p><div class="code"><div class="bar"><span>SQL with parameters</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, username, role <span class="kw">FROM</span> app_user <span class="kw">WHERE</span> username = alice <span class="kw">AND</span> password = <span class="st">' OR '</span><span class="nu">1</span><span class="st">'='</span><span class="nu">1</span>
+<span class="cm">-- parameters: ('alice', "' OR '1'='1")</span></pre></div><div class="out"><div class="bar">Result (MySQL 8.4)</div><pre>(no rows)</pre></div><h4>Safe: attack 2</h4><p class="muted">What the user typed: <code>username = "admin' -- ", password = 'x'</code></p><div class="code"><div class="bar"><span>SQL with parameters</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, username, role <span class="kw">FROM</span> app_user <span class="kw">WHERE</span> username = admin<span class="st">' --  AND password = x
+-- parameters: ("admin'</span> <span class="cm">-- ", 'x')</span></pre></div><div class="out"><div class="bar">Result (MySQL 8.4)</div><pre>(no rows)</pre></div><h4>Safe: attack 4</h4><p class="muted">What the user typed: <code>search = "zzz' UNION SELECT username, password FROM app_user -- "</code></p><div class="code"><div class="bar"><span>SQL with parameters</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, price <span class="kw">FROM</span> product <span class="kw">WHERE</span> name <span class="kw">LIKE</span> %s
+<span class="cm">-- parameter: "%zzz' UNION SELECT username, password FROM app_user -- %"</span></pre></div><div class="out"><div class="bar">Result (MySQL 8.4)</div><pre>(no rows)</pre></div>
+<div class="callout "><b class="tag">Why one attack failed</b><p><b>Dialect note.</b> In MySQL a <code>--</code> comment must be followed by a space (or a control character). That is why the version without the space failed with a syntax error while <code>-- </code> worked. MySQL also accepts <code>#</code> as a comment. The attacker adapts to the database, so never rely on such details as a defense. The browser lab below uses SQLite, where <code>--</code> works without a space.</p></div>
+<h3>Try it yourself (safely)</h3>
+<p>The lab has a fake login form and a fake product search, running on a toy database in your browser. Switch between the <b>vulnerable</b> code and the <b>parameterized</b> code, and try the preset inputs or your own. The page shows the exact SQL text that was built.</p>
+<div id="w-inj" class="card"><p class="muted">Loading the SQL engine...</p></div>
+<h3>Defenses</h3>
+<ol>
+<li><b>Parameterized queries (prepared statements).</b> Always. Keep the SQL text fixed and pass values separately. This is the primary defense.</li>
+<li><b>Least privilege.</b> The application account should not be able to <code>DROP</code> tables or read tables it does not need. Then even a successful injection does limited harm (section 7).</li>
+<li><b>Allow-lists for things that cannot be parameters.</b> Table names, column names and <code>ORDER BY</code> directions cannot be bound as parameters. If you must take them from the user, map the input to a fixed list in your code (for example, only <code>name</code> or <code>price</code>).</li>
+<li><b>Validate input</b> for type and length. This is a helpful second layer, not a replacement for parameters.</li>
+<li><b>Do not show raw database errors to users.</b> They reveal table and column names. Log them privately.</li>
+<li><b>Watch for the same mistake in "safe-looking" tools.</b> An ORM or query builder protects you only while you use its parameter features. Building a raw SQL string from user input inside an ORM is still injection.</li>
+</ol>
+<p>The same flaw exists in the safe-looking version only if you go back to concatenating strings. The correct code is short:</p>
+<div class="code"><div class="bar"><span>Python (PyMySQL)</span><button type="button">Copy</button></div><pre><span class="cm"># SAFE: the values travel as parameters, not as SQL text</span>
+cursor.execute(
+    "SELECT id, username, role FROM app_user WHERE username = %s AND password = %s",
+    (username, password))</pre></div>
+<p>In Java use <code>PreparedStatement</code> with <code>?</code> placeholders and <code>setString</code> (Module 8). The principle is identical in every language.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="inj"></div><p><button type="button" class="btn" data-markdone="injection">Mark section as done</button></p></section>
+<section class="mod" id="protect"><h2><span class="num">09</span>Protecting the data</h2><p class="lead">Access control decides who may ask. These measures protect the data itself, in case someone gets past the front door or the hardware is lost.</p>
+<h3>Never store passwords as text</h3>
+<p>If your database stores passwords in a plain column, then anyone who reads that table (an attacker, a careless administrator, a leaked backup) has every user's password, and people reuse passwords on other sites. The correct approach is to store only a <b>salted, slow hash</b> of each password:</p>
+<ul>
+<li>A <b>hash</b> is a one-way function: you can compute it from the password but not reverse it.</li>
+<li>A <b>salt</b> is a random value, different for each user, stored next to the hash. It makes two users with the same password have different hashes, and it defeats precomputed tables.</li>
+<li>The hash must be <b>deliberately slow</b> and memory-hungry, so guessing millions of passwords is expensive. Use a password hashing function: <b>Argon2id</b>, scrypt, bcrypt or PBKDF2. Fast general hashes such as plain SHA-256 are the wrong tool for passwords.</li>
+</ul>
+<p>OWASP's Password Storage Cheat Sheet recommends Argon2id where it is available, with scrypt, bcrypt and PBKDF2 as alternatives; follow its current parameter advice in real systems. Use a maintained library and never invent your own scheme. This demonstration uses scrypt from Python's standard library, with fixed salts so the output is reproducible (a real salt is random, at least 16 bytes, from <code>os.urandom</code> or <code>secrets</code>):</p>
+<div class="code"><div class="bar"><span>Python</span><button type="button">Copy</button></div><pre>import hashlib, hmac
+
+def hash_password(password, salt):
+    return hashlib.scrypt(password.encode(), salt=salt, n=2**14, r=8, p=1, dklen=32)
+
+def verify(password, salt, stored):
+    return hmac.compare_digest(hash_password(password, salt), stored)   <span class="cm"># constant-time compare</span></pre></div><div class="out"><div class="bar">Output (Python, scrypt)</div><pre>same password, salt 1:  e6dd06aff1606492483ad13d855548716f8b74a60bfe31523a4b4c6aec0db114
+same password, salt 2:  4339d347dce9b8c014fcb65309604002dd96749e40a29f534c1167c32994e11a
+verify("correct horse"): True
+verify("wrong horse"):   False</pre></div>
+<p>The same password produced two completely different stored values. The parameters here (<code>n=2**14</code>) are chosen to keep the demonstration fast; production systems need stronger settings. A typical table has columns <code>username</code>, <code>salt</code> and <code>password_hash</code>; there is never a column called <code>password</code> that holds the real thing.</p>
+<h3>Protect data in transit and at rest</h3>
+<div class="tablewrap"><table><thead><tr><th>Measure</th><th>What it does</th><th>In MySQL 8.4</th></tr></thead><tbody><tr><td><b>Encryption in transit</b> (TLS)</td><td>Stops people on the network from reading or changing traffic between application and server.</td><td>MySQL supports TLS connections. The server variable <code>require_secure_transport</code> can force them (it is shown below).</td></tr><tr><td><b>Encryption at rest</b></td><td>Protects data files and backups if a disk or backup is stolen.</td><td>InnoDB supports tablespace encryption, which needs a keyring component to hold the keys. Cloud providers also offer disk encryption.</td></tr><tr><td><b>Backups</b></td><td>Recover from mistakes, ransomware and failures. Test restores; an untested backup is a hope, not a backup.</td><td><code>mysqldump --single-transaction</code> takes a consistent snapshot of InnoDB tables without blocking writers. Store copies off the server.</td></tr><tr><td><b>Auditing and logging</b></td><td>Record who did what, so misuse can be found and proven.</td><td>The general and error logs are built in; fuller audit features depend on the edition and plugins.</td></tr><tr><td><b>Data minimization</b></td><td>Do not collect or keep data you do not need.</td><td>Data you do not hold cannot leak. Delete data when the retention period ends.</td></tr><tr><td><b>Patching and hardening</b></td><td>Fix known vulnerabilities; close unused ports; remove unused accounts.</td><td>Keep MySQL on a supported release (8.4 is a long-term support series).</td></tr></tbody></table></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> @@require_secure_transport <span class="kw">AS</span> require_secure_transport;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------------------+
+| require_secure_transport |
++--------------------------+
+|                        0 |
++--------------------------+
+1 row in set</pre></div>
+<p class="muted">The value above is for the local socket connection used to produce this tutorial. A production server that is reachable over a network should require encrypted connections.</p>
+<h3>Defense in depth</h3>
+<p>No single control is enough. A realistic system stacks them: parameterized queries so injection fails, least privilege so a failure does little harm, hashed passwords so a leak does not reveal secrets, encryption and backups so loss does not end the business, and logging so you notice. Each layer assumes the one before it might fail.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="prot"></div><p><button type="button" class="btn" data-markdone="protect">Mark section as done</button></p></section>
+<section class="mod" id="ethics"><h2><span class="num">10</span>Ethics and the law</h2><p class="lead">People who work with databases hold other people's grades, health records, finances and private messages. The technology gives you power; ethics and law set the limits on how you may use it.</p>
+<div class="callout "><b class="tag">Not legal advice</b><p>This section is general education, not legal advice. Laws differ by country, state and industry, and they change. When a real situation involves legal risk, involve your organization's legal counsel.</p></div>
+<h3>A small toolbox for hard questions</h3>
+<ul>
+<li><b>Authorization is not the same as permission.</b> What the system lets you do and what you are entitled to do are different.</li>
+<li><b>Purpose.</b> Was this data collected for this use? Would the people it describes expect it?</li>
+<li><b>Minimize.</b> Do you need the data at all, and for how long?</li>
+<li><b>Be accountable.</b> Assume your actions will be logged and read aloud later. Could you defend them?</li>
+<li><b>Professional codes.</b> The <a href="https://www.acm.org/code-of-ethics" rel="noopener">ACM Code of Ethics and Professional Conduct</a> is a good reference for computing professionals.</li>
+</ul>
+<h3>Laws and rules you will hear about</h3>
+<div class="tablewrap"><table><thead><tr><th>Rule</th><th>Applies to</th><th>Idea</th></tr></thead><tbody><tr><td><b>GDPR</b> (EU)</td><td>Personal data of people in the EU, wherever the company is</td><td>Lawful basis, purpose limitation, data minimization, rights to access and erasure, breach notification.</td></tr><tr><td><b>HIPAA</b> (US)</td><td>Health information held by covered healthcare organizations and their business associates</td><td>Privacy and security rules for protected health information, breach notification.</td></tr><tr><td><b>FERPA</b> (US)</td><td>Education records at institutions that receive US federal education funds</td><td>Students control disclosure of their education records, with exceptions.</td></tr><tr><td><b>PCI DSS</b></td><td>Organizations that handle payment-card data (an industry standard, not a law)</td><td>Required controls for storing and transmitting card data.</td></tr><tr><td><b>Breach-notification laws</b></td><td>US states and many other countries</td><td>Duty to tell affected people and regulators after a breach.</td></tr><tr><td><b>Computer misuse laws</b> (for example the CFAA in the US)</td><td>Anyone</td><td>Unauthorized access to computer systems can be a crime.</td></tr></tbody></table></div>
+<h3>Six cases</h3>
+<p>For each case, decide what you would do before you open the discussion.</p>
+<div class="card"><h4>Case 1: A curious administrator</h4><p>You are the database administrator at a hospital. You have full access. A famous local athlete is admitted, and you wonder what is wrong with them. Nobody would ever know if you looked at the record. What do you do?</p><details class="sol"><summary>What should you do? Think first, then open.</summary><div><p><b>Do not look.</b> Having the technical ability is not permission. Access rights are granted for a purpose (running the system), and looking at a record without a work reason is a breach of confidentiality and of the organization's policy, even if no harm follows. In many places it also breaks the law (for health records in the United States, HIPAA's privacy rules). Good systems log and audit access precisely so that curiosity is detectable.</p><p class="muted">ACM Code of Ethics: 1.6 Respect privacy; 1.7 Honor confidentiality; 2.8 Access computing and communication resources only when authorized.</p></div></details></div><div class="card"><h4>Case 2: A hole in someone else's website</h4><p>While browsing an online shop you notice that a search box shows a database error when you type an apostrophe. You suspect SQL injection. You are curious to see how far it goes. What do you do?</p><details class="sol"><summary>What should you do? Think first, then open.</summary><div><p><b>Stop and report it; do not exploit it.</b> Testing a system you do not own without written permission can be illegal, even with good intentions (in the United States, for example, the Computer Fraud and Abuse Act prohibits unauthorized access). Responsible practice is to stop, do not copy or view any data, and tell the organization through its security contact or a published disclosure policy. Many organizations publish a vulnerability disclosure program that sets out what is permitted.</p><p class="muted">Practice on your own systems or on training environments built for the purpose, as in this tutorial.</p></div></details></div><div class="card"><h4>Case 3: Real data for testing</h4><p>To test a new report, a colleague copies the production customer table, with real names and emails, to their laptop and a shared test server. Is that acceptable?</p><details class="sol"><summary>What should you do? Think first, then open.</summary><div><p><b>Not as described.</b> Production personal data should not leave its protected environment for convenience. Use synthetic data (like the made-up tables in this course) or mask and anonymize real data first, and apply the same access controls to any copy that must exist. The principles of data minimization and purpose limitation (data collected for one purpose is not freely reusable for another) are part of laws such as the EU's GDPR.</p></div></details></div><div class="card"><h4>Case 4: A breach</h4><p>You discover that an attacker downloaded the customer table of your company's service six weeks ago. A manager suggests saying nothing until the investigation is complete, to avoid bad publicity. What are your obligations?</p><details class="sol"><summary>What should you do? Think first, then open.</summary><div><p><b>Escalate to the people responsible for legal and security response immediately, and do not hide it.</b> Many laws require notification. For example, the EU's GDPR generally requires a controller to notify the supervisory authority without undue delay and, where feasible, within 72 hours of becoming aware of a personal data breach, and to tell affected people when the risk to them is high. US states have their own breach-notification laws, and sector rules such as HIPAA add specific requirements. Delay and concealment usually make the legal and ethical position much worse. Details depend on place and situation, so this is where you involve legal counsel.</p></div></details></div><div class="card"><h4>Case 5: Student records</h4><p>You maintain the system that holds student grades. A parent calls, says they are paying the tuition, and asks you to read out their adult child's grades. What do you do?</p><details class="sol"><summary>What should you do? Think first, then open.</summary><div><p><b>Do not disclose.</b> In the United States, FERPA gives students (once they are 18 or attend a postsecondary institution) control over their education records, and disclosure generally needs the student's consent, with specific exceptions. The right action is to follow your institution's policy, which usually means referring the parent to the student or the registrar. The wider lesson: authentication of the person asking, and a rule about who may receive what, come before helpfulness.</p></div></details></div><div class="card"><h4>Case 6: Delete my data</h4><p>A user from the EU asks your company to delete all of their personal data. Your data is also inside nightly backups that are kept for 30 days. What should a well-designed system do?</p><details class="sol"><summary>What should you do? Think first, then open.</summary><div><p><b>Plan for it from the start.</b> GDPR gives individuals a right to erasure in many circumstances (Article 17), with exceptions. In practice that means knowing where personal data lives, being able to remove it from live systems, and having a documented approach for backups, for example letting them expire on schedule and not restoring deleted people's data. This is a design requirement, not something to improvise after the request arrives.</p></div></details></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="eth"></div><p><button type="button" class="btn" data-markdone="ethics">Mark section as done</button></p></section>
+<section class="mod" id="final"><h2><span class="num">11</span>Final check</h2><p class="lead">Twelve mixed questions on the whole module.</p>
+<div class="quiz" data-quiz="final"></div>
+<h3>Where to go next</h3>
+<ul>
+<li><b>Module 8</b> shows the connection code (JDBC and Python) with parameterized statements and transactions.</li>
+<li><b>Module 9</b> explains how indexes reduce the number of rows locked and read.</li>
+<li>Read the <a href="https://dev.mysql.com/doc/refman/8.4/en/" rel="noopener">MySQL 8.4 Reference Manual</a> chapters on InnoDB locking and transaction isolation, and on access control and account management.</li>
+</ul>
+<h3>Files for this tutorial</h3>
+<ul><li><a href="labs/tx_demo.sql">labs/tx_demo.sql</a>: the demo database for MySQL 8.4 (creates the database <code>tx_demo</code>).</li></ul></section>
+
+<p class="nav-foot">Tutorial date: October 29, 2026. Progress, quiz answers and drafts stay in your own browser.</p>
+</main>
+</div>
+</div>
+<script>window.TK_QUIZ={"acid": [{"q": "A server crashes after <code>COMMIT<\/code> has returned. When it restarts, the committed change is still there. Which property is that?", "o": ["Consistency", "Isolation", "Durability", "Atomicity"], "a": 2, "e": "Durability: committed work survives crashes."}, {"q": "A transfer debits one account, then the connection drops before the credit. With a transaction open, what happens to the debit?", "o": ["It is committed after a timeout", "It stays, and the money is lost", "It is rolled back automatically", "It depends on the isolation level"], "a": 2, "e": "Atomicity: an unfinished transaction is rolled back when its connection ends."}, {"q": "A <code>CHECK<\/code> constraint rejects an <code>UPDATE<\/code> inside a transaction. What is undone by default in MySQL?", "o": ["Only the failing statement", "Every transaction on the server", "Nothing", "The whole transaction"], "a": 0, "e": "A statement error undoes that statement only. Your code decides whether to roll back the rest."}, {"q": "Which ACID property is mainly enforced by constraints such as PRIMARY KEY, FOREIGN KEY and CHECK?", "o": ["Consistency", "Isolation", "Durability", "Atomicity"], "a": 0, "e": "Constraints keep the database in a valid state."}], "ctl": [{"q": "In MySQL's default autocommit mode, what is the effect of running a single <code>UPDATE<\/code> without <code>START TRANSACTION<\/code>?", "o": ["It is committed immediately", "It waits for a COMMIT", "It is rolled back at the end of the session", "It is held until the server restarts"], "a": 0, "e": "Each statement is its own committed transaction."}, {"q": "You run <code>START TRANSACTION; INSERT ...; CREATE TABLE t (...); ROLLBACK;<\/code> on InnoDB. Is the row still inserted?", "o": ["Yes, CREATE TABLE committed the transaction first", "The CREATE TABLE fails", "It depends on the isolation level", "No, ROLLBACK undoes it"], "a": 0, "e": "DDL causes an implicit commit."}, {"q": "When is <code>ROLLBACK TO SAVEPOINT x<\/code> useful?", "o": ["To undo part of a transaction and continue", "To release locks of other sessions", "To end the transaction", "To change the isolation level"], "a": 0, "e": "It undoes the work after the savepoint but keeps the transaction open."}], "conc": [{"q": "T1 updates a row but has not committed. T2 reads the new value. T1 then rolls back. What is T2's read called?", "o": ["A non-repeatable read", "A phantom read", "A dirty read", "A lost update"], "a": 2, "e": "T2 read uncommitted data that was later undone."}, {"q": "Within one transaction you run the same <code>SELECT COUNT(*) ... WHERE amount &gt; 100<\/code> twice and get 2 then 3 because another session inserted and committed a row. What is this?", "o": ["Non-repeatable read of a single row", "Dirty read", "Phantom read", "Deadlock"], "a": 2, "e": "New rows appearing in a range is a phantom."}, {"q": "According to the recording, which level in MySQL 8.4 allowed a non-repeatable read?", "o": ["Only SERIALIZABLE", "REPEATABLE READ and SERIALIZABLE", "READ UNCOMMITTED and READ COMMITTED", "None"], "a": 2, "e": "At READ UNCOMMITTED and READ COMMITTED T2 saw 1000 then 1500. REPEATABLE READ kept 1000; SERIALIZABLE made the writer wait."}, {"q": "Two clerks each read a stock level of 10, subtract 1 in their program, and write 9. The correct final level is 8. Which problem happened?", "o": ["Lost update", "Dirty read", "Phantom read", "Deadlock"], "a": 0, "e": "Both based their write on a stale read, and one update was lost."}], "iso": [{"q": "What is MySQL InnoDB's default isolation level?", "o": ["SERIALIZABLE", "REPEATABLE READ", "READ UNCOMMITTED", "READ COMMITTED"], "a": 1, "e": "REPEATABLE READ (confirmed above with <code>@@transaction_isolation<\/code>)."}, {"q": "Which pattern prevents a lost update?", "o": ["UPDATE account SET balance = balance + 100", "SET autocommit = 1", "Run the code twice", "SELECT the balance, add in the program, UPDATE with the new number"], "a": 0, "e": "The database applies the change to the current value while holding the row lock."}, {"q": "What does MVCC allow?", "o": ["Skipping COMMIT", "Readers and writers usually proceed without blocking each other", "Disabling constraints", "Two sessions to write the same row at once"], "a": 1, "e": "Plain reads use old row versions, so they do not wait for writers."}, {"q": "Which statement locks the rows it reads so that others cannot change them until you finish?", "o": ["SHOW TABLES", "SELECT DISTINCT", "SELECT ... LIMIT 1", "SELECT ... FOR UPDATE"], "a": 3, "e": "FOR UPDATE takes exclusive locks on the rows it reads."}], "dl": [{"q": "T1 holds a lock on row A and wants B. T2 holds B and wants A. This is:", "o": ["A phantom read", "A deadlock", "A lost update", "A lock timeout only"], "a": 1, "e": "A circular wait is a deadlock."}, {"q": "What does InnoDB do when it detects a deadlock?", "o": ["Commits both transactions", "Rolls back one transaction (the victim) so the others can continue", "Waits forever", "Shuts down the server"], "a": 1, "e": "It picks a victim and rolls back its whole transaction, returning error 1213."}, {"q": "What is the best first step when your program receives error 1213?", "o": ["Restart the server", "Ignore it", "Raise the isolation level", "Roll back and run the whole transaction again"], "a": 3, "e": "A deadlock victim should simply retry the transaction."}, {"q": "Which design makes the opposite-order deadlock in this section impossible?", "o": ["Turn off autocommit", "Always update accounts in ascending id order", "Use a bigger server", "Use SERIALIZABLE"], "a": 1, "e": "If everyone locks in the same order, no circular wait can form."}], "acl": [{"q": "What is the difference between authentication and authorization?", "o": ["They are the same", "Authentication is only for passwords, authorization only for roles", "Authentication proves who you are; authorization decides what you may do", "Authorization proves who you are; authentication decides what you may do"], "a": 2, "e": "First you are identified, then your privileges are checked."}, {"q": "A web application only reads and updates rows in one database. Which account is best?", "o": ["root", "An account with ALL PRIVILEGES on *.*", "An account with SELECT, INSERT, UPDATE, DELETE on that database only", "An account with no password"], "a": 2, "e": "Least privilege."}, {"q": "You granted a role to a user, but the user still gets \"command denied\". What is a likely reason?", "o": ["Roles do not work in MySQL", "The role is not active in the session (use SET ROLE or SET DEFAULT ROLE)", "The role needs a password", "The user needs root"], "a": 1, "e": "Granted roles are inactive until activated or made default."}, {"q": "You want a user to see employee names but never salaries. Which approach works?", "o": ["Rename the salary column", "Nothing can do this", "GRANT SELECT ON employees and ask them not to look", "A view that selects only id and name, with SELECT granted on the view"], "a": 3, "e": "Views (or column-level grants) restrict which columns a user can reach."}, {"q": "Which privileges does <code>UPDATE orders SET amount = amount + 1 WHERE id = 1<\/code> need?", "o": ["UPDATE and SELECT on the table", "INSERT", "DELETE", "UPDATE only"], "a": 0, "e": "The WHERE clause and the expression read columns, so SELECT is needed as well. The privilege widget shows it."}], "inj": [{"q": "What is the root cause of SQL injection?", "o": ["Building SQL text by concatenating untrusted input", "Weak server hardware", "Having too many users", "Using MySQL"], "a": 0, "e": "Input and code get mixed in one string, so input can change the code."}, {"q": "Which is the primary defense?", "o": ["Using long passwords", "Hiding the login page", "Parameterized queries", "Escaping quotes by hand"], "a": 2, "e": "Parameters keep user data out of the SQL text. Hand-written escaping is fragile and easy to get wrong."}, {"q": "A search page lets the user choose the sort column and builds <code>ORDER BY &lt;column&gt;<\/code>. Column names cannot be bound as parameters. What should you do?", "o": ["Concatenate it, since it is only a column name", "Escape the quotes", "Use SELECT *", "Map the choice to a fixed allow-list of column names in your code"], "a": 3, "e": "Only values you control may become SQL text."}, {"q": "Why should the application's database account not have DROP privileges?", "o": ["It is required for transactions", "DROP is slow", "MySQL forbids it", "It limits the damage if injection or a bug occurs"], "a": 3, "e": "Least privilege limits the blast radius."}, {"q": "In MySQL, which comment form works as a comment to the end of the line?", "o": ["<code>--<\/code> immediately followed by text", "<code>-- <\/code> (two dashes and a space), or <code>#<\/code>", "<code>//<\/code>", "<code>%%<\/code>"], "a": 1, "e": "MySQL requires whitespace after the two dashes."}], "prot": [{"q": "What is the purpose of a salt?", "o": ["It makes identical passwords hash to different values and defeats precomputed tables", "It encrypts the database", "It makes the hash faster", "It replaces the need for a hash"], "a": 0, "e": "A per-user random salt makes each stored hash unique."}, {"q": "Which is the right way to store a user's password?", "o": ["Encrypted with a key stored in the same database", "A single SHA-256 without a salt", "Plain text in a VARCHAR column", "A salted hash made with a password-hashing function such as Argon2id, scrypt or bcrypt"], "a": 3, "e": "Slow, salted hashing limits the damage of a leak."}, {"q": "Which protects the contents of a stolen backup file?", "o": ["Encryption at rest", "Autocommit", "A view", "TLS on the connection"], "a": 0, "e": "TLS protects data moving over a network; a stolen file needs encryption at rest."}, {"q": "Why keep several security measures at once?", "o": ["It makes queries faster", "Any one control can fail, so layers limit the damage", "It is required by MySQL", "Auditors prefer it"], "a": 1, "e": "This is defense in depth."}], "eth": [{"q": "You have full administrator rights to a database. A coworker asks you to look up their ex-partner's account details. What is the right response?", "o": ["Do it but tell nobody", "Decline, because access rights do not make it appropriate or permitted", "Do it if they pay you", "Do it, since you have access"], "a": 1, "e": "Authorization to run the system is not permission to browse people's data."}, {"q": "You find a vulnerability on a website you do not own. Which is the best action?", "o": ["Stop, avoid viewing any data, and report it to the organization through a responsible channel", "Sell the information", "Post it publicly at once", "Exploit it to see how serious it is"], "a": 0, "e": "Report responsibly. Unauthorized testing can be illegal."}, {"q": "What is wrong with using a copy of real customer data for a test server?", "o": ["It breaks foreign keys", "It makes tests slower", "It exposes personal data outside its protected environment; use synthetic or masked data instead", "Nothing"], "a": 2, "e": "Minimize and protect personal data; use synthetic or anonymized data for testing."}, {"q": "A breach of personal data is discovered. Which is true?", "o": ["You can wait as long as you like", "Many laws set deadlines for notification, so you escalate to the responsible people immediately", "Only the database administrator needs to know", "Notification is never required"], "a": 1, "e": "Notification duties and deadlines exist (for example, GDPR's 72-hour guideline to regulators)."}], "final": [{"q": "Which ACID property makes sure that a committed transfer is still there after a power failure?", "o": ["Durability", "Isolation", "Consistency", "Atomicity"], "a": 0, "e": "Durability."}, {"q": "Your program runs two <code>UPDATE<\/code> statements in a transaction and the second fails with a constraint error. Nothing else is done. What is the state of the first <code>UPDATE<\/code>?", "o": ["Deleted", "Rolled back automatically by MySQL", "Still pending in the open transaction until you COMMIT or ROLLBACK", "Committed"], "a": 2, "e": "Only the failing statement is undone; your code must roll back."}, {"q": "What do <code>START TRANSACTION; INSERT ...; CREATE TABLE ...; ROLLBACK;<\/code> leave behind on InnoDB?", "o": ["Nothing, the insert is undone", "The inserted row, because CREATE TABLE committed implicitly", "The table but not the row", "An error"], "a": 1, "e": "DDL triggers an implicit commit."}, {"q": "At which of these isolation levels can a non-repeatable read occur in MySQL?", "o": ["REPEATABLE READ", "READ COMMITTED", "None", "SERIALIZABLE"], "a": 1, "e": "READ COMMITTED sees newly committed data on each statement."}, {"q": "Two clerks both read stock 10, subtract 1, and write 9. What is the best fix?", "o": ["Use a bigger server", "<code>UPDATE ... SET stock = stock - 1<\/code>", "Use READ UNCOMMITTED", "Turn off constraints"], "a": 1, "e": "Let the database apply the change to the current value under a row lock."}, {"q": "Which error code means InnoDB chose your transaction as a deadlock victim?", "o": ["1045", "1213", "1146", "1062"], "a": 1, "e": "1213 (40001): Deadlock found when trying to get lock; try restarting transaction."}, {"q": "What should an application normally do after a deadlock error?", "o": ["Ignore it", "Delete the table", "Roll back and retry the whole transaction", "Disable InnoDB"], "a": 2, "e": "Deadlocks are expected occasionally; retry."}, {"q": "Which GRANT follows the principle of least privilege for an application that reads and writes one database?", "o": ["<code>GRANT DROP ON *.* ...<\/code>", "<code>GRANT SELECT, INSERT, UPDATE, DELETE ON shop.* ...<\/code>", "<code>GRANT ALL ON *.* ...<\/code>", "Use the root account"], "a": 1, "e": "Only the needed privileges on only the needed database."}, {"q": "You granted a role to a user but their queries are still denied. A likely cause?", "o": ["Passwords expired", "The role has no name", "Roles require MyISAM", "The role is not active in their session"], "a": 3, "e": "Use SET ROLE or SET DEFAULT ROLE."}, {"q": "Which makes SQL injection ineffective?", "o": ["Hiding error pages only", "A faster server", "Parameterized queries", "Longer user names"], "a": 2, "e": "Parameters keep input out of the SQL text."}, {"q": "Which is the best way to store a password?", "o": ["Reversible encryption with the key beside it", "A salted hash from a password-hashing function (Argon2id, scrypt, bcrypt)", "Plain text", "MD5 of the password"], "a": 1, "e": "Salted, slow hashing."}, {"q": "You can read any table. A friend asks you to look at a stranger's record \"just this once\". What should you do?", "o": ["Do it quietly", "Ask them to pay", "Decline; authorization to run the system is not permission to browse people's data", "Do it if it is a small table"], "a": 2, "e": "Access rights are for a purpose."}]};</script>
+<script>
+(function(){
+'use strict';
+var SLUG = document.documentElement.getAttribute('data-slug') || 'tutorial';
+var $ = function(s,r){return (r||document).querySelector(s)};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('tk:'+SLUG+':'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem('tk:'+SLUG+':'+k,JSON.stringify(v))}catch(e){}},
+  clear:function(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('tk:'+SLUG+':')===0)localStorage.removeItem(k)})}catch(e){}}
+};
+window.TK={$:$,$$:$$,el:el,store:store,slug:SLUG};
+
+/* copy buttons */
+$$('.code').forEach(function(c){
+  var b=$('button',c); if(!b) return;
+  b.addEventListener('click',function(){
+    var t=$('pre',c).textContent;
+    function done(){var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o},1200)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fallback(t,done)})}else fallback(t,done);
+  });
+});
+function fallback(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb()}catch(e){}document.body.removeChild(ta)}
+
+/* section nav */
+var secs=$$('section.mod'), links=$$('nav.side a[data-sec]');
+var done=store.get('done',{});
+function paintDone(){links.forEach(function(a){var t=$('.tick',a);if(t)t.textContent=done[a.getAttribute('data-sec')]?'✓':''})}
+paintDone();
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('active',a.getAttribute('data-sec')===e.target.id)})}
+  })},{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(function(s){io.observe(s)});
+}
+$$('button[data-markdone]').forEach(function(b){
+  var id=b.getAttribute('data-markdone');
+  function paint(){b.textContent=done[id]?'Marked as done ✓':'Mark section as done';b.setAttribute('aria-pressed',done[id]?'true':'false')}
+  paint();
+  b.addEventListener('click',function(){done[id]=!done[id];store.set('done',done);paint();paintDone()});
+});
+var reset=$('#tk-reset'); if(reset) reset.addEventListener('click',function(){if(confirm('Clear your saved progress and quiz answers in this browser?')){store.clear();location.reload()}});
+
+/* quizzes: data in window.TK_QUIZ = {id:[{q,o:[],a,e}]} */
+TK.quiz=function(box){
+  var id=box.getAttribute('data-quiz'), qs=(window.TK_QUIZ||{})[id]||[];
+  var saved=store.get('quiz:'+id,{});
+  box.innerHTML='';
+  var score=el('p','score'); score.setAttribute('aria-live','polite');
+  var retry=el('button','btn','Try again'); retry.type='button'; retry.hidden=true;
+  function refresh(){
+    var n=Object.keys(saved).length, r=0; qs.forEach(function(q,i){if(saved[i]===q.a)r++});
+    score.textContent=n<qs.length?'Answer each question. Feedback appears right away.':'Score: '+r+' of '+qs.length+'.';
+    retry.hidden=n<qs.length;
+  }
+  qs.forEach(function(q,i){
+    var fs=el('fieldset','q'); var lg=el('legend'); lg.innerHTML=(i+1)+'. '+q.q; fs.appendChild(lg);
+    if(q.code){var pre=el('pre','',q.code);pre.style.cssText='background:var(--code-bg);color:var(--code-ink);border-radius:8px;margin:8px 0';fs.appendChild(pre)}
+    var opts=el('div','opts'), fb=el('p','fb'); fb.setAttribute('aria-live','polite'); var bs=[];
+    function reveal(c){
+      bs.forEach(function(b,j){b.disabled=true;if(j===q.a)b.classList.add('right');else if(j===c)b.classList.add('wrong')});
+      fb.textContent=''; fb.appendChild(el('b',c===q.a?'ok':'no',c===q.a?'Correct. ':'Not quite. ')); var ex=el('span'); ex.innerHTML=q.e; fb.appendChild(ex);
+    }
+    q.o.forEach(function(t,j){var b=el('button','opt');b.innerHTML=t;b.type='button';b.addEventListener('click',function(){saved[i]=j;store.set('quiz:'+id,saved);reveal(j);refresh()});bs.push(b);opts.appendChild(b)});
+    fs.appendChild(opts); fs.appendChild(fb); box.appendChild(fs);
+    if(saved[i]!==undefined) reveal(saved[i]);
+  });
+  retry.addEventListener('click',function(){store.set('quiz:'+id,{});TK.quiz(box)});
+  box.appendChild(score); box.appendChild(retry); refresh();
+};
+$$('[data-quiz]').forEach(TK.quiz);
+
+/* result-set table builder: cols[], rows[][] */
+TK.table=function(cols,rows,opt){
+  opt=opt||{};
+  var w=el('div','rs'), t=el('table'), th=el('thead'), tr=el('tr');
+  cols.forEach(function(c,ci){var isnum=rows.length&&rows.some(function(r){return typeof r[ci]==='number'})&&rows.every(function(r){return r[ci]===null||typeof r[ci]==='number'});tr.appendChild(el('th',isnum?'num':null,c))}); th.appendChild(tr); t.appendChild(th);
+  var tb=el('tbody');
+  rows.forEach(function(r,ri){var tr=el('tr'); if(opt.rowClass){var c=opt.rowClass(r,ri);if(c)tr.className=c}
+    r.forEach(function(v){var td=el('td',v===null?'null':(typeof v==='number'?'num':''),v===null?'NULL':String(v));tr.appendChild(td)});tb.appendChild(tr)});
+  t.appendChild(tb); w.appendChild(t); return w;
+};
+})();
+
+</script>
+<script>window.M10={"tl": [{"id": "dirty", "label": "Dirty read", "intro": "T1 changes Alice's balance without committing. Does T2 see it?", "byLevel": {"READ UNCOMMITTED": {"log": [{"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = 500 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "T1 has not committed yet."}, {"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["500"]]}, "note": "Does T2 see T1's uncommitted change?"}, {"who": "T1", "sql": "ROLLBACK", "out": {"msg": "OK"}, "note": "T1 changes its mind."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 read 500, a value that T1 had not committed and then rolled back: a dirty read."}, "READ COMMITTED": {"log": [{"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = 500 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "T1 has not committed yet."}, {"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "Does T2 see T1's uncommitted change?"}, {"who": "T1", "sql": "ROLLBACK", "out": {"msg": "OK"}, "note": "T1 changes its mind."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 read 1000, the last committed value. No dirty read at this level."}, "REPEATABLE READ": {"log": [{"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = 500 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "T1 has not committed yet."}, {"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "Does T2 see T1's uncommitted change?"}, {"who": "T1", "sql": "ROLLBACK", "out": {"msg": "OK"}, "note": "T1 changes its mind."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 read 1000, the last committed value. No dirty read at this level."}, "SERIALIZABLE": {"log": [{"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = 500 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "T1 has not committed yet."}, {"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"err": "ERROR 1205: Lock wait timeout exceeded; try restarting transaction", "code": 1205}, "note": "Does T2 see T1's uncommitted change?"}, {"who": "T1", "sql": "ROLLBACK", "out": {"msg": "OK"}, "note": "T1 changes its mind."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2's read had to wait for T1's lock and timed out (error 1205). T2 never saw the uncommitted value."}}}, {"id": "nonrep", "label": "Non-repeatable read", "intro": "T2 reads Alice's balance twice in one transaction while T1 commits a change in between.", "byLevel": {"READ UNCOMMITTED": {"log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "First read."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = 1500 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": null}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1500"]]}, "note": "Second read, same transaction."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 read 1000 and then 1500 inside one transaction: a non-repeatable read."}, "READ COMMITTED": {"log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "First read."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = 1500 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": null}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1500"]]}, "note": "Second read, same transaction."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 read 1000 and then 1500 inside one transaction: a non-repeatable read."}, "REPEATABLE READ": {"log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "First read."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = 1500 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": null}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "Second read, same transaction."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 read 1000 both times. No non-repeatable read at this level."}, "SERIALIZABLE": {"log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "First read."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = 1500 WHERE id = 1", "out": {"err": "ERROR 1205: Lock wait timeout exceeded; try restarting transaction", "code": 1205}, "note": null}, {"who": "T1", "sql": "ROLLBACK", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "Second read, same transaction."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T1's UPDATE had to wait for the lock that T2's read took, and timed out (error 1205). The row could not change under T2."}}}, {"id": "phantom", "label": "Phantom read", "intro": "T2 counts the orders above 100 twice while T1 inserts another one in between.", "byLevel": {"READ UNCOMMITTED": {"log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["2"]]}, "note": "First count."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "INSERT INTO orders VALUES (4, 'Bob', 300)", "out": {"msg": "Query OK, 1 row affected"}, "note": null}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["3"]]}, "note": "Second count, same transaction."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 counted 2 large orders, then 3: a phantom row appeared."}, "READ COMMITTED": {"log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["2"]]}, "note": "First count."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "INSERT INTO orders VALUES (4, 'Bob', 300)", "out": {"msg": "Query OK, 1 row affected"}, "note": null}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["3"]]}, "note": "Second count, same transaction."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 counted 2 large orders, then 3: a phantom row appeared."}, "REPEATABLE READ": {"log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["2"]]}, "note": "First count."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "INSERT INTO orders VALUES (4, 'Bob', 300)", "out": {"msg": "Query OK, 1 row affected"}, "note": null}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["2"]]}, "note": "Second count, same transaction."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T2 counted 2 both times. No phantom at this level for plain reads."}, "SERIALIZABLE": {"log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["2"]]}, "note": "First count."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "INSERT INTO orders VALUES (4, 'Bob', 300)", "out": {"err": "ERROR 1205: Lock wait timeout exceeded; try restarting transaction", "code": 1205}, "note": null}, {"who": "T1", "sql": "ROLLBACK", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["2"]]}, "note": "Second count, same transaction."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "T1's INSERT had to wait for the locks that T2's read took on the range, and timed out (error 1205). No new row could appear."}}}, {"id": "phantom_write", "label": "Phantoms and snapshots (REPEATABLE READ)", "intro": "At REPEATABLE READ plain reads keep a snapshot. What happens once T2 writes to the range itself?", "log": [{"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["2"]]}, "note": "First count."}, {"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "INSERT INTO orders VALUES (4, 'Bob', 300)", "out": {"msg": "Query OK, 1 row affected"}, "note": null}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["2"]]}, "note": "Second count, same transaction."}, {"who": "T2", "sql": "UPDATE orders SET amount = amount + 1 WHERE amount > 100", "out": {"msg": "Query OK, 3 rows affected"}, "note": "T2 writes to every row that matches, including the one T1 added."}, {"who": "T2", "sql": "SELECT COUNT(*) AS big_orders FROM orders WHERE amount > 100", "out": {"cols": ["big_orders"], "rows": [["3"]]}, "note": "Third count, after T2's own UPDATE."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}], "summary": "Plain reads kept the snapshot (count 2, then 2). After T2's own UPDATE touched the new row, the count became 3."}, {"id": "lost_naive", "label": "Lost update: read, compute, write", "intro": "Two sessions each add to Alice's balance by reading it, adding in the program, and writing the result.", "log": [{"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "T1 reads 1000 and plans to add 100."}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "T2 also reads 1000 and plans to add 200."}, {"who": "T1", "sql": "UPDATE account SET balance = 1100 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "The application computed 1000 + 100."}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "UPDATE account SET balance = 1200 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "The application computed 1000 + 200, with a stale 1000."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1200"]]}, "note": "Expected 1300."}], "summary": "Final balance 1200. It should be 1300: T1's deposit of 100 was overwritten."}, {"id": "lost_atomic", "label": "Fix 1: one atomic UPDATE", "intro": "The same two deposits, using balance = balance + amount.", "log": [{"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = balance + 100 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "T1 now holds a lock on the row."}, {"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "UPDATE account SET balance = balance + 200 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "T2 has to wait for T1's lock.", "blocked": true}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": "T1 releases the lock."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1300"]]}, "note": "Both deposits survive."}], "summary": "Final balance 1300. Both deposits survived."}, {"id": "lost_forupdate", "label": "Fix 2: SELECT ... FOR UPDATE", "intro": "The same two deposits; the read locks the row.", "log": [{"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "SELECT balance FROM account WHERE id = 1 FOR UPDATE", "out": {"cols": ["balance"], "rows": [["1000"]]}, "note": "T1 reads and locks the row."}, {"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "SELECT balance FROM account WHERE id = 1 FOR UPDATE", "out": {"cols": ["balance"], "rows": [["1100"]]}, "note": "T2 waits for the lock.", "blocked": true}, {"who": "T1", "sql": "UPDATE account SET balance = 1100 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": null}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": "T1 releases the lock."}, {"who": "T2", "sql": "UPDATE account SET balance = 1300 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "T2 got 1100 from its locking read, so it computes 1100 + 200."}, {"who": "T2", "sql": "COMMIT", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "SELECT balance FROM account WHERE id = 1", "out": {"cols": ["balance"], "rows": [["1300"]]}, "note": null}], "summary": "Final balance 1300. Both deposits survived."}, {"id": "deadlock", "label": "Deadlock", "intro": "Two transfers update the same two accounts in opposite order.", "log": [{"who": "T1", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T2", "sql": "START TRANSACTION", "out": {"msg": "OK"}, "note": null}, {"who": "T1", "sql": "UPDATE account SET balance = balance - 10 WHERE id = 1", "out": {"msg": "Query OK, 1 row affected"}, "note": "T1 locks Alice."}, {"who": "T2", "sql": "UPDATE account SET balance = balance - 10 WHERE id = 2", "out": {"msg": "Query OK, 1 row affected"}, "note": "T2 locks Bob."}, {"who": "T1", "sql": "UPDATE account SET balance = balance + 10 WHERE id = 2", "out": {"msg": "Query OK, 1 row affected"}, "note": "T1 wants Bob, held by T2, so it waits.", "blocked": true}, {"who": "T2", "sql": "UPDATE account SET balance = balance + 10 WHERE id = 1", "out": {"err": "ERROR 1213: Deadlock found when trying to get lock; try restarting transaction", "code": 1213}, "note": "T2 wants Alice, held by T1. Each now waits for the other."}, {"who": "T1", "sql": "COMMIT", "out": {"msg": "OK"}, "note": "The survivor can finish."}], "summary": "T2 was chosen as the victim (error 1213) and its transaction was rolled back; the other transaction completed. This time the server picked T2; it may pick either."}], "xfer": {"True|True": [1000, 1000], "True|False": [700, 1300], "False|True": [700, 1000], "False|False": [700, 1300]}, "tables": ["customers", "orders", "employees"], "privs": ["SELECT", "INSERT", "UPDATE", "DELETE"], "stmts": [{"id": "s1", "sql": "SELECT * FROM customers", "table": "customers", "priv": "SELECT"}, {"id": "s2", "sql": "SELECT * FROM orders", "table": "orders", "priv": "SELECT"}, {"id": "s3", "sql": "SELECT name, salary FROM employees", "table": "employees", "priv": "SELECT"}, {"id": "s4", "sql": "INSERT INTO orders VALUES (99, 'Zed', 10)", "table": "orders", "priv": "INSERT"}, {"id": "s5", "sql": "UPDATE orders SET amount = amount + 1 WHERE id = 1", "table": "orders", "priv": "UPDATE"}, {"id": "s6", "sql": "DELETE FROM orders WHERE id = 1", "table": "orders", "priv": "DELETE"}, {"id": "s7", "sql": "UPDATE customers SET email = 'new@example.com' WHERE id = 1", "table": "customers", "priv": "UPDATE"}, {"id": "s8", "sql": "DELETE FROM employees WHERE id = 2", "table": "employees", "priv": "DELETE"}], "msgs": {"s1|SELECT": "ERROR 1142: SELECT command denied to user '{user}'@'localhost' for table 'customers'", "s2|SELECT": "ERROR 1142: SELECT command denied to user '{user}'@'localhost' for table 'orders'", "s3|SELECT": "ERROR 1142: SELECT command denied to user '{user}'@'localhost' for table 'employees'", "s4|INSERT": "ERROR 1142: INSERT command denied to user '{user}'@'localhost' for table 'orders'", "s5|UPDATE,SELECT": "ERROR 1142: UPDATE command denied to user '{user}'@'localhost' for table 'orders'", "s6|DELETE,SELECT": "ERROR 1142: DELETE command denied to user '{user}'@'localhost' for table 'orders'", "s7|UPDATE,SELECT": "ERROR 1142: UPDATE command denied to user '{user}'@'localhost' for table 'customers'", "s8|DELETE,SELECT": "ERROR 1142: DELETE command denied to user '{user}'@'localhost' for table 'employees'", "s5|SELECT": "ERROR 1143: SELECT command denied to user '{user}'@'localhost' for column 'id' in table 'orders'", "s7|UPDATE": "ERROR 1142: UPDATE command denied to user '{user}'@'localhost' for table 'customers'", "s6|SELECT": "ERROR 1143: SELECT command denied to user '{user}'@'localhost' for column 'id' in table 'orders'", "s8|SELECT": "ERROR 1143: SELECT command denied to user '{user}'@'localhost' for column 'id' in table 'employees'", "s5|UPDATE": "ERROR 1142: UPDATE command denied to user '{user}'@'localhost' for table 'orders'", "s6|DELETE": "ERROR 1142: DELETE command denied to user '{user}'@'localhost' for table 'orders'", "s7|SELECT": "ERROR 1143: SELECT command denied to user '{user}'@'localhost' for column 'id' in table 'customers'", "s8|DELETE": "ERROR 1142: DELETE command denied to user '{user}'@'localhost' for table 'employees'"}, "inj": {"schema": "CREATE TABLE app_user (id INTEGER PRIMARY KEY, username TEXT, password TEXT, role TEXT);\nCREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT, price REAL);\nINSERT INTO app_user VALUES (1,'admin','s3cret-admin','admin'),(2,'alice','alicepw','user'),(3,'bob','bobpw','user');\nINSERT INTO product VALUES (1,'Notebook',4.5),(2,'Pencil',0.75),(3,'Stapler',9.0);"}};</script>
+<script src="../assets/sqljs/sql-wasm.js"></script>
+<script>
+(function(){
+'use strict';
+var $=TK.$, $$=TK.$$, el=TK.el, store=TK.store, D=window.M10;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+
+/* ===== transfer widget ===== */
+(function(){
+  var box=$('#w-xfer'); if(!box) return;
+  box.innerHTML='<div class="row"><label>Does the program use a transaction? <select id="xf-tx"><option value="True">Yes: START TRANSACTION ... COMMIT</option><option value="False">No: autocommit (each statement commits alone)</option></select></label><label>What happens? <select id="xf-crash"><option value="True">The connection is lost after the debit</option><option value="False">Everything runs to the end</option></select></label></div><div id="xf-out" aria-live="polite" style="margin-top:12px"></div>';
+  function render(){
+    var tx=$('#xf-tx',box).value, cr=$('#xf-crash',box).value, b=D.xfer[tx+'|'+cr], total=b[0]+b[1], out=$('#xf-out',box); out.innerHTML='';
+    var sql=(tx==='True'?'START TRANSACTION;\n':'')+'UPDATE account SET balance = balance - 300 WHERE id = 1;\n'+(cr==='True'?'-- connection lost here --\n':'UPDATE account SET balance = balance + 300 WHERE id = 2;\n'+(tx==='True'?'COMMIT;\n':''));
+    var pre=el('pre','mono',sql); pre.style.cssText='background:var(--code-bg);color:var(--code-ink);border-radius:8px;padding:10px 14px;margin:0 0 10px;font-size:14px;overflow:auto'; out.appendChild(pre);
+    out.appendChild(TK.table(['owner','balance'],[['Alice',b[0]],['Bob',b[1]]]));
+    var ok=total===2000;
+    out.appendChild(Object.assign(el('p','fb'),{innerHTML:'Total money in the two accounts: <b class="'+(ok?'ok':'no')+'" id="xf-total">'+total+'</b> (it started at 2000). '+(ok?(cr==='True'?'The unfinished transaction was rolled back, so nothing changed.':'Both changes were applied together.'):'<b class="no">300 has disappeared.</b> The debit was committed on its own and the credit never ran.')}));
+  }
+  $$('select',box).forEach(function(s){s.addEventListener('change',render)}); render();
+})();
+
+/* ===== timeline viewer ===== */
+function viewer(box,list,startId,showPick){
+  var cur=list.filter(function(s){return s.id===startId})[0]||list[0], level=store.get('lvl','REPEATABLE READ'), k=0;
+  box.innerHTML='';
+  var top=el('div','row'); 
+  var selWrap=el('label',null,'Scenario '); var sel=el('select'); selWrap.appendChild(sel); if(showPick) top.appendChild(selWrap);
+  list.forEach(function(s){var o=el('option',null,s.label);o.value=s.id;sel.appendChild(o)}); sel.value=cur.id;
+  box.appendChild(top);
+  var pills=el('div','pills'); pills.style.margin='10px 0'; pills.setAttribute('role','group'); pills.setAttribute('aria-label','Isolation level'); box.appendChild(pills);
+  var intro=el('p','muted'); box.appendChild(intro);
+  var head=el('div','tl-grid tl-head'); head.innerHTML='<div class="tl-h">Session T1</div><div class="tl-h">Session T2</div>'; box.appendChild(head);
+  var grid=el('div','tl-grid'); grid.setAttribute('aria-live','polite'); box.appendChild(grid);
+  var ctl=el('div','row'); ctl.style.margin='12px 0';
+  var bBack=el('button','btn','Back'), bNext=el('button','btn primary','Next step'), bAll=el('button','btn','Show all'), bRe=el('button','btn','Restart');
+  [bBack,bNext,bAll,bRe].forEach(function(b){b.type='button';ctl.appendChild(b)});
+  var cnt=el('span','muted'); ctl.appendChild(cnt); box.appendChild(ctl);
+  var sum=el('p','fb'); sum.id=box.id+'-sum'; sum.setAttribute('aria-live','polite'); box.appendChild(sum);
+  function data(){return cur.byLevel?cur.byLevel[level]:cur}
+  function result(o){
+    var d=el('div','tl-res');
+    if(o.err){d.className+=' bad';d.textContent=o.err}
+    else if(o.rows){d.appendChild(TK.table(o.cols,o.rows))}
+    else d.textContent=o.msg||'OK';
+    return d;
+  }
+  function render(){
+    var dd=data(), log=dd.log; grid.innerHTML='';
+    log.slice(0,k).forEach(function(e,i){
+      var left=e.who==='T1', c=el('div','tl-step'+(i===k-1?' last':'')); 
+      var s=el('pre','mono',e.sql); c.appendChild(s);
+      if(e.blocked) c.appendChild(el('div','muted tl-blk','This statement had to wait for a lock held by the other session.'));
+      c.appendChild(result(e.out));
+      if(e.note) c.appendChild(el('div','tl-note',e.note));
+      var a=el('div','tl-cell'), b=el('div','tl-cell'); (left?a:b).appendChild(c); grid.appendChild(a); grid.appendChild(b);
+    });
+    cnt.textContent='Step '+k+' of '+log.length;
+    bBack.disabled=k===0; bNext.disabled=k>=log.length; bAll.disabled=k>=log.length;
+    sum.innerHTML=k>=log.length?'<b>Outcome.</b> '+esc(dd.summary):'';
+    intro.textContent=cur.intro||'';
+  }
+  function levels(){
+    pills.innerHTML=''; pills.style.display=cur.byLevel?'':'none';
+    if(!cur.byLevel) return;
+    Object.keys(cur.byLevel).forEach(function(lv){var b=el('button','pill',lv);b.type='button';b.setAttribute('aria-pressed',lv===level?'true':'false');b.addEventListener('click',function(){level=lv;store.set('lvl',lv);k=0;levels();render()});pills.appendChild(b)});
+  }
+  sel.addEventListener('change',function(){cur=list.filter(function(s){return s.id===sel.value})[0];k=0;levels();render()});
+  bNext.addEventListener('click',function(){k=Math.min(k+1,data().log.length);render()});
+  bBack.addEventListener('click',function(){k=Math.max(k-1,0);render()});
+  bAll.addEventListener('click',function(){k=data().log.length;render()});
+  bRe.addEventListener('click',function(){k=0;render()});
+  levels(); render();
+  return {setScenario:function(id,lv){cur=list.filter(function(s){return s.id===id})[0];if(lv)level=lv;sel.value=id;k=0;levels();render()},showAll:function(){k=data().log.length;render()},summary:function(){return sum.textContent}};
+}
+var tl=null,dl=null;
+(function(){
+  var box=$('#w-tl'); if(box){ box.id='w-tl'; tl=viewer(box,D.tl.filter(function(s){return s.id!=='deadlock'}),'dirty',true); TK.tl=tl; }
+  var b2=$('#w-dl'); if(b2){ dl=viewer(b2,D.tl.filter(function(s){return s.id==='deadlock'}),'deadlock',false); TK.dl=dl; }
+})();
+
+/* ===== privilege widget ===== */
+(function(){
+  var box=$('#w-priv'); if(!box) return;
+  var T=D.tables, P=D.privs, cfg={};
+  T.forEach(function(t){cfg[t]={};P.forEach(function(p){cfg[t][p]=false})});
+  box.innerHTML='<div class="pills" id="pv-pre" role="group" aria-label="Presets"></div><div id="pv-grid" class="tablewrap" style="margin:12px 0"></div><div class="code"><div class="bar"><span>Equivalent GRANT statements</span></div><pre id="pv-sql"></pre></div><h4>What can the user do?</h4><div id="pv-out" aria-live="polite"></div>';
+  var PRESETS=[['Nothing',{}],['Read-only analyst',{customers:['SELECT'],orders:['SELECT'],employees:[]}],['Order clerk',{customers:['SELECT'],orders:['SELECT','INSERT','UPDATE']}],['Everything on orders only',{orders:['SELECT','INSERT','UPDATE','DELETE']}]];
+  PRESETS.forEach(function(p){var b=el('button','pill',p[0]);b.type='button';b.addEventListener('click',function(){T.forEach(function(t){P.forEach(function(x){cfg[t][x]=(p[1][t]||[]).indexOf(x)>=0})});draw()});$('#pv-pre',box).appendChild(b)});
+  function evalStmt(s){
+    var need=(s.priv==='SELECT'||s.priv==='INSERT')?[s.priv]:[s.priv,'SELECT'];
+    var missing=need.filter(function(p){return !cfg[s.table][p]});
+    if(!missing.length) return {ok:true,need:need};
+    var m=D.msgs[s.id+'|'+missing.join(',')]; return {ok:false,need:need,msg:m?m.replace('{user}','analyst'):'denied'};
+  }
+  TK.privSet=function(c){T.forEach(function(t){P.forEach(function(p){cfg[t][p]=!!c[t][p]})});draw()};
+  TK.privResults=function(){var r={};D.stmts.forEach(function(s){r[s.id]=evalStmt(s).ok});return r};
+  function draw(){
+    var g=$('#pv-grid',box); g.innerHTML='';
+    var t=el('table'), th=el('thead'), tr=el('tr'); tr.appendChild(el('th',null,'Table')); P.forEach(function(p){tr.appendChild(el('th',null,p))}); th.appendChild(tr); t.appendChild(th);
+    var tb=el('tbody'); T.forEach(function(tn){var r=el('tr'); r.appendChild(el('td',null,tn)); P.forEach(function(p){var td=el('td'),cb=el('input'); cb.type='checkbox'; cb.checked=cfg[tn][p]; cb.id='pv-'+tn+'-'+p; cb.setAttribute('aria-label',p+' on '+tn); cb.addEventListener('change',function(){cfg[tn][p]=cb.checked;draw()}); td.appendChild(cb); r.appendChild(td)}); tb.appendChild(r)}); t.appendChild(tb); g.appendChild(t);
+    var sql=[]; T.forEach(function(tn){var ps=P.filter(function(p){return cfg[tn][p]}); if(ps.length) sql.push("GRANT "+ps.join(', ')+" ON tx_demo."+tn+" TO 'analyst'@'localhost';")});
+    $('#pv-sql',box).textContent=sql.length?sql.join('\n'):"-- no privileges: the user can connect (USAGE) but nothing else";
+    var out=$('#pv-out',box); out.innerHTML='';
+    var rows=D.stmts.map(function(s){var r=evalStmt(s);return [s.sql,r.need.join(' + '),r.ok?'Allowed':r.msg]});
+    var w=TK.table(['Statement','Needs','Result'],rows,{rowClass:function(r){return r[2]==='Allowed'?'hit':'deny'}}); out.appendChild(w);
+  }
+  draw();
+})();
+
+/* ===== injection lab ===== */
+(function(){
+  var box=$('#w-inj'); if(!box) return;
+  var SQLJS=null;
+  function load(){
+    if(typeof initSqlJs!=='function') return Promise.resolve(null);
+    return initSqlJs({locateFile:function(f){return '../assets/sqljs/'+f}}).catch(function(){return null});
+  }
+  load().then(function(S){
+    if(!S){box.innerHTML='<p class="bad">The SQL engine could not be loaded. If you opened this file directly from your disk, use the course website instead; browsers block WebAssembly files loaded from file:// pages.</p>';return}
+    var db=new S.Database(); db.exec(D.inj.schema);
+    box.innerHTML='<div class="pills" id="ij-mode" role="group" aria-label="Which code?"></div><h4>Login form</h4><div class="row"><label>Username <input type="text" id="ij-u" autocomplete="off" spellcheck="false"></label><label>Password <input type="text" id="ij-p" autocomplete="off" spellcheck="false"></label></div><div class="pills" id="ij-lpre" style="margin:8px 0"></div><div class="row" style="margin:8px 0"><button class="btn primary" id="ij-login" type="button">Log in</button></div><div id="ij-lout" aria-live="polite"></div><h4>Product search</h4><div class="row"><label>Search <input type="text" id="ij-q" autocomplete="off" spellcheck="false"></label></div><div class="pills" id="ij-spre" style="margin:8px 0"></div><div class="row" style="margin:8px 0"><button class="btn primary" id="ij-search" type="button">Search</button></div><div id="ij-sout" aria-live="polite"></div><p class="muted">Engine: SQLite in your browser, toy data only. This lab shows the SQL text that is built, so you can see how the input changes it.</p>';
+    var safe=false;
+    [['Vulnerable code (string concatenation)',false],['Safe code (parameters)',true]].forEach(function(m){var b=el('button','pill',m[0]);b.type='button';b.setAttribute('aria-pressed',m[1]===safe?'true':'false');b.addEventListener('click',function(){safe=m[1];$$('#ij-mode .pill',box).forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});doLogin();doSearch()});$('#ij-mode',box).appendChild(b)});
+    function rowsOf(res){return res.length?{cols:res[0].columns,rows:res[0].values}:{cols:[],rows:[]}}
+    function login(u,p,sf){
+      var sql,r;
+      try{
+        if(sf){ sql="SELECT id, username, role FROM app_user WHERE username = ? AND password = ?\n-- parameters: ["+JSON.stringify(u)+", "+JSON.stringify(p)+"]"; var st=db.prepare("SELECT id, username, role FROM app_user WHERE username = ? AND password = ?"); st.bind([u,p]); var rows=[]; while(st.step()) rows.push(st.get()); st.free(); r={cols:['id','username','role'],rows:rows}; }
+        else { sql="SELECT id, username, role FROM app_user WHERE username = '"+u+"' AND password = '"+p+"'"; r=rowsOf(db.exec(sql)); }
+      }catch(e){return {sql:sql,err:e.message,rows:[]}}
+      return {sql:sql,cols:r.cols,rows:r.rows};
+    }
+    function search(q,sf){
+      var sql,r;
+      try{
+        if(sf){ sql="SELECT name, price FROM product WHERE name LIKE ?\n-- parameter: "+JSON.stringify('%'+q+'%'); var st=db.prepare("SELECT name, price FROM product WHERE name LIKE ?"); st.bind(['%'+q+'%']); var rows=[]; while(st.step()) rows.push(st.get()); st.free(); r={cols:['name','price'],rows:rows}; }
+        else { sql="SELECT name, price FROM product WHERE name LIKE '%"+q+"%'"; r=rowsOf(db.exec(sql)); }
+      }catch(e){return {sql:sql,err:e.message,rows:[]}}
+      return {sql:sql,cols:r.cols,rows:r.rows};
+    }
+    TK.injLogin=function(u,p,sf){return login(u,p,sf)}; TK.injSearch=function(q,sf){return search(q,sf)};
+    function show(target,r,kind){
+      target.innerHTML='';
+      var c=el('div','code'); c.innerHTML='<div class="bar"><span>SQL '+(safe?'(with parameters)':'built by the vulnerable code')+'</span></div>'; var pre=el('pre',null,r.sql); c.appendChild(pre); target.appendChild(c);
+      if(r.err){target.appendChild(el('p','bad mono',r.err));return}
+      if(r.rows.length) target.appendChild(TK.table(r.cols,r.rows));
+      var msg=kind==='login'?(r.rows.length?'Login succeeded as '+r.rows[0][1]+' ('+r.rows[0][2]+'). Rows matched: '+r.rows.length+'.':'Login failed. Rows matched: 0.'):('Rows returned: '+r.rows.length+'.');
+      target.appendChild(el('p','fb',msg));
+    }
+    var ui=$('#ij-u',box), pi=$('#ij-p',box), qi=$('#ij-q',box);
+    ui.value=store.get('u','alice'); pi.value=store.get('p','alicepw'); qi.value=store.get('q','pen');
+    function doLogin(){store.set('u',ui.value);store.set('p',pi.value);show($('#ij-lout',box),login(ui.value,pi.value,safe),'login')}
+    function doSearch(){store.set('q',qi.value);show($('#ij-sout',box),search(qi.value,safe),'search')}
+    $('#ij-login',box).addEventListener('click',doLogin); $('#ij-search',box).addEventListener('click',doSearch);
+    [ui,pi].forEach(function(i){i.addEventListener('keydown',function(e){if(e.key==='Enter')doLogin()})}); qi.addEventListener('keydown',function(e){if(e.key==='Enter')doSearch()});
+    [['Normal','alice','alicepw'],['Wrong password','alice','wrong'],['Always-true condition','alice',"' OR '1'='1"],['Comment out the check','admin' ,"x"]].forEach(function(p,i){
+      var b=el('button','pill',p[0]);b.type='button';b.addEventListener('click',function(){ui.value=i===3?"admin' -- ":p[1];pi.value=p[2];doLogin()});$('#ij-lpre',box).appendChild(b)});
+    [['Normal','pen'],['Read another table (UNION)',"zzz' UNION SELECT username, password FROM app_user -- "]].forEach(function(p){var b=el('button','pill',p[0]);b.type='button';b.addEventListener('click',function(){qi.value=p[1];doSearch()});$('#ij-spre',box).appendChild(b)});
+    doLogin(); doSearch();
+  });
+})();
+})();
+
+</script>
+<!--dbm-end-->
+<nav class="dbm-end" aria-label="Previous and next tutorial"><a href="../physical-design-indexing/" rel="prev"><small>&larr; Previous tutorial</small><b>Module 9: Physical design and indexing</b></a><span></span><a class="dbm-hub" href="../"><small>Course home</small><b>All tutorials</b></a></nav>
+<!--/dbm-end-->
+</body>
+</html>

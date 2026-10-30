@@ -1,0 +1,1455 @@
+<!doctype html>
+<html lang="en" data-slug="relational-algebra">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relational Algebra, Calculus and Query Foundations: Interactive Tutorial</title>
+<meta name="description" content="Interactive tutorial on relational algebra, tuple relational calculus and query optimization, with a live expression lab, equivalent MySQL 8.4 queries and auto-checked practice.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2EF; --surface:#FFFFFF; --surface2:#F4F8F6; --ink:#0E2420; --soft:#46605A; --line:#C5D5CE;
+  --accent:#5B3FD0; --accent-tint:#E9E4FB; --accent-ink:#35208F;
+  --teal:#0F766E; --teal-tint:#DDF1ED; --warn:#9A4A0A; --warn-tint:#FBEBD0;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1;
+  --code-bg:#0D1F1C; --code-bar:#16322D; --code-ink:#DDEBE7;
+  --kw:#C9BEFF; --st:#8FE0C0; --nu:#F2C77B; --cm:#7C9A93; --out-bg:#E4ECE8;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1614; --surface:#12231F; --surface2:#0F1D1A; --ink:#E5F0EC; --soft:#9BB3AC; --line:#274039;
+    --accent:#A99BFF; --accent-tint:#2B2552; --accent-ink:#D4CCFF;
+    --teal:#4FD1C5; --teal-tint:#14332E; --warn:#F0B45A; --warn-tint:#3A2C12;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D;
+    --code-bg:#08130F; --code-bar:#12302A; --out-bg:#0E1C19;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,h4{font-family:"Familjen Grotesk","Public Sans",system-ui,sans-serif;line-height:1.15;letter-spacing:-.005em;margin:0}
+a{color:var(--accent-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre,kbd{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+code{font-size:.88em;background:var(--accent-tint);color:var(--accent-ink);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1320px;margin:0 auto}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:700 20px "Familjen Grotesk",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+header.hero{padding:44px 40px 30px;border-bottom:1px solid var(--line)}
+.eyebrow{font:600 13px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+header.hero h1{font-size:clamp(34px,5vw,56px);font-weight:700;max-width:18ch;margin-top:8px}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:62ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:10px;margin:22px 0 0;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Familjen Grotesk",sans-serif;font-size:17px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:52px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:700}
+section.mod>h2 .num{font:600 14px "IBM Plex Mono",monospace;color:var(--accent-ink);display:block;margin-bottom:6px;letter-spacing:.06em}
+section.mod h3{font-size:22px;margin:30px 0 6px}
+section.mod h4{font-size:17px;margin:20px 0 4px}
+.lead{font-size:18.5px;color:var(--soft);max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:18px 0;min-width:0}
+.card>h3:first-child,.card>h4:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.grid2>*{min-width:0}
+.callout{border-radius:var(--radius);padding:12px 16px;margin:16px 0;border:1px solid var(--line);background:var(--teal-tint)}
+.callout.warn{background:var(--warn-tint);border-color:var(--warn)}
+.callout.bad{background:var(--bad-tint);border-color:var(--bad)}
+.callout b.tag{display:block;font:700 12px "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;color:var(--teal)}
+.callout.warn b.tag{color:var(--warn)} .callout.bad b.tag{color:var(--bad)}
+.callout p:first-of-type{margin-top:0}.callout p:last-child{margin-bottom:0}
+.tested{border:1px dashed var(--line);border-radius:var(--radius);padding:12px 16px;margin:22px 0 0;font-size:15px;color:var(--soft);background:var(--surface2)}
+.tested b{color:var(--ink)}
+.tested table{margin:8px 0 0;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin:14px 0;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font:600 12px "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--soft);background:var(--surface2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.code{border-radius:var(--radius);overflow:hidden;background:var(--code-bg);margin:14px 0;min-width:0}
+.code .bar{display:flex;justify-content:space-between;align-items:center;background:var(--code-bar);color:#9fc2b8;padding:5px 8px 5px 14px;font:600 12px "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase}
+.code button{font:500 12px "Public Sans",sans-serif;background:transparent;color:var(--code-ink);border:1px solid #2c5148;border-radius:6px;padding:3px 10px;cursor:pointer}
+.code button:hover{background:#1d423a}
+pre{margin:0;padding:13px 16px;overflow-x:auto;font-size:14px;line-height:1.6;color:var(--code-ink);tab-size:2}
+.code pre .kw{color:var(--kw);font-weight:600}.code pre .st{color:var(--st)}.code pre .nu{color:var(--nu)}.code pre .cm{color:var(--cm);font-style:italic}
+.out{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);margin:-6px 0 14px;background:var(--out-bg);min-width:0}
+.out .bar{padding:4px 14px;font:600 11.5px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--line)}
+.out pre{color:var(--ink);font-size:13.5px}
+.out.err pre{color:var(--bad)}
+details.sol{border:1px solid var(--line);border-radius:var(--radius);margin:12px 0;background:var(--surface)}
+details.sol>summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:15px;background:var(--surface2);border-radius:var(--radius)}
+details.sol[open]>summary{border-bottom:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0}
+details.sol>div{padding:4px 14px 10px}
+.btn{font:600 14px "Public Sans",sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:600 13px "IBM Plex Mono",monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);cursor:pointer;color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+select,textarea,input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+textarea{width:100%;font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:1.55;min-height:120px;resize:vertical}
+.quiz{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.q{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 18px;margin:0;min-width:0}
+.q legend{font-weight:700;padding:0 6px;font-family:"Familjen Grotesk",sans-serif;font-size:18px}
+.q .opts{display:grid;gap:8px;margin-top:8px}
+.opt{text-align:left;font:inherit;font-size:16px;padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.45}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.fb{font-size:15.5px;color:var(--soft);margin:10px 0 0}
+.fb b.ok{color:var(--ok)}.fb b.no{color:var(--bad)}
+.score{font-weight:700}
+.rs{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rs table{font-size:14px}
+.rs td.null{color:var(--soft);font-style:italic}
+.mono{font-family:"IBM Plex Mono",monospace}
+.muted{color:var(--soft)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-block;font:600 12px "IBM Plex Mono",monospace;padding:2px 9px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.erd{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:14px 0}
+.erd>div{border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:170px;flex:1 1 170px}
+.erd h4{font:700 14px "IBM Plex Mono",monospace;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface2);margin:0}
+.erd ul{list-style:none;margin:0;padding:8px 12px;font:400 13px/1.7 "IBM Plex Mono",monospace}
+.erd b{color:var(--accent-ink)}
+.nav-foot{margin-top:60px;color:var(--soft);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px}
+  nav.side ol{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto}
+  header.hero{padding:30px 18px 24px}
+  main{padding:0 16px 60px}
+}
+.row label{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 220px;font-size:14px;color:var(--soft);font-weight:600}
+.row label select{width:100%;font-weight:400;color:var(--ink)}
+
+
+.relbox{min-width:0}.relbox>.mono{display:block;margin-bottom:4px}
+.verified{font-size:14.5px;color:var(--soft);margin:6px 0 18px}.verified b{color:var(--ok)}
+.labbtn{margin:6px 0 10px}
+details.trace{margin:8px 0;border:1px solid var(--line);border-radius:8px;background:var(--surface2);min-width:0}
+details.trace>summary{cursor:pointer;padding:8px 12px;font-size:14px;overflow-wrap:anywhere}
+details.trace .tracebody{padding:0 12px 10px;min-width:0}
+.rs tr.hit td{background:var(--ok-tint);font-weight:600}
+.chip{font:600 12px "IBM Plex Mono",monospace;background:var(--accent-tint);color:var(--accent-ink);border-radius:99px;padding:2px 9px;margin-left:4px;white-space:nowrap}
+
+</style>
+
+</head>
+<body>
+<!--dbm-top-->
+<style>
+.dbm-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 20px;background:#0F1F33;color:#E6EEF8;font:600 14.5px/1.3 "Public Sans",system-ui,sans-serif}
+.dbm-bar a{color:#E6EEF8;text-decoration:none;padding:5px 10px;border-radius:8px;border:1px solid #33506f}
+.dbm-bar a:hover,.dbm-bar a:focus-visible{background:#1d3a5c;outline:none}
+.dbm-bar .dbm-where{color:#9DB2CC;font-weight:400;margin-right:auto}
+.dbm-bar .dbm-home{border-color:transparent;padding-left:0}
+.dbm-bar .dbm-home:hover{background:none;text-decoration:underline}
+.dbm-end{max-width:1320px;margin:0 auto;padding:30px 24px 56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-family:"Public Sans",system-ui,sans-serif}
+.dbm-end a{display:block;text-decoration:none;color:inherit;border:1px solid var(--line,#C7D3E1);background:var(--surface,#fff);border-radius:12px;padding:14px 18px;min-width:0}
+.dbm-end a:hover,.dbm-end a:focus-visible{border-color:var(--accent,#1F5FBF);outline:none}
+.dbm-end small{display:block;color:var(--soft,#475C75);font-size:13.5px}
+.dbm-end b{display:block;font-size:18px;overflow-wrap:anywhere}
+.dbm-end .dbm-next{text-align:right;grid-column:2}
+.dbm-end .dbm-hub{grid-column:1/-1;text-align:center}
+@media (max-width:560px){.dbm-end{grid-template-columns:minmax(0,1fr)}.dbm-end .dbm-next{grid-column:auto}.dbm-bar .dbm-where{display:none}.dbm-bar{padding:8px 14px}}
+</style>
+<nav class="dbm-bar" aria-label="Course navigation"><a class="dbm-home" href="../">&larr; All tutorials</a><span class="dbm-where">Module 3 of 10</span><a href="../data-modeling/" rel="prev">&larr; Module 2: Data modeling and the relational model</a><a href="../sql-programming/" rel="next">Module 4: SQL programming &rarr;</a></nav>
+<!--/dbm-top-->
+<div class="wrap">
+<nav class="side" aria-label="Sections"><div class="brand">Relational Algebra, Calculus and Query Foundations</div><div class="sub">COSC 431 · Module 3</div>
+<ol><li><a href="#start" data-sec="start"><span>Start here</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#spr" data-sec="spr"><span>Select, project, rename</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#sets" data-sec="sets"><span>Union, intersection, difference</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#joins" data-sec="joins"><span>Products and joins</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#division" data-sec="division"><span>Division</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#grouping" data-sec="grouping"><span>Grouping and aggregates</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#lab" data-sec="lab"><span>Algebra lab</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#optimize" data-sec="optimize"><span>Query trees and optimization</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#calculus" data-sec="calculus"><span>Tuple relational calculus</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#practice" data-sec="practice"><span>Practice</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#final" data-sec="final"><span>Final check</span><span class="tick" aria-hidden="true"></span></a></li></ol><button type="button" id="tk-reset">Reset my progress</button></nav>
+<div>
+<header class="hero"><div class="eyebrow">COSC 431 · Module 3</div><h1>Relational Algebra, Calculus and Query Foundations</h1><p class="lede">Learn the formal language behind every SQL query: the operators of relational algebra, the logic of relational calculus, and how a database rewrites a query tree to make it fast. Type your own expressions and see every intermediate result.</p>
+<ul class="outcomes"><li><b>Operators</b>Select, project, join, set operations, division</li><li><b>Extended</b>Grouping and outer joins</li><li><b>Calculus</b>Tuple relational calculus</li><li><b>Equivalence</b>Algebra, calculus and SQL side by side</li><li><b>Optimization</b>Query trees and rewrite rules</li></ul><div class="tested"><b>Tested with.</b> Every command, output and answer in this tutorial was run on real software on <b>October 29, 2026</b>. If you install a newer release, small differences in wording or formatting are normal.<div class="tablewrap"><table><thead><tr><th>Tool</th><th>Version</th><th>Used for</th></tr></thead><tbody><tr><td>MySQL Community Server</td><td><b>8.4.2 (8.4 LTS series)</b></td><td>Every SQL statement and output shown, and the check of every algebra and calculus example</td></tr><tr><td>Relational algebra and calculus engine</td><td><b>Written for this course (JavaScript)</b></td><td>The lab, the step-by-step trees and the practice checker; compared with MySQL on 47 expressions at build time</td></tr><tr><td>Sample database</td><td><b>ra_demo: 4 relations, 7 students</b></td><td>Download it from the Files list in section 11</td></tr></tbody></table></div></div></header>
+<main>
+<section class="mod" id="start"><h2><span class="num">01</span>Start here</h2><p class="lead">Before SQL existed, there was relational algebra: a small set of operators that take tables in and give tables out. Every SQL query you run is turned into an algebra expression inside the database, and that expression is what the optimizer rewrites to make your query fast. Learning it makes SQL easier to reason about, because you can see what each clause <em>does</em> to the data.</p>
+<h3>Three ideas to hold on to</h3>
+<ul>
+<li><b>Closure.</b> Every operator takes relations and returns a relation. That is why operators can be nested as deeply as you like.</li>
+<li><b>Sets, not bags.</b> A relation in the textbook model is a <em>set</em> of tuples: no duplicate rows and no row order. SQL tables are <em>bags</em> (duplicates allowed), so to match algebra in SQL you often need <code>DISTINCT</code>. You will see this difference in section 2.</li>
+<li><b>Two ways to ask.</b> Relational <em>algebra</em> says <em>how</em> to compute the answer, step by step. Relational <em>calculus</em> says <em>what</em> the answer must satisfy, like a logic statement. Section 9 shows they can express exactly the same queries.</li>
+</ul>
+<h3>The sample database</h3>
+<p>All examples use four small relations, shown in full so you can check every result by hand. The data is invented for teaching. Notice what is deliberately awkward: Gus has no enrollments, Fay has no GPA (<code>NULL</code>), Ben's grade in C2 is <code>NULL</code>, and course C6 (Ethics) belongs to a department with no instructor.</p>
+<div class="grid2"><div class="relbox"><b class="mono">Student</b><div class="tablewrap"><table><thead><tr><th>sid</th><th>sname</th><th>major</th><th>gpa</th></tr></thead><tbody><tr><td class="num">1</td><td>Ana</td><td>CS</td><td class="num">3.80</td></tr><tr><td class="num">2</td><td>Ben</td><td>CS</td><td class="num">3.20</td></tr><tr><td class="num">3</td><td>Cara</td><td>MATH</td><td class="num">3.90</td></tr><tr><td class="num">4</td><td>Dan</td><td>MATH</td><td class="num">2.80</td></tr><tr><td class="num">5</td><td>Eli</td><td>DS</td><td class="num">3.50</td></tr><tr><td class="num">6</td><td>Fay</td><td>DS</td><td class="null">NULL</td></tr><tr><td class="num">7</td><td>Gus</td><td>CS</td><td class="num">3.00</td></tr></tbody></table></div></div><div class="relbox"><b class="mono">Course</b><div class="tablewrap"><table><thead><tr><th>cid</th><th>title</th><th>credits</th><th>dept</th></tr></thead><tbody><tr><td>C1</td><td>Databases</td><td class="num">3</td><td>CS</td></tr><tr><td>C2</td><td>Algorithms</td><td class="num">4</td><td>CS</td></tr><tr><td>C3</td><td>Calculus</td><td class="num">4</td><td>MATH</td></tr><tr><td>C4</td><td>Statistics</td><td class="num">3</td><td>MATH</td></tr><tr><td>C5</td><td>Machine Learning</td><td class="num">3</td><td>DS</td></tr><tr><td>C6</td><td>Ethics</td><td class="num">2</td><td>PHIL</td></tr></tbody></table></div></div><div class="relbox"><b class="mono">Instructor</b><div class="tablewrap"><table><thead><tr><th>iid</th><th>iname</th><th>dept</th></tr></thead><tbody><tr><td class="num">1</td><td>Okafor</td><td>CS</td></tr><tr><td class="num">2</td><td>Tanaka</td><td>MATH</td></tr><tr><td class="num">3</td><td>Brooks</td><td>DS</td></tr><tr><td class="num">4</td><td>Romero</td><td>CS</td></tr></tbody></table></div></div><div class="relbox"><b class="mono">Enrolled</b><div class="tablewrap"><table><thead><tr><th>sid</th><th>cid</th><th>grade</th></tr></thead><tbody><tr><td class="num">1</td><td>C1</td><td>A</td></tr><tr><td class="num">1</td><td>C2</td><td>B</td></tr><tr><td class="num">1</td><td>C3</td><td>A</td></tr><tr><td class="num">1</td><td>C5</td><td>B</td></tr><tr><td class="num">2</td><td>C1</td><td>B</td></tr><tr><td class="num">2</td><td>C2</td><td class="null">NULL</td></tr><tr><td class="num">3</td><td>C2</td><td>A</td></tr><tr><td class="num">3</td><td>C3</td><td>A</td></tr><tr><td class="num">3</td><td>C4</td><td>B</td></tr><tr><td class="num">4</td><td>C3</td><td>C</td></tr><tr><td class="num">4</td><td>C4</td><td>B</td></tr><tr><td class="num">5</td><td>C1</td><td>B</td></tr><tr><td class="num">5</td><td>C4</td><td>C</td></tr><tr><td class="num">5</td><td>C5</td><td>A</td></tr><tr><td class="num">6</td><td>C5</td><td>B</td></tr></tbody></table></div></div></div>
+<p>Keys: <b>Student</b>(<u>sid</u>), <b>Course</b>(<u>cid</u>), <b>Instructor</b>(<u>iid</u>), <b>Enrolled</b>(<u>sid, cid</u>) where <code>Enrolled.sid</code> refers to Student and <code>Enrolled.cid</code> refers to Course. Download <a href="labs/ra_demo_mysql.sql">ra_demo_mysql.sql</a> to load the same data in MySQL (it creates a database called <code>ra_demo</code>) and run the SQL in this tutorial yourself.</p>
+<h3>Notation, and how to type it</h3>
+<p>Textbooks write operator conditions as subscripts, for example &sigma;<sub>major='CS'</sub>(Student). Subscripts are awkward to type, so this tutorial writes the condition in square brackets: <code>&sigma;[major="CS"](Student)</code>. Both mean the same thing. Other books use slightly different symbols for grouping and for outer joins, so match the notation to your textbook when you study.</p>
+<div class="tablewrap"><table><thead><tr><th>Operator</th><th>Symbol</th><th>You can also type</th><th>Section</th></tr></thead><tbody><tr><td>Select (filter rows)</td><td>&sigma;</td><td><code>select[cond](R)</code></td><td>2</td></tr><tr><td>Project (choose columns)</td><td>&pi;</td><td><code>project[a, b](R)</code></td><td>2</td></tr><tr><td>Rename</td><td>&rho;</td><td><code>rename[x](R)</code> or <code>rename[old -&gt; new](R)</code></td><td>2</td></tr><tr><td>Union, intersection, difference</td><td>&cup; &cap; &minus;</td><td><code>union</code>, <code>intersect</code>, <code>minus</code></td><td>3</td></tr><tr><td>Cartesian product</td><td>&times;</td><td><code>cross</code></td><td>4</td></tr><tr><td>Join (theta, natural)</td><td>&bowtie;</td><td><code>join</code>, <code>join [cond]</code>, <code>natural join</code></td><td>4</td></tr><tr><td>Outer joins</td><td>(none in the palette)</td><td><code>left join</code>, <code>right join</code>, <code>full join</code></td><td>4</td></tr><tr><td>Division</td><td>&divide;</td><td><code>divide</code></td><td>5</td></tr><tr><td>Grouping and aggregation</td><td>&gamma;</td><td><code>group[attrs; COUNT(*) AS n]</code></td><td>6</td></tr></tbody></table></div>
+<p>Conditions use <code>=</code>, <code>!=</code>, <code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code>, <code>AND</code>, <code>OR</code>, <code>NOT</code> and <code>IS NULL</code>. Text values go in quotes. If a name appears in more than one relation, write <code>Relation.attribute</code>.</p>
+<div class="callout warn"><b class="tag">Brackets</b><p>The binary operators (&cup; &cap; &minus; &times; &bowtie; &divide;) all have the <b>same priority</b> and are applied from left to right. Always use brackets when you mix them, exactly as you would in arithmetic with unusual operators.</p></div>
+<p class="muted">The lab and the examples run on a small relational-algebra interpreter written for this course. To make sure it is correct, every example below was also written in SQL and run on a real MySQL server; the page only shows an example when both returned the same rows.</p><p><button type="button" class="btn" data-markdone="start">Mark section as done</button></p></section>
+<section class="mod" id="spr"><h2><span class="num">02</span>Select, project, rename</h2><p class="lead">Three unary operators do most of the everyday work: &sigma; chooses <em>rows</em>, &pi; chooses <em>columns</em>, and &rho; changes <em>names</em>.</p>
+<h3>Select (&sigma;): keep the rows that satisfy a condition</h3>
+<p>&sigma;[condition](R) returns the tuples of R for which the condition is true. The result has the same attributes as R. It is the WHERE clause of SQL.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>σ[major="CS" AND gpa &gt;= 3.5](Student)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="σ[major=&quot;CS&quot; AND gpa &gt;= 3.5](Student)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> Student <span class="kw">WHERE</span> major = <span class="st">'CS'</span> <span class="kw">AND</span> gpa &gt;= <span class="nu">3.5</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+-------+-------+------+
+| sid | sname | major | gpa  |
++-----+-------+-------+------+
+|   1 | Ana   | CS    | 3.80 |
++-----+-------+-------+------+
+1 row in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 1 row.</p>
+<h3>Project (&pi;): keep only some columns</h3>
+<p>&pi;[a, b](R) keeps the listed attributes and then removes duplicate rows, because the result is a set. In SQL that second step is <code>DISTINCT</code>; without it MySQL keeps one output row per input row.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[major](Student)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[major](Student)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> <span class="kw">DISTINCT</span> major <span class="kw">FROM</span> Student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+
+| major |
++-------+
+| CS    |
+| MATH  |
+| DS    |
++-------+
+3 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 3 rows.</p>
+<p>Plain SELECT without DISTINCT is a <em>bag</em> query, and gives a different answer:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major <span class="kw">FROM</span> Student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+
+| major |
++-------+
+| CS    |
+| CS    |
+| MATH  |
+| MATH  |
+| DS    |
+| DS    |
+| CS    |
++-------+
+7 rows in set</pre></div>
+<p>Seven rows instead of three. This is the single most common reason a correct-looking algebra answer and a SQL answer differ by a few rows.</p>
+<h3>Combine them</h3>
+<p>Because every operator returns a relation, you can nest them. Read the expression from the inside out: first &sigma; filters the rows, then &pi; keeps the column you want.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname, gpa](σ[gpa &gt;= 3.5](Student))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sname, gpa](σ[gpa &gt;= 3.5](Student))">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> <span class="kw">DISTINCT</span> sname, gpa <span class="kw">FROM</span> Student <span class="kw">WHERE</span> gpa &gt;= <span class="nu">3.5</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+------+
+| sname | gpa  |
++-------+------+
+| Ana   | 3.80 |
+| Cara  | 3.90 |
+| Eli   | 3.50 |
++-------+------+
+3 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 3 rows.</p>
+<p>The order matters. If you project first, the columns you dropped are gone and a later &sigma; cannot use them:</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>σ[gpa &gt;= 3.5](π[sname](Student))</pre></div><div class="out err"><div class="bar">What the lab says</div><pre>Unknown attribute "gpa". Available: sname. (Text values must be written in quotes, for example "CS".)</pre></div>
+<h3>NULL and select</h3>
+<p>Conditions use three-valued logic exactly like SQL's WHERE: a comparison with <code>NULL</code> is <em>unknown</em>, and &sigma; keeps only tuples where the condition is <em>true</em>. Ben's grade in C2 is NULL, so he is missing from both of these:</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>σ[grade != "A"](Enrolled)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="σ[grade != &quot;A&quot;](Enrolled)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> Enrolled <span class="kw">WHERE</span> grade &lt;&gt; <span class="st">'A'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+-----+-------+
+| sid | cid | grade |
++-----+-----+-------+
+|   1 | C2  | B     |
+|   1 | C5  | B     |
+|   2 | C1  | B     |
+|   3 | C4  | B     |
+|   4 | C3  | C     |
+|   4 | C4  | B     |
+|   5 | C1  | B     |
+|   5 | C4  | C     |
+|   6 | C5  | B     |
++-----+-----+-------+
+9 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 9 rows.</p>
+<p>To include the NULL row, ask for it explicitly: <code>&sigma;[grade != "A" OR grade IS NULL](Enrolled)</code>.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>σ[grade != "A" OR grade IS NULL](Enrolled)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="σ[grade != &quot;A&quot; OR grade IS NULL](Enrolled)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> Enrolled <span class="kw">WHERE</span> grade &lt;&gt; <span class="st">'A'</span> <span class="kw">OR</span> grade <span class="kw">IS</span> <span class="kw">NULL</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+-----+-------+
+| sid | cid | grade |
++-----+-----+-------+
+|   1 | C2  | B     |
+|   1 | C5  | B     |
+|   2 | C1  | B     |
+|   2 | C2  | NULL  |
+|   3 | C4  | B     |
+|   4 | C3  | C     |
+|   4 | C4  | B     |
+|   5 | C1  | B     |
+|   5 | C4  | C     |
+|   6 | C5  | B     |
++-----+-----+-------+
+10 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 10 rows.</p>
+<h3>Rename (&rho;): change names</h3>
+<p>&rho; renames attributes (<code>rename[sid -&gt; student_id](R)</code>) or gives a whole relation a new name, called an <em>alias</em> (<code>rename[s](Student)</code>). Aliases are essential for comparing a relation with itself, which you will do in section 4. In SQL, this is <code>AS</code>.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>ρ[sid -&gt; student_id](π[sid, sname](Student))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="ρ[sid -&gt; student_id](π[sid, sname](Student))">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> <span class="kw">DISTINCT</span> sid <span class="kw">AS</span> student_id, sname <span class="kw">FROM</span> Student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------+-------+
+| student_id | sname |
++------------+-------+
+|          1 | Ana   |
+|          2 | Ben   |
+|          3 | Cara  |
+|          4 | Dan   |
+|          5 | Eli   |
+|          6 | Fay   |
+|          7 | Gus   |
++------------+-------+
+7 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 7 rows.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="sel"></div><p><button type="button" class="btn" data-markdone="spr">Mark section as done</button></p></section>
+<section class="mod" id="sets"><h2><span class="num">03</span>Union, intersection, difference</h2><p class="lead">Relations are sets, so we can take unions, intersections and differences. These operators need the two inputs to be <b>union-compatible</b>: the same number of attributes, with matching types in each position.</p>
+<h3>Union (&cup;)</h3>
+<p>R &cup; S contains every tuple that is in R, in S, or in both. Example: students enrolled in C1 <em>or</em> C3.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sid](σ[cid="C1"](Enrolled)) ∪ π[sid](σ[cid="C3"](Enrolled))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sid](σ[cid=&quot;C1&quot;](Enrolled)) ∪ π[sid](σ[cid=&quot;C3&quot;](Enrolled))">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sid <span class="kw">FROM</span> Enrolled <span class="kw">WHERE</span> cid = <span class="st">'C1'</span>
+<span class="kw">UNION</span>
+<span class="kw">SELECT</span> sid <span class="kw">FROM</span> Enrolled <span class="kw">WHERE</span> cid = <span class="st">'C3'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+
+| sid |
++-----+
+|   1 |
+|   2 |
+|   5 |
+|   3 |
+|   4 |
++-----+
+5 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 5 rows.</p>
+<p><code>UNION</code> removes duplicates, matching the set operator. <code>UNION ALL</code> keeps them. The result takes its attribute names from the <em>left</em> operand, so you can even union columns that have different names:</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname](Student) ∪ π[iname](Instructor)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sname](Student) ∪ π[iname](Instructor)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sname <span class="kw">FROM</span> Student <span class="kw">UNION</span> <span class="kw">SELECT</span> iname <span class="kw">FROM</span> Instructor;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------+
+| sname  |
++--------+
+| Ana    |
+| Ben    |
+| Cara   |
+| Dan    |
+| Eli    |
+| Fay    |
+| Gus    |
+| Okafor |
+| Tanaka |
+| Brooks |
+| Romero |
++--------+
+11 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 11 rows.</p>
+<h3>Intersection (&cap;)</h3>
+<p>R &cap; S contains the tuples that are in both. Example: students enrolled in C1 <em>and</em> C2.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sid](σ[cid="C1"](Enrolled)) ∩ π[sid](σ[cid="C2"](Enrolled))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sid](σ[cid=&quot;C1&quot;](Enrolled)) ∩ π[sid](σ[cid=&quot;C2&quot;](Enrolled))">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sid <span class="kw">FROM</span> Enrolled <span class="kw">WHERE</span> cid = <span class="st">'C1'</span>
+<span class="kw">INTERSECT</span>
+<span class="kw">SELECT</span> sid <span class="kw">FROM</span> Enrolled <span class="kw">WHERE</span> cid = <span class="st">'C2'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+
+| sid |
++-----+
+|   1 |
+|   2 |
++-----+
+2 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 2 rows.</p>
+<div class="callout "><b class="tag">MySQL version note</b><p><code>INTERSECT</code> and <code>EXCEPT</code> were added to MySQL in version 8.0.31, so they work in MySQL 8.4. Older tutorials say MySQL has no intersect; before 8.0.31 you wrote it with a join or <code>IN</code>. PostgreSQL and SQLite have supported both for many years.</p></div>
+<h3>Difference (&minus;)</h3>
+<p>R &minus; S contains the tuples that are in R but not in S. Order matters: R &minus; S is not the same as S &minus; R. This is how algebra expresses "<em>not</em>" queries. Example: students with no enrollment at all.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sid](Student) − π[sid](Enrolled)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sid](Student) − π[sid](Enrolled)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sid <span class="kw">FROM</span> Student
+<span class="kw">EXCEPT</span>
+<span class="kw">SELECT</span> sid <span class="kw">FROM</span> Enrolled;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+
+| sid |
++-----+
+|   7 |
++-----+
+1 row in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 1 row.</p>
+<p>Only Gus (sid 7) is left. Compare the same idea in the other direction, which is empty because every enrollment belongs to a real student (that is what the foreign key guarantees):</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sid](Enrolled) − π[sid](Student)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sid](Enrolled) − π[sid](Student)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sid <span class="kw">FROM</span> Enrolled <span class="kw">EXCEPT</span> <span class="kw">SELECT</span> sid <span class="kw">FROM</span> Student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Empty set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 0 rows.</p>
+<h3>Intersection is not a new idea</h3>
+<p>Intersection can be written with difference: R &cap; S = R &minus; (R &minus; S). The engine confirms it on real data:</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sid](σ[cid="C1"](Enrolled)) − (π[sid](σ[cid="C1"](Enrolled)) − π[sid](σ[cid="C2"](Enrolled)))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sid](σ[cid=&quot;C1&quot;](Enrolled)) − (π[sid](σ[cid=&quot;C1&quot;](Enrolled)) − π[sid](σ[cid=&quot;C2&quot;](Enrolled)))">Open in the lab</button></p><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 2 rows.</p>
+<p>That is why textbooks call &sigma;, &pi;, &rho;, &cup;, &minus; and &times; the <em>fundamental</em> operators: the others (&cap;, &bowtie;, &divide;) can be built from them. They exist for convenience.</p>
+<h3>When the inputs are not compatible</h3>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname](Student) ∪ π[sid, sname](Student)</pre></div><div class="out err"><div class="bar">What the lab says</div><pre>The two relations must have the same number of attributes to use UNION (left has 1, right has 2). Project them to matching attributes first.</pre></div>
+<p>SQL gives the same kind of error: "The used SELECT statements have a different number of columns".</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="set"></div><p><button type="button" class="btn" data-markdone="sets">Mark section as done</button></p></section>
+<section class="mod" id="joins"><h2><span class="num">04</span>Products and joins</h2><p class="lead">Joins combine tuples from two relations. All of them are built from one idea: pair up every tuple of one relation with every tuple of the other (the Cartesian product), then keep the pairs that make sense.</p>
+<h3>Cartesian product (&times;)</h3>
+<p>R &times; S pairs every tuple of R with every tuple of S. With 7 students and 6 courses you get 7 &times; 6 = 42 tuples, most of them meaningless. The product is rarely useful on its own; it is the raw material for joins.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> pairs <span class="kw">FROM</span> Student <span class="kw">CROSS</span> <span class="kw">JOIN</span> Course;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+
+| pairs |
++-------+
+|    42 |
++-------+
+1 row in set</pre></div>
+<p>If both relations have an attribute with the same name, the product keeps both; you tell them apart with the relation name (<code>Student.sid</code>, <code>Enrolled.sid</code>).</p>
+<h3>Theta join (&bowtie;<sub>&theta;</sub>): product followed by select</h3>
+<p>A join with a condition is shorthand: R &bowtie;[cond] S = &sigma;[cond](R &times; S). The two forms below are the same query, and the engine confirms they give the same rows. The condition <code>Student.sid = Enrolled.sid</code> is what makes the pairs meaningful: we keep a student only together with <em>their own</em> enrollments.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>σ[Student.sid = Enrolled.sid](Student × Enrolled)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="σ[Student.sid = Enrolled.sid](Student × Enrolled)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> Student, Enrolled <span class="kw">WHERE</span> Student.sid = Enrolled.sid;</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 15 rows.</p><div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>Student ⋈ [Student.sid = Enrolled.sid] Enrolled</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="Student ⋈ [Student.sid = Enrolled.sid] Enrolled">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> Student <span class="kw">JOIN</span> Enrolled <span class="kw">ON</span> Student.sid = Enrolled.sid;</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 15 rows.</p>
+<p>When the condition is an equality, it is called an <b>equi-join</b>. Both results above have seven columns, and the join column <code>sid</code> appears twice, once from each side. The natural join removes that repetition.</p>
+<h3>Natural join (&bowtie;): match on the attributes with the same name</h3>
+<p>R &bowtie; S automatically joins on <em>all</em> attributes that have the same name in both relations and keeps one copy of each. <code>Student &bowtie; Enrolled</code> matches on <code>sid</code>.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname, cid, grade](Student ⋈ Enrolled)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sname, cid, grade](Student ⋈ Enrolled)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sname, cid, grade <span class="kw">FROM</span> Student <span class="kw">NATURAL</span> <span class="kw">JOIN</span> Enrolled;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+-----+-------+
+| sname | cid | grade |
++-------+-----+-------+
+| Ana   | C1  | A     |
+| Ana   | C2  | B     |
+| Ana   | C3  | A     |
+| Ana   | C5  | B     |
+| Ben   | C1  | B     |
+| Ben   | C2  | NULL  |
+| Cara  | C2  | A     |
+| Cara  | C3  | A     |
+| Cara  | C4  | B     |
+| Dan   | C3  | C     |
+| Dan   | C4  | B     |
+| Eli   | C1  | B     |
+| Eli   | C4  | C     |
+| Eli   | C5  | A     |
+| Fay   | C5  | B     |
++-------+-----+-------+
+15 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 15 rows.</p>
+<p>Chain joins to follow the foreign keys. Each natural join matches the attribute the relations share:</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname, title](Student ⋈ Enrolled ⋈ Course)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sname, title](Student ⋈ Enrolled ⋈ Course)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s.sname, c.title
+<span class="kw">FROM</span> Student s
+<span class="kw">JOIN</span> Enrolled e <span class="kw">ON</span> e.sid = s.sid
+<span class="kw">JOIN</span> Course c <span class="kw">ON</span> c.cid = e.cid;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+------------------+
+| sname | title            |
++-------+------------------+
+| Ana   | Databases        |
+| Ben   | Databases        |
+| Eli   | Databases        |
+| Ana   | Algorithms       |
+| Ben   | Algorithms       |
+| Cara  | Algorithms       |
+| Ana   | Calculus         |
+| Cara  | Calculus         |
+| Dan   | Calculus         |
+| Cara  | Statistics       |
+| Dan   | Statistics       |
+| Eli   | Statistics       |
+| Ana   | Machine Learning |
+| Eli   | Machine Learning |
+| Fay   | Machine Learning |
++-------+------------------+
+15 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 15 rows.</p>
+<div class="callout bad"><b class="tag">Common mistake</b><p><b>Natural joins can surprise you.</b> They join on <em>every</em> same-named attribute, and if there are none they silently become a Cartesian product. Student and Course share no attribute name, so this returns 42 tuples, not a useful answer:</p><div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>Student ⋈ Course</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="Student ⋈ Course">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> Student <span class="kw">NATURAL</span> <span class="kw">JOIN</span> Course;</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 42 rows.</p><p>For this reason many SQL teachers prefer <code>JOIN ... ON</code>, which states the matching condition explicitly. A later schema change that adds a same-named column can silently change a natural join's meaning.</p></div>
+<h3>Dangling tuples and outer joins</h3>
+<p>An ordinary (inner) join drops tuples that find no partner. Course C6 (Ethics) is in the PHIL department, which has no instructor, so it disappears from this natural join on the shared attribute <code>dept</code>:</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[cid, title, iname](Course ⋈ Instructor)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[cid, title, iname](Course ⋈ Instructor)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> c.cid, c.title, i.iname <span class="kw">FROM</span> Course c <span class="kw">JOIN</span> Instructor i <span class="kw">ON</span> i.dept = c.dept;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+------------------+--------+
+| cid | title            | iname  |
++-----+------------------+--------+
+| C1  | Databases        | Romero |
+| C1  | Databases        | Okafor |
+| C2  | Algorithms       | Romero |
+| C2  | Algorithms       | Okafor |
+| C3  | Calculus         | Tanaka |
+| C4  | Statistics       | Tanaka |
+| C5  | Machine Learning | Brooks |
++-----+------------------+--------+
+7 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 7 rows.</p>
+<p>A <b>left outer join</b> keeps every tuple of the left relation and fills in <code>NULL</code> where there is no match. Right and full outer joins keep the unmatched tuples of the right relation, or of both.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[cid, title, iname](Course left join Instructor)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[cid, title, iname](Course left join Instructor)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> c.cid, c.title, i.iname <span class="kw">FROM</span> Course c <span class="kw">LEFT</span> <span class="kw">JOIN</span> Instructor i <span class="kw">ON</span> i.dept = c.dept;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+------------------+--------+
+| cid | title            | iname  |
++-----+------------------+--------+
+| C1  | Databases        | Romero |
+| C1  | Databases        | Okafor |
+| C2  | Algorithms       | Romero |
+| C2  | Algorithms       | Okafor |
+| C3  | Calculus         | Tanaka |
+| C4  | Statistics       | Tanaka |
+| C5  | Machine Learning | Brooks |
+| C6  | Ethics           | NULL   |
++-----+------------------+--------+
+8 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 8 rows.</p>
+<p>Outer joins answer questions such as "list every student with their courses, <em>including students with none</em>":</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname, cid](Student left join Enrolled)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sname, cid](Student left join Enrolled)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s.sname, e.cid <span class="kw">FROM</span> Student s <span class="kw">LEFT</span> <span class="kw">JOIN</span> Enrolled e <span class="kw">ON</span> e.sid = s.sid;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+------+
+| sname | cid  |
++-------+------+
+| Ana   | C1   |
+| Ana   | C2   |
+| Ana   | C3   |
+| Ana   | C5   |
+| Ben   | C1   |
+| Ben   | C2   |
+| Cara  | C2   |
+| Cara  | C3   |
+| Cara  | C4   |
+| Dan   | C3   |
+| Dan   | C4   |
+| Eli   | C1   |
+| Eli   | C4   |
+| Eli   | C5   |
+| Fay   | C5   |
+| Gus   | NULL |
++-------+------+
+16 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 16 rows.</p>
+<p class="muted">MySQL has <code>LEFT JOIN</code> and <code>RIGHT JOIN</code> but no <code>FULL JOIN</code>; you build it from a UNION of a left and a right join (see Module 4). Some other systems, such as PostgreSQL, have it.</p>
+<h3>Joining a relation with itself</h3>
+<p>To compare tuples of the same relation, give each copy its own alias with &rho;. Example: pairs of different students who share a major. The condition <code>a.sid &lt; b.sid</code> removes the pairing of a student with themself and also stops each pair appearing in both orders.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[a.sname, b.sname](σ[a.sid &lt; b.sid](ρ[a](Student) ⋈ [a.major = b.major] ρ[b](Student)))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[a.sname, b.sname](σ[a.sid &lt; b.sid](ρ[a](Student) ⋈ [a.major = b.major] ρ[b](Student)))">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> a.sname, b.sname <span class="kw">FROM</span> Student a <span class="kw">JOIN</span> Student b <span class="kw">ON</span> a.major = b.major <span class="kw">WHERE</span> a.sid &lt; b.sid;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+-------+
+| sname | sname |
++-------+-------+
+| Ana   | Ben   |
+| Ana   | Gus   |
+| Ben   | Gus   |
+| Cara  | Dan   |
+| Eli   | Fay   |
++-------+-------+
+5 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 5 rows.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="join"></div><p><button type="button" class="btn" data-markdone="joins">Mark section as done</button></p></section>
+<section class="mod" id="division"><h2><span class="num">05</span>Division</h2><p class="lead">Division answers "for all" questions: <em>which students have taken every course in this list?</em> It is the least common operator, and the one students find hardest, so we build it up carefully.</p>
+<h3>The idea</h3>
+<p>Let R have attributes (A, B) and S have attribute B. Then <b>R &divide; S</b> is the set of A-values <code>a</code> such that for <em>every</em> tuple <code>b</code> in S, the pair (a, b) is in R. The result has the attributes of R that are not in S.</p>
+<p>Here R is "which student took which course" and S is a list of required courses. Then R &divide; S is the set of students who took <em>all</em> the required courses.</p>
+<h3>Division stepper</h3>
+<p>Choose a set of required courses. The table shows, for every student, which of the required courses they have taken. A student is in the answer only if every required course has a tick.</p>
+<div id="w-div" class="card"></div>
+<h3>In algebra and in SQL</h3>
+<p>Students enrolled in every 4-credit course (C2 and C3):</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sid, cid](Enrolled) ÷ π[cid](σ[credits=4](Course))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sid, cid](Enrolled) ÷ π[cid](σ[credits=4](Course))">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> <span class="kw">DISTINCT</span> e.sid
+<span class="kw">FROM</span> Enrolled e
+<span class="kw">WHERE</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> (
+  <span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> Course c
+  <span class="kw">WHERE</span> c.credits = <span class="nu">4</span>
+    <span class="kw">AND</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> (
+      <span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> Enrolled x <span class="kw">WHERE</span> x.sid = e.sid <span class="kw">AND</span> x.cid = c.cid));</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+
+| sid |
++-----+
+|   1 |
+|   3 |
++-----+
+2 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 2 rows.</p>
+<p>SQL has no division operator. The standard translation says "there is <em>no</em> required course for which there is <em>no</em> enrollment", a double <code>NOT EXISTS</code>. Read it from the inside out. A second common form counts: a student qualifies if the number of required courses they have taken equals the number of required courses.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sid, cid](Enrolled) ÷ π[cid](σ[credits=4](Course))</pre></div><div class="code"><div class="bar"><span>SQL (counting version)</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> e.sid
+<span class="kw">FROM</span> Enrolled e
+<span class="kw">JOIN</span> Course c <span class="kw">ON</span> c.cid = e.cid <span class="kw">AND</span> c.credits = <span class="nu">4</span>
+<span class="kw">GROUP</span> <span class="kw">BY</span> e.sid
+<span class="kw">HAVING</span> COUNT(<span class="kw">DISTINCT</span> e.cid) = (<span class="kw">SELECT</span> COUNT(*) <span class="kw">FROM</span> Course <span class="kw">WHERE</span> credits = <span class="nu">4</span>);</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+
+| sid |
++-----+
+|   1 |
+|   3 |
++-----+
+2 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 2 rows.</p>
+<h3>Division from the basic operators</h3>
+<p>Division is not fundamental. With R(A, B) and S(B):</p>
+<p style="text-align:center"><b>R &divide; S = &pi;<sub>A</sub>(R) &minus; &pi;<sub>A</sub>((&pi;<sub>A</sub>(R) &times; S) &minus; R)</b></p>
+<p>In words: build every pairing of every candidate with every required item (&pi;<sub>A</sub>(R) &times; S), subtract the pairs that really exist (&minus; R), and what is left are the <em>missing</em> pairs. Any candidate with a missing pair fails, so subtract those candidates from the candidate list. The engine confirms that this long form returns the same students as &divide;:</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sid](π[sid, cid](Enrolled)) − π[sid]((π[sid](π[sid, cid](Enrolled)) × π[cid](σ[credits=4](Course))) − π[sid, cid](Enrolled))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="π[sid](π[sid, cid](Enrolled)) − π[sid]((π[sid](π[sid, cid](Enrolled)) × π[cid](σ[credits=4](Course))) − π[sid, cid](Enrolled))">Open in the lab</button></p><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 2 rows.</p>
+<div class="callout warn"><b class="tag">Edge case</b><p><b>Division by an empty set.</b> If nobody has to satisfy anything, everybody qualifies. Pick "An empty set" in the stepper: all six students who have at least one enrollment are returned. SQL's double NOT EXISTS behaves the same way (there are no required courses that could be missing). Gus is still absent because he has no tuple in Enrolled at all, so he is not a candidate.</p></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="div"></div><p><button type="button" class="btn" data-markdone="division">Mark section as done</button></p></section>
+<section class="mod" id="grouping"><h2><span class="num">06</span>Grouping and aggregates</h2><p class="lead">The original algebra only reshapes data. Real queries also summarize it: counts, sums, averages. Textbooks add one extension operator, &gamma; (grouping and aggregation), which is the algebra behind GROUP BY. Some books use a different symbol for it (for example a script F), so check yours.</p>
+<h3>Syntax</h3>
+<p><code>&gamma;[grouping attributes ; aggregate AS name, ...](R)</code> splits R into groups that share the same grouping attributes, and then produces one tuple per group. Write the semicolon even when there are no grouping attributes. The aggregates are COUNT, SUM, AVG, MIN and MAX.</p>
+<h3>Whole-relation aggregates</h3>
+<p>With nothing before the semicolon there is a single group: the whole relation. Look at what happens to NULL. Fay's GPA is NULL, so <code>AVG(gpa)</code> averages the six known GPAs (20.2 / 6), and <code>COUNT(gpa)</code> counts 6, while <code>COUNT(*)</code> counts all 7 tuples:</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>γ[; COUNT(*) AS total, COUNT(gpa) AS with_gpa, AVG(gpa) AS avg_gpa](Student)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="γ[; COUNT(*) AS total, COUNT(gpa) AS with_gpa, AVG(gpa) AS avg_gpa](Student)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> total, COUNT(gpa) <span class="kw">AS</span> with_gpa, ROUND(AVG(gpa), <span class="nu">4</span>) <span class="kw">AS</span> avg_gpa <span class="kw">FROM</span> Student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+----------+---------+
+| total | with_gpa | avg_gpa |
++-------+----------+---------+
+|     7 |        6 |  3.3667 |
++-------+----------+---------+
+1 row in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 1 row.</p>
+<p>Aggregate functions ignore NULL values, except <code>COUNT(*)</code>, which counts tuples.</p>
+<h3>One tuple per group</h3>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>γ[major; COUNT(*) AS n, MAX(gpa) AS best](Student)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="γ[major; COUNT(*) AS n, MAX(gpa) AS best](Student)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major, COUNT(*) <span class="kw">AS</span> n, MAX(gpa) <span class="kw">AS</span> best <span class="kw">FROM</span> Student <span class="kw">GROUP</span> <span class="kw">BY</span> major;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+---+------+
+| major | n | best |
++-------+---+------+
+| CS    | 3 | 3.80 |
+| MATH  | 2 | 3.90 |
+| DS    | 2 | 3.50 |
++-------+---+------+
+3 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 3 rows.</p>
+<h3>HAVING is a select after the group</h3>
+<p>Because the output of &gamma; is a relation, filtering groups is just a &sigma; applied to it. That is what HAVING is.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>σ[n &gt;= 3](γ[cid; COUNT(*) AS n](Enrolled))</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="σ[n &gt;= 3](γ[cid; COUNT(*) AS n](Enrolled))">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> cid, COUNT(*) <span class="kw">AS</span> n <span class="kw">FROM</span> Enrolled <span class="kw">GROUP</span> <span class="kw">BY</span> cid <span class="kw">HAVING</span> COUNT(*) &gt;= <span class="nu">3</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+---+
+| cid | n |
++-----+---+
+| C1  | 3 |
+| C2  | 3 |
+| C3  | 3 |
+| C4  | 3 |
+| C5  | 3 |
++-----+---+
+5 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 5 rows.</p>
+<h3>Grouping after an outer join</h3>
+<p>To count enrollments per student <em>including students with none</em>, join first with a left outer join and count a column from the right-hand side. Counting <code>cid</code> skips the NULL that Gus's padded tuple carries, so he correctly gets 0. <code>COUNT(*)</code> would wrongly give him 1.</p>
+<div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>γ[sname; COUNT(cid) AS taken](Student left join Enrolled)</pre></div><p class="labbtn"><button type="button" class="btn" data-lab="γ[sname; COUNT(cid) AS taken](Student left join Enrolled)">Open in the lab</button></p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s.sname, COUNT(e.cid) <span class="kw">AS</span> taken <span class="kw">FROM</span> Student s <span class="kw">LEFT</span> <span class="kw">JOIN</span> Enrolled e <span class="kw">ON</span> e.sid = s.sid <span class="kw">GROUP</span> <span class="kw">BY</span> s.sid, s.sname;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+-------+
+| sname | taken |
++-------+-------+
+| Ana   |     4 |
+| Ben   |     2 |
+| Cara  |     3 |
+| Dan   |     2 |
+| Eli   |     3 |
+| Fay   |     1 |
+| Gus   |     0 |
++-------+-------+
+7 rows in set</pre></div><p class="verified"><b>Checked.</b> The algebra engine on this page and MySQL returned the same 7 rows.</p>
+<h3>What algebra cannot do</h3>
+<p>Even with &gamma;, relational algebra cannot express every question. The classic example is <b>transitive closure</b>, such as "all the prerequisites of a course, however deep the chain". Recursion is needed for that, and SQL provides it as <code>WITH RECURSIVE</code>, which you can try in Module 4.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="grp"></div><p><button type="button" class="btn" data-markdone="grouping">Mark section as done</button></p></section>
+<section class="mod" id="lab"><h2><span class="num">07</span>Algebra lab</h2><p class="lead">Type any expression and see the result, plus every intermediate relation on the way. Pick a ready-made example from the list (they are all the examples from this tutorial), or open any example from earlier sections with its <b>Open in the lab</b> button.</p>
+<div id="w-lab" class="card"></div>
+<div class="callout "><b class="tag">No special keyboard needed</b><p>Type with the keyboard if the symbols are awkward: <code>select[major="CS"](Student)</code>, <code>project[sname](...)</code>, <code>rename[a](Student)</code>, <code>union</code>, <code>intersect</code>, <code>minus</code>, <code>cross</code>, <code>join</code>, <code>natural join</code>, <code>left join</code>, <code>divide</code> and <code>group[major; COUNT(*) AS n](Student)</code> all work. Error messages tell you what was expected and where.</p></div>
+<h3>Things to try</h3>
+<ul>
+<li>Remove the brackets around a nested expression and read the error message.</li>
+<li>Change <code>&gt;=</code> to <code>&gt;</code> in a GPA condition and predict which student disappears before you run it.</li>
+<li>Replace a join by <code>cross</code> and look at how many rows flow through the tree.</li>
+<li>Find the students with the highest GPA without &gamma;. (Hint: difference and a self-join. Watch what Fay's NULL GPA does to your answer.)</li>
+</ul></section>
+<section class="mod" id="optimize"><h2><span class="num">08</span>Query trees and optimization</h2><p class="lead">Many different algebra expressions return exactly the same answer, but they do not cost the same. A database turns your SQL into an algebra tree and then rewrites the tree into an equivalent, cheaper one before running it.</p>
+<h3>A query tree</h3>
+<p>Each operator is a node, base relations are the leaves, and data flows upward. The lab in section 7 shows these trees with the number of tuples at every node. The cost of a plan is driven largely by how many tuples flow through the tree, so an optimizer tries to make the intermediate results small as early as possible.</p>
+<h3>Rewriting rules that keep the answer the same</h3>
+<ul>
+<li><b>Push selections down.</b> Filter before you join. &sigma;[cond on R](R &bowtie; S) = (&sigma;[cond](R)) &bowtie; S when the condition mentions only attributes of R.</li>
+<li><b>Push projections down.</b> Drop columns you do not need as early as you can (but keep the join attributes until the join has used them).</li>
+<li><b>Replace &sigma; over &times; by a join.</b> &sigma;[R.a = S.b](R &times; S) = R &bowtie;[R.a = S.b] S, which a database can execute without ever building the product.</li>
+<li><b>Order the joins.</b> Join order does not change the answer (joins are associative), but it changes the size of the intermediate results.</li>
+</ul>
+<h3>Compare two plans</h3>
+<p>Each pair below computes the <em>same</em> answer. The numbers count every tuple that flows through every node of the tree except the final result, including the tuples read from the base relations. Smaller is cheaper. On this toy data the differences are small; on tables with millions of rows they become the difference between a second and an hour.</p>
+<div id="w-opt" class="card"></div>
+<h3>What MySQL really does</h3>
+<p>You write the <em>what</em>; the optimizer picks the <em>how</em>. Here is one SQL query that joins in the order Student, Enrolled, Course. MySQL does not run it in that order. It chooses its own plan from statistics about the tables. You will learn to read this output properly in Module 9.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">EXPLAIN</span> <span class="kw">FORMAT</span>=TREE <span class="kw">SELECT</span> s.sname <span class="kw">FROM</span> Student s <span class="kw">JOIN</span> Enrolled e <span class="kw">ON</span> e.sid = s.sid <span class="kw">JOIN</span> Course c <span class="kw">ON</span> c.cid = e.cid <span class="kw">WHERE</span> c.title = <span class="st">'Databases'</span>\G</pre></div><div class="out"><div class="bar">Output (MySQL 8.4.2): MySQL chooses its own plan</div><pre>*************************** 1. row ***************************
+EXPLAIN: -&gt; Nested loop inner join  (cost=4.25 rows=7)
+    -&gt; Inner hash join (no condition)  (cost=1.8 rows=7)
+        -&gt; Table scan on s  (cost=0.95 rows=7)
+        -&gt; Hash
+            -&gt; Filter: (c.title = 'Databases')  (cost=0.85 rows=1)
+                -&gt; Table scan on c  (cost=0.85 rows=6)
+    -&gt; Single-row covering index lookup on e using PRIMARY (sid=s.sid, cid=c.cid)  (cost=0.264 rows=1)
+
+1 row in set</pre></div>
+<p class="muted">The exact plan and cost numbers depend on the MySQL version and the table statistics, so yours may look different.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="opt"></div><p><button type="button" class="btn" data-markdone="optimize">Mark section as done</button></p></section>
+<section class="mod" id="calculus"><h2><span class="num">09</span>Tuple relational calculus</h2><p class="lead">Relational calculus describes the answer instead of the steps. Instead of "join, then filter, then project" you write a condition and say: <em>the set of all tuples that make it true</em>. This is much closer to how SQL reads, and to formal logic.</p>
+<h3>Tuple relational calculus (TRC)</h3>
+<p>A TRC query has the form <b>{ t | P(t) }</b>: the set of tuples <code>t</code> for which the formula P is true. A <em>tuple variable</em> ranges over the tuples of a relation. In this tutorial's typed syntax:</p>
+<ul>
+<li><code>s IN Student</code> says the variable <code>s</code> is a tuple of Student. This is called a <b>range</b> atom.</li>
+<li><code>s.major = "CS"</code> compares an attribute with a constant, or with another tuple's attribute (<code>e.sid = s.sid</code>).</li>
+<li>Formulas combine with <code>AND</code>, <code>OR</code> and <code>NOT</code>.</li>
+<li><code>EXISTS e IN Enrolled ( ... )</code> (&exist;) means some tuple of Enrolled makes the formula true. <code>FORALL c IN Course ( ... )</code> (&forall;) means every tuple of Course does.</li>
+<li>The part before the bar says which attributes to output, written <code>variable.attribute</code>.</li>
+</ul>
+<p>Textbooks write the same queries with the symbols &exist;, &forall;, &and;, &or; and &not;, and with the range as <code>Student(s)</code> or <code>s &isin; Student</code>. The lab accepts &exist; &forall; &and; &or; &not; &isin; as well as the words.</p>
+<h3>Four queries, three languages</h3>
+<p>Each query below is written in calculus, in algebra and in SQL. All three returned the same rows on the sample data.</p>
+<h4>CS students</h4><div class="code"><div class="bar"><span>Tuple calculus</span><button type="button">Copy</button></div><pre>{ s.sname | s IN Student AND s.major = "CS" }</pre></div><p class="labbtn"><button type="button" class="btn" data-trclab="{ s.sname | s IN Student AND s.major = &quot;CS&quot; }">Open in the calculus lab</button></p><div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname](σ[major="CS"](Student))</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sname <span class="kw">FROM</span> Student <span class="kw">WHERE</span> major = <span class="st">'CS'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+
+| sname |
++-------+
+| Ana   |
+| Ben   |
+| Gus   |
++-------+
+3 rows in set</pre></div><p class="verified"><b>Checked.</b> Calculus, algebra and MySQL all returned the same 3 rows.</p><h4>Students enrolled in C1 (EXISTS)</h4><div class="code"><div class="bar"><span>Tuple calculus</span><button type="button">Copy</button></div><pre>{ s.sname | s IN Student AND EXISTS e IN Enrolled (e.sid = s.sid AND e.cid = "C1") }</pre></div><p class="labbtn"><button type="button" class="btn" data-trclab="{ s.sname | s IN Student AND EXISTS e IN Enrolled (e.sid = s.sid AND e.cid = &quot;C1&quot;) }">Open in the calculus lab</button></p><div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname](Student ⋈ σ[cid="C1"](Enrolled))</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sname <span class="kw">FROM</span> Student s <span class="kw">WHERE</span> <span class="kw">EXISTS</span> (<span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> Enrolled e <span class="kw">WHERE</span> e.sid = s.sid <span class="kw">AND</span> e.cid = <span class="st">'C1'</span>);</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+
+| sname |
++-------+
+| Ana   |
+| Ben   |
+| Eli   |
++-------+
+3 rows in set</pre></div><p class="verified"><b>Checked.</b> Calculus, algebra and MySQL all returned the same 3 rows.</p><h4>Students with no enrollment (NOT EXISTS)</h4><div class="code"><div class="bar"><span>Tuple calculus</span><button type="button">Copy</button></div><pre>{ s.sname | s IN Student AND NOT EXISTS e IN Enrolled (e.sid = s.sid) }</pre></div><p class="labbtn"><button type="button" class="btn" data-trclab="{ s.sname | s IN Student AND NOT EXISTS e IN Enrolled (e.sid = s.sid) }">Open in the calculus lab</button></p><div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname](Student) − π[sname](Student ⋈ Enrolled)</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sname <span class="kw">FROM</span> Student s <span class="kw">WHERE</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> (<span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> Enrolled e <span class="kw">WHERE</span> e.sid = s.sid);</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+
+| sname |
++-------+
+| Gus   |
++-------+
+1 row in set</pre></div><p class="verified"><b>Checked.</b> Calculus, algebra and MySQL all returned the same 1 row.</p><h4>Students enrolled in every CS course (FORALL)</h4><div class="code"><div class="bar"><span>Tuple calculus</span><button type="button">Copy</button></div><pre>{ s.sname | s IN Student AND FORALL c IN Course (NOT c.dept = "CS" OR EXISTS e IN Enrolled (e.sid = s.sid AND e.cid = c.cid)) }</pre></div><p class="labbtn"><button type="button" class="btn" data-trclab="{ s.sname | s IN Student AND FORALL c IN Course (NOT c.dept = &quot;CS&quot; OR EXISTS e IN Enrolled (e.sid = s.sid AND e.cid = c.cid)) }">Open in the calculus lab</button></p><div class="code"><div class="bar"><span>Relational algebra</span><button type="button">Copy</button></div><pre>π[sname](Student ⋈ (π[sid, cid](Enrolled) ÷ π[cid](σ[dept="CS"](Course))))</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> sname <span class="kw">FROM</span> Student s <span class="kw">WHERE</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> (<span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> Course c <span class="kw">WHERE</span> c.dept = <span class="st">'CS'</span> <span class="kw">AND</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> (<span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> Enrolled e <span class="kw">WHERE</span> e.sid = s.sid <span class="kw">AND</span> e.cid = c.cid));</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+
+| sname |
++-------+
+| Ana   |
+| Ben   |
++-------+
+2 rows in set</pre></div><p class="verified"><b>Checked.</b> Calculus, algebra and MySQL all returned the same 2 rows.</p>
+<h3>The pattern for "for all"</h3>
+<p>The &forall; query above has a shape worth memorizing. "Every CS course is taken by s" is <em>not</em> "for all courses, s took it", because that would include the non-CS courses. You write an implication: <b>for every course, either it is not a CS course, or s took it</b>. In logic that is <code>NOT p OR q</code>. A useful equivalence is &forall;x P(x) = &not;&exist;x &not;P(x), which is exactly why SQL uses a double NOT EXISTS.</p>
+<h3>Safe expressions</h3>
+<p>Calculus lets you write formulas that describe infinitely many tuples, such as "all tuples that are <em>not</em> in Student". That is not a database query, because the answer cannot be listed. A <b>safe</b> expression only produces values that appear in the database. Requiring a range atom for every output variable, as this lab does, is one simple way to stay safe.</p>
+<h3>Domain relational calculus</h3>
+<p>The other flavour, <b>domain relational calculus</b>, uses variables that range over single attribute <em>values</em> instead of whole tuples, for example &lbrace; &lt;n&gt; | &exist;s,m,g (&lt;s,n,m,g&gt; &isin; Student &and; m = "CS") &rbrace;. Query-by-Example (QBE), the fill-in-the-grid query style, is based on it.</p>
+<h3>Algebra and calculus have the same power</h3>
+<p><b>Codd's theorem</b> (1972) says that relational algebra and safe relational calculus can express exactly the same queries. A query language that can express everything in relational algebra is called <b>relationally complete</b>. SQL is relationally complete and adds extras on top (grouping, ordering, recursion, NULLs, duplicates). Informally: calculus is how you <em>think</em> about a query, algebra is how a database <em>executes</em> it, and SQL lets you write either way.</p>
+<h3>Try the calculus lab</h3>
+<div id="w-trc" class="card"></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="trc"></div><p><button type="button" class="btn" data-markdone="calculus">Mark section as done</button></p></section>
+<section class="mod" id="practice"><h2><span class="num">10</span>Practice</h2><p class="lead">Write each query yourself. The checker runs your expression on the sample data and compares the <em>tuples</em> with the correct answer (names of columns do not matter, but the number and order of columns do). Your solved challenges are remembered in this browser.</p>
+<p class="score" id="ch-score"></p>
+<h3>Relational algebra</h3>
+<div id="ch-alg"></div>
+<h3>Tuple relational calculus</h3>
+<div id="ch-trc"></div>
+<div class="callout "><b class="tag">Typing tip</b><p>Symbol buttons are under the editor in each challenge. Keywords such as <code>select</code>, <code>project</code>, <code>join</code> and <code>divide</code> also work.</p></div></section>
+<section class="mod" id="final"><h2><span class="num">11</span>Final check</h2><p class="lead">Twelve mixed questions on the whole module.</p>
+<div class="quiz" data-quiz="final"></div>
+<h3>Where to go next</h3>
+<ul>
+<li><b>Module 4</b> turns all of this into SQL you run on MySQL: every operator here has a clause there.</li>
+<li><b>Module 9</b> shows how real query plans (the trees from section 8) are chosen and how indexes change them.</li>
+<li>Further reading: the relational algebra and calculus chapters of your course textbook; check the notation they use for grouping and outer joins.</li>
+</ul>
+<h3>Files for this tutorial</h3>
+<ul><li><a href="labs/ra_demo_mysql.sql">labs/ra_demo_mysql.sql</a>: the four sample relations for MySQL 8.4 (creates the database <code>ra_demo</code>).</li></ul></section>
+
+<p class="nav-foot">Tutorial date: October 29, 2026. Progress, quiz answers and drafts stay in your own browser.</p>
+</main>
+</div>
+</div>
+<script>window.TK_QUIZ={"sel": [{"q": "Which operator chooses <em>columns<\/em>?", "o": ["&rho; (rename)", "&pi; (project)", "&times; (product)", "&sigma; (select)"], "a": 1, "e": "&pi; keeps the listed attributes. &sigma; chooses rows; the names are easy to mix up because SQL's SELECT clause does the job of &pi;."}, {"q": "<code>&pi;[major](Student)<\/code> on the sample data has how many tuples?", "o": ["3", "7", "2", "1"], "a": 0, "e": "The relation is a set, so the seven majors collapse to the three different values CS, MATH and DS."}, {"q": "What does <code>&sigma;[gpa &gt; 3.0](Student)<\/code> do with Fay, whose GPA is NULL?", "o": ["Drops her, because NULL &gt; 3.0 is unknown, not true", "Keeps her", "Raises an error", "Treats NULL as 0 and drops her"], "a": 0, "e": "Only tuples where the condition is true are kept. Unknown is not true."}, {"q": "Which SQL is equivalent to <code>&pi;[major](Student)<\/code> under set semantics?", "o": ["SELECT DISTINCT major FROM Student", "SELECT major FROM Student", "SELECT * FROM Student", "SELECT COUNT(major) FROM Student"], "a": 0, "e": "DISTINCT removes duplicates, as the set-based projection does."}], "set": [{"q": "Which pair of relations is union-compatible?", "o": ["Student and Enrolled", "Course and Instructor", "\u03c0[sname](Student) and \u03c0[iname](Instructor)", "Student(sid, sname) and Course(cid)"], "a": 2, "e": "Both have one text attribute. The other pairs have different numbers of attributes."}, {"q": "<code>R &minus; S<\/code> and <code>S &minus; R<\/code> are:", "o": ["Always empty", "Always equal", "Not necessarily equal", "Equal only when R and S are equal"], "a": 2, "e": "Difference is not commutative. Example: \u03c0[sid](Student) \u2212 \u03c0[sid](Enrolled) has one tuple; the reverse is empty."}, {"q": "Which SQL operator corresponds to <code>R &cap; S<\/code>?", "o": ["UNION", "CROSS JOIN", "EXCEPT", "INTERSECT (MySQL 8.0.31 and later)"], "a": 3, "e": "INTERSECT returns the rows that appear in both queries."}, {"q": "Students enrolled in C1 <em>and not<\/em> in C2 is best written as:", "o": ["C1 &cup; C2", "C1 &minus; C2", "C1 &cap; C2", "C2 &minus; C1"], "a": 1, "e": "Difference keeps what is in the first set and not in the second. Students: sid 5 only."}], "join": [{"q": "How many tuples are in <code>Student &times; Course<\/code> on the sample data?", "o": ["13 + 6", "7", "42", "13"], "a": 2, "e": "7 students times 6 courses = 42 tuples."}, {"q": "R &bowtie;[cond] S is equivalent to:", "o": ["R &minus; S", "&sigma;[cond](R &times; S)", "R &cup; S", "&pi;[cond](R &times; S)"], "a": 1, "e": "A theta join is a product followed by a selection."}, {"q": "Two relations have <em>no<\/em> attribute names in common. What does their natural join return?", "o": ["An error", "Only the first relation", "The Cartesian product", "An empty relation"], "a": 2, "e": "With no common attributes there is nothing to match on, so every pairing qualifies."}, {"q": "Which join would list every Course, including those with no instructor in their department?", "o": ["Course &cap; Instructor", "Course left join Instructor", "Course &bowtie; Instructor", "Instructor &bowtie; Course"], "a": 1, "e": "A left outer join keeps all tuples of the left relation."}, {"q": "Why is <code>rename[a](Student) join [a.major = b.major] rename[b](Student)<\/code> needed instead of joining Student with itself directly?", "o": ["It converts the result to a bag", "Algebra forbids joining a relation with itself", "Both copies have the same attribute names, so you need aliases to say which copy each attribute comes from", "Aliases make the query run faster"], "a": 2, "e": "Without aliases, <code>major<\/code> is ambiguous."}], "div": [{"q": "Which question is a division query?", "o": ["Which students are enrolled in <em>every<\/em> CS course?", "Which students are enrolled in no course?", "How many students are enrolled in each course?", "Which students are enrolled in C1?"], "a": 0, "e": "\"Every\" signals a for-all condition, which is division. The others are selection, difference and grouping."}, {"q": "For R(sid, cid) &divide; S(cid), what attributes does the result have?", "o": ["No attributes", "sid and cid", "cid only", "sid only"], "a": 3, "e": "The result has the attributes of R that are not in S."}, {"q": "Which SQL pattern implements division?", "o": ["UNION ALL", "A LEFT JOIN with IS NULL", "ORDER BY ... LIMIT 1", "A double NOT EXISTS (or a COUNT comparison)"], "a": 3, "e": "\"There is no required item that the candidate is missing\" is a double negation: NOT EXISTS inside NOT EXISTS."}], "grp": [{"q": "A relation has gpa values 3.0, 4.0 and NULL. What is <code>COUNT(gpa)<\/code>?", "o": ["3", "2", "NULL", "1"], "a": 1, "e": "COUNT(attribute) counts the non-NULL values. COUNT(*) would give 3."}, {"q": "HAVING corresponds to which algebra step?", "o": ["A &sigma; applied after &gamma;", "A &cup; of the groups", "A &pi; applied before &gamma;", "A &rho; of the aggregates"], "a": 0, "e": "HAVING filters groups, which are the tuples &gamma; produces."}, {"q": "You want the number of enrollments for every student, including students with none. Which is the correct plan?", "o": ["Student left join Enrolled, then count a column of Enrolled", "Count over Enrolled only", "Student &cap; Enrolled", "Student left join Enrolled, then COUNT(*)"], "a": 0, "e": "The outer join keeps Gus; counting an Enrolled column skips his padded NULL, giving 0. COUNT(*) would give 1."}], "opt": [{"q": "Why is \"push selections down\" a good rule?", "o": ["It changes the answer to a smaller one", "It turns bags into sets", "It makes intermediate results smaller before expensive joins", "It removes the need for indexes"], "a": 2, "e": "Filtering early means joins process fewer tuples. The rewritten plan returns exactly the same answer."}, {"q": "Which pair of expressions is always equivalent (for conditions on R only)?", "o": ["\u03c0[a](R) and \u03c3[a](R)", "\u03c3[c](R \u22c8 S) and (\u03c3[c](R)) \u22c8 S", "R \u00d7 S and R \u22c8 S", "R \u2212 S and S \u2212 R"], "a": 1, "e": "This is the push-down rule. R \u2212 S and S \u2212 R are generally different, and a product and a join differ unless the join condition always holds."}, {"q": "Who decides the order in which MySQL joins your tables?", "o": ["The primary key", "You, by the order in the FROM clause", "The client program", "The optimizer, which may reorder the joins"], "a": 3, "e": "For inner joins the optimizer is free to choose any order that gives the same result."}], "trc": [{"q": "What does <code>{ s.sname | s IN Student AND s.gpa &gt; 3.5 }<\/code> describe?", "o": ["All GPAs above 3.5", "The number of students", "An unsafe expression", "The students with a GPA above 3.5, giving their names"], "a": 3, "e": "It is the set of sname values of Student tuples whose gpa exceeds 3.5."}, {"q": "Which formula expresses \"s is enrolled in <em>no<\/em> course\"?", "o": ["NOT EXISTS e IN Enrolled (e.sid = s.sid)", "EXISTS e IN Enrolled (e.sid = s.sid)", "FORALL e IN Enrolled (e.sid = s.sid)", "NOT FORALL e IN Enrolled (e.sid = s.sid)"], "a": 0, "e": "No Enrolled tuple belongs to s. The FORALL options say something different (they require every enrollment in the database to be s's)."}, {"q": "Why is \"all tuples that are not in Student\" a problem?", "o": ["It returns NULL", "The answer would be infinite, so the expression is unsafe", "NOT is not allowed in calculus", "It is the same as a join"], "a": 1, "e": "Safe expressions can only return values that occur in the database."}, {"q": "Codd's theorem says relational algebra and safe relational calculus:", "o": ["Differ in power, with calculus stronger", "Differ in power, with algebra stronger", "Can express exactly the same queries", "Are unrelated"], "a": 2, "e": "They have equal expressive power."}], "final": [{"q": "Which operators are <em>fundamental<\/em>, meaning the others can be built from them?", "o": ["Only &sigma; and &pi;", "&gamma; only", "&bowtie;, &divide;, &cap;", "&sigma;, &pi;, &rho;, &cup;, &minus;, &times;"], "a": 3, "e": "Intersection, joins and division can all be expressed with the six fundamental operators."}, {"q": "A relation has two identical rows after a projection. In relational algebra they are:", "o": ["Marked as NULL", "Kept as two rows", "Merged into one row, because relations are sets", "An error"], "a": 2, "e": "Algebra works on sets. SQL needs DISTINCT to do the same."}, {"q": "Which expression returns the students that are <em>not<\/em> enrolled in anything?", "o": ["\u03c0[sid](Student) \u2212 \u03c0[sid](Enrolled)", "\u03c0[sid](Student) \u2229 \u03c0[sid](Enrolled)", "\u03c0[sid](Enrolled) \u2212 \u03c0[sid](Student)", "Student \u22c8 Enrolled"], "a": 0, "e": "Difference removes every student that appears in Enrolled."}, {"q": "Which operator do you reach for when a question contains the word \"every\" or \"all\"?", "o": ["Union", "Natural join", "Rename", "Division"], "a": 3, "e": "\"For all\" questions are division queries."}, {"q": "How many tuples are in the Cartesian product of a 7-tuple relation and a 6-tuple relation?", "o": ["42", "13", "7", "6"], "a": 0, "e": "7 \u00d7 6 = 42."}, {"q": "What does a left outer join add compared with an inner join?", "o": ["Duplicate tuples", "Tuples of the left relation with no match, padded with NULL", "Nothing; they are the same", "Tuples of the right relation with no match"], "a": 1, "e": "Unmatched left tuples are kept and the right-hand attributes are NULL."}, {"q": "Which SQL clause corresponds to a &sigma; applied after &gamma;?", "o": ["WHERE", "ORDER BY", "HAVING", "DISTINCT"], "a": 2, "e": "HAVING filters groups after aggregation."}, {"q": "Which of these is <em>not<\/em> a rewriting that preserves the answer?", "o": ["Swapping the operands of a difference: R \u2212 S to S \u2212 R", "Replacing \u03c3[R.a=S.b](R \u00d7 S) by a join", "Pushing a selection below a join (condition on one side only)", "Reordering a chain of natural joins"], "a": 0, "e": "Difference is not commutative."}, {"q": "In tuple calculus, how is \"for every CS course, s took it\" correctly written?", "o": ["NOT EXISTS c IN Course (took(s, c))", "EXISTS c IN Course (c.dept = \"CS\" AND took(s, c))", "FORALL c IN Course (NOT c.dept = \"CS\" OR took(s, c))", "FORALL c IN Course (c.dept = \"CS\" AND took(s, c))"], "a": 2, "e": "Use an implication: not a CS course, or taken. The first option would force every course to be CS."}, {"q": "What does Codd's theorem state?", "o": ["SQL cannot express recursion", "Joins are always faster than subqueries", "Every table needs a primary key", "Relational algebra and safe relational calculus have equal expressive power"], "a": 3, "e": "It links the procedural and the declarative formalisms."}, {"q": "Which problem can <em>not<\/em> be solved by basic relational algebra (even with &gamma;)?", "o": ["Pairs of students sharing a major", "Courses nobody takes", "Students with the highest GPA", "All prerequisites of a course through any number of levels"], "a": 3, "e": "Transitive closure needs recursion, for example WITH RECURSIVE in SQL."}, {"q": "Why can a natural join between two relations behave like a Cartesian product?", "o": ["If they share no attribute names, there is nothing to match on", "Only when one relation is empty", "Natural joins always ignore the join attribute", "Because of NULL values"], "a": 0, "e": "With no common attributes every pair matches."}]};</script>
+<script>
+(function(){
+'use strict';
+var SLUG = document.documentElement.getAttribute('data-slug') || 'tutorial';
+var $ = function(s,r){return (r||document).querySelector(s)};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('tk:'+SLUG+':'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem('tk:'+SLUG+':'+k,JSON.stringify(v))}catch(e){}},
+  clear:function(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('tk:'+SLUG+':')===0)localStorage.removeItem(k)})}catch(e){}}
+};
+window.TK={$:$,$$:$$,el:el,store:store,slug:SLUG};
+
+/* copy buttons */
+$$('.code').forEach(function(c){
+  var b=$('button',c); if(!b) return;
+  b.addEventListener('click',function(){
+    var t=$('pre',c).textContent;
+    function done(){var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o},1200)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fallback(t,done)})}else fallback(t,done);
+  });
+});
+function fallback(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb()}catch(e){}document.body.removeChild(ta)}
+
+/* section nav */
+var secs=$$('section.mod'), links=$$('nav.side a[data-sec]');
+var done=store.get('done',{});
+function paintDone(){links.forEach(function(a){var t=$('.tick',a);if(t)t.textContent=done[a.getAttribute('data-sec')]?'✓':''})}
+paintDone();
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('active',a.getAttribute('data-sec')===e.target.id)})}
+  })},{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(function(s){io.observe(s)});
+}
+$$('button[data-markdone]').forEach(function(b){
+  var id=b.getAttribute('data-markdone');
+  function paint(){b.textContent=done[id]?'Marked as done ✓':'Mark section as done';b.setAttribute('aria-pressed',done[id]?'true':'false')}
+  paint();
+  b.addEventListener('click',function(){done[id]=!done[id];store.set('done',done);paint();paintDone()});
+});
+var reset=$('#tk-reset'); if(reset) reset.addEventListener('click',function(){if(confirm('Clear your saved progress and quiz answers in this browser?')){store.clear();location.reload()}});
+
+/* quizzes: data in window.TK_QUIZ = {id:[{q,o:[],a,e}]} */
+TK.quiz=function(box){
+  var id=box.getAttribute('data-quiz'), qs=(window.TK_QUIZ||{})[id]||[];
+  var saved=store.get('quiz:'+id,{});
+  box.innerHTML='';
+  var score=el('p','score'); score.setAttribute('aria-live','polite');
+  var retry=el('button','btn','Try again'); retry.type='button'; retry.hidden=true;
+  function refresh(){
+    var n=Object.keys(saved).length, r=0; qs.forEach(function(q,i){if(saved[i]===q.a)r++});
+    score.textContent=n<qs.length?'Answer each question. Feedback appears right away.':'Score: '+r+' of '+qs.length+'.';
+    retry.hidden=n<qs.length;
+  }
+  qs.forEach(function(q,i){
+    var fs=el('fieldset','q'); var lg=el('legend'); lg.innerHTML=(i+1)+'. '+q.q; fs.appendChild(lg);
+    if(q.code){var pre=el('pre','',q.code);pre.style.cssText='background:var(--code-bg);color:var(--code-ink);border-radius:8px;margin:8px 0';fs.appendChild(pre)}
+    var opts=el('div','opts'), fb=el('p','fb'); fb.setAttribute('aria-live','polite'); var bs=[];
+    function reveal(c){
+      bs.forEach(function(b,j){b.disabled=true;if(j===q.a)b.classList.add('right');else if(j===c)b.classList.add('wrong')});
+      fb.textContent=''; fb.appendChild(el('b',c===q.a?'ok':'no',c===q.a?'Correct. ':'Not quite. ')); var ex=el('span'); ex.innerHTML=q.e; fb.appendChild(ex);
+    }
+    q.o.forEach(function(t,j){var b=el('button','opt');b.innerHTML=t;b.type='button';b.addEventListener('click',function(){saved[i]=j;store.set('quiz:'+id,saved);reveal(j);refresh()});bs.push(b);opts.appendChild(b)});
+    fs.appendChild(opts); fs.appendChild(fb); box.appendChild(fs);
+    if(saved[i]!==undefined) reveal(saved[i]);
+  });
+  retry.addEventListener('click',function(){store.set('quiz:'+id,{});TK.quiz(box)});
+  box.appendChild(score); box.appendChild(retry); refresh();
+};
+$$('[data-quiz]').forEach(TK.quiz);
+
+/* result-set table builder: cols[], rows[][] */
+TK.table=function(cols,rows,opt){
+  opt=opt||{};
+  var w=el('div','rs'), t=el('table'), th=el('thead'), tr=el('tr');
+  cols.forEach(function(c,ci){var isnum=rows.length&&rows.some(function(r){return typeof r[ci]==='number'})&&rows.every(function(r){return r[ci]===null||typeof r[ci]==='number'});tr.appendChild(el('th',isnum?'num':null,c))}); th.appendChild(tr); t.appendChild(th);
+  var tb=el('tbody');
+  rows.forEach(function(r,ri){var tr=el('tr'); if(opt.rowClass){var c=opt.rowClass(r,ri);if(c)tr.className=c}
+    r.forEach(function(v){var td=el('td',v===null?'null':(typeof v==='number'?'num':''),v===null?'NULL':String(v));tr.appendChild(td)});tb.appendChild(tr)});
+  t.appendChild(tb); w.appendChild(t); return w;
+};
+})();
+
+</script>
+<script>window.M3={"db": {"Student": {"attrs": ["sid", "sname", "major", "gpa"], "rows": [[1, "Ana", "CS", 3.8], [2, "Ben", "CS", 3.2], [3, "Cara", "MATH", 3.9], [4, "Dan", "MATH", 2.8], [5, "Eli", "DS", 3.5], [6, "Fay", "DS", null], [7, "Gus", "CS", 3.0]]}, "Course": {"attrs": ["cid", "title", "credits", "dept"], "rows": [["C1", "Databases", 3, "CS"], ["C2", "Algorithms", 4, "CS"], ["C3", "Calculus", 4, "MATH"], ["C4", "Statistics", 3, "MATH"], ["C5", "Machine Learning", 3, "DS"], ["C6", "Ethics", 2, "PHIL"]]}, "Instructor": {"attrs": ["iid", "iname", "dept"], "rows": [[1, "Okafor", "CS"], [2, "Tanaka", "MATH"], [3, "Brooks", "DS"], [4, "Romero", "CS"]]}, "Enrolled": {"attrs": ["sid", "cid", "grade"], "rows": [[1, "C1", "A"], [1, "C2", "B"], [1, "C3", "A"], [1, "C5", "B"], [2, "C1", "B"], [2, "C2", null], [3, "C2", "A"], [3, "C3", "A"], [3, "C4", "B"], [4, "C3", "C"], [4, "C4", "B"], [5, "C1", "B"], [5, "C4", "C"], [5, "C5", "A"], [6, "C5", "B"]]}}, "examples": [["Select: CS students with GPA of at least 3.5", "\u03c3[major=\"CS\" AND gpa >= 3.5](Student)"], ["Project: the distinct majors", "\u03c0[major](Student)"], ["Select then project: names and GPAs of strong students", "\u03c0[sname, gpa](\u03c3[gpa >= 3.5](Student))"], ["NULL trap: grade != \"A\" drops the NULL grade", "\u03c3[grade != \"A\"](Enrolled)"], ["grade != \"A\" OR grade IS NULL", "\u03c3[grade != \"A\" OR grade IS NULL](Enrolled)"], ["Rename an attribute", "\u03c1[sid -> student_id](\u03c0[sid, sname](Student))"], ["Union: enrolled in C1 or C3", "\u03c0[sid](\u03c3[cid=\"C1\"](Enrolled)) \u222a \u03c0[sid](\u03c3[cid=\"C3\"](Enrolled))"], ["Union of names (different attribute names)", "\u03c0[sname](Student) \u222a \u03c0[iname](Instructor)"], ["Intersection: enrolled in C1 and C2", "\u03c0[sid](\u03c3[cid=\"C1\"](Enrolled)) \u2229 \u03c0[sid](\u03c3[cid=\"C2\"](Enrolled))"], ["Difference: students with no enrollment", "\u03c0[sid](Student) \u2212 \u03c0[sid](Enrolled)"], ["Difference the other way: empty", "\u03c0[sid](Enrolled) \u2212 \u03c0[sid](Student)"], ["R \u2229 S written as R \u2212 (R \u2212 S)", "\u03c0[sid](\u03c3[cid=\"C1\"](Enrolled)) \u2212 (\u03c0[sid](\u03c3[cid=\"C1\"](Enrolled)) \u2212 \u03c0[sid](\u03c3[cid=\"C2\"](Enrolled)))"], ["Product then select", "\u03c3[Student.sid = Enrolled.sid](Student \u00d7 Enrolled)"], ["Theta join (same query)", "Student \u22c8 [Student.sid = Enrolled.sid] Enrolled"], ["Natural join: each student with their enrollments", "\u03c0[sname, cid, grade](Student \u22c8 Enrolled)"], ["Three-way join: student names with course titles", "\u03c0[sname, title](Student \u22c8 Enrolled \u22c8 Course)"], ["Inner join: C6 disappears", "\u03c0[cid, title, iname](Course \u22c8 Instructor)"], ["Left outer join: C6 is kept with NULL", "\u03c0[cid, title, iname](Course left join Instructor)"], ["Every student, even Gus with no enrollment", "\u03c0[sname, cid](Student left join Enrolled)"], ["Self-join: pairs with the same major", "\u03c0[a.sname, b.sname](\u03c3[a.sid < b.sid](\u03c1[a](Student) \u22c8 [a.major = b.major] \u03c1[b](Student)))"], ["Division: students who took every 4-credit course", "\u03c0[sid, cid](Enrolled) \u00f7 \u03c0[cid](\u03c3[credits=4](Course))"], ["Division written with \u03c0, \u00d7, \u2212 only", "\u03c0[sid](\u03c0[sid, cid](Enrolled)) \u2212 \u03c0[sid]((\u03c0[sid](\u03c0[sid, cid](Enrolled)) \u00d7 \u03c0[cid](\u03c3[credits=4](Course))) \u2212 \u03c0[sid, cid](Enrolled))"], ["Aggregates over the whole relation (NULL skipped)", "\u03b3[; COUNT(*) AS total, COUNT(gpa) AS with_gpa, AVG(gpa) AS avg_gpa](Student)"], ["Group by major", "\u03b3[major; COUNT(*) AS n, MAX(gpa) AS best](Student)"], ["Courses with at least 3 enrollments", "\u03c3[n >= 3](\u03b3[cid; COUNT(*) AS n](Enrolled))"], ["Enrollments per student, zero included", "\u03b3[sname; COUNT(cid) AS taken](Student left join Enrolled)"]], "trc": [["CS students", "{ s.sname | s IN Student AND s.major = \"CS\" }"], ["Students enrolled in C1 (EXISTS)", "{ s.sname | s IN Student AND EXISTS e IN Enrolled (e.sid = s.sid AND e.cid = \"C1\") }"], ["Students with no enrollment (NOT EXISTS)", "{ s.sname | s IN Student AND NOT EXISTS e IN Enrolled (e.sid = s.sid) }"], ["Students enrolled in every CS course (FORALL)", "{ s.sname | s IN Student AND FORALL c IN Course (NOT c.dept = \"CS\" OR EXISTS e IN Enrolled (e.sid = s.sid AND e.cid = c.cid)) }"]], "opt": [{"title": "Which students take Databases?", "note": "Plan 1 joins all three relations first and filters at the end. Plan 2 filters the course first and only then joins the small result.", "a": "\u03c0[sname](\u03c3[title=\"Databases\"](Student \u22c8 Enrolled \u22c8 Course))", "b": "\u03c0[sname](Student \u22c8 \u03c0[sid](Enrolled \u22c8 \u03c0[cid](\u03c3[title=\"Databases\"](Course))))", "rows": 3, "ia": 61, "ib": 39}, {"title": "Product then select, or join?", "note": "A product pairs every student with every enrollment before the condition removes almost all of the pairs.", "a": "\u03c0[sname, cid](\u03c3[Student.sid = Enrolled.sid](Student \u00d7 Enrolled))", "b": "\u03c0[sname, cid](Student \u22c8 Enrolled)", "rows": 15, "ia": 142, "ib": 37}, {"title": "Who earned an A in a 4-credit course?", "note": "Plan 2 pushes both selections down to the base relations before joining.", "a": "\u03c0[sname](\u03c3[grade=\"A\" AND credits=4](Student \u22c8 Enrolled \u22c8 Course))", "b": "\u03c0[sname](Student \u22c8 (\u03c3[grade=\"A\"](Enrolled) \u22c8 \u03c3[credits=4](Course)))", "rows": 2, "ia": 61, "ib": 41}], "div": [["All CS courses", "\u03c0[cid](\u03c3[dept=\"CS\"](Course))"], ["All 4-credit courses", "\u03c0[cid](\u03c3[credits=4](Course))"], ["All MATH courses", "\u03c0[cid](\u03c3[dept=\"MATH\"](Course))"], ["The one DS course", "\u03c0[cid](\u03c3[dept=\"DS\"](Course))"], ["An empty set (no course has 9 credits)", "\u03c0[cid](\u03c3[credits=9](Course))"]], "challenges": [{"id": "a1", "kind": "alg", "n": 1, "prompt": "Return the <code>sname<\/code> of every student whose major is CS. (One column.)", "solution": "\u03c0[sname](\u03c3[major=\"CS\"](Student))", "hint": "Select the rows first, then project the column.", "expected": [["Ana"], ["Ben"], ["Gus"]]}, {"id": "a2", "kind": "alg", "n": 2, "prompt": "Return <code>sid<\/code> and <code>gpa<\/code> for students with a GPA of 3.5 or more. (Two columns, in that order.)", "solution": "\u03c0[sid, gpa](\u03c3[gpa >= 3.5](Student))", "hint": "\u03c3 with a comparison, then \u03c0 with two attributes.", "expected": [[1, 3.8], [3, 3.9], [5, 3.5]]}, {"id": "a3", "kind": "alg", "n": 3, "prompt": "Return the <code>title<\/code> of every course worth 4 credits.", "solution": "\u03c0[title](\u03c3[credits = 4](Course))", "hint": "Same pattern as challenge 1.", "expected": [["Algorithms"], ["Calculus"]]}, {"id": "a4", "kind": "alg", "n": 4, "prompt": "Return the <code>sid<\/code> of students enrolled in C1 <em>or<\/em> C3.", "solution": "\u03c0[sid](\u03c3[cid=\"C1\" OR cid=\"C3\"](Enrolled))", "hint": "Either one union of two selections, or one selection with OR.", "expected": [[1], [2], [3], [4], [5]]}, {"id": "a5", "kind": "alg", "n": 5, "prompt": "Return the <code>sid<\/code> of students enrolled in both C1 <em>and<\/em> C2.", "solution": "\u03c0[sid](\u03c3[cid=\"C1\"](Enrolled)) \u2229 \u03c0[sid](\u03c3[cid=\"C2\"](Enrolled))", "hint": "A selection with AND on one tuple cannot work, because a tuple has one cid. Use intersection of two projections.", "expected": [[1], [2]]}, {"id": "a6", "kind": "alg", "n": 6, "prompt": "Return the <code>sid<\/code> of students who are not enrolled in any course.", "solution": "\u03c0[sid](Student) \u2212 \u03c0[sid](Enrolled)", "hint": "All students minus the students who appear in Enrolled.", "expected": [[7]]}, {"id": "a7", "kind": "alg", "n": 7, "prompt": "Return every student's <code>sname<\/code> together with the <code>title<\/code> of each course they are enrolled in.", "solution": "\u03c0[sname, title](Student \u22c8 Enrolled \u22c8 Course)", "hint": "Chain two natural joins, then project.", "expected": [["Ana", "Databases"], ["Ana", "Algorithms"], ["Ana", "Calculus"], ["Ana", "Machine Learning"], ["Ben", "Databases"], ["Ben", "Algorithms"], ["Cara", "Algorithms"], ["Cara", "Calculus"], ["Cara", "Statistics"], ["Dan", "Calculus"], ["Dan", "Statistics"], ["Eli", "Databases"], ["Eli", "Statistics"], ["Eli", "Machine Learning"], ["Fay", "Machine Learning"]]}, {"id": "a8", "kind": "alg", "n": 8, "prompt": "Return the <code>sname<\/code> of students who are enrolled in a course from a department different from their own major.", "solution": "\u03c0[sname](\u03c3[major != dept](Student \u22c8 Enrolled \u22c8 Course))", "hint": "Student has <code>major<\/code>, Course has <code>dept<\/code>. After joining, compare them with &sigma;.", "expected": [["Ana"], ["Cara"], ["Eli"]]}, {"id": "a9", "kind": "alg", "n": 9, "prompt": "Return the <code>sid<\/code> of students enrolled in <em>every<\/em> 4-credit course.", "solution": "\u03c0[sid, cid](Enrolled) \u00f7 \u03c0[cid](\u03c3[credits=4](Course))", "hint": "Division: R(sid, cid) divided by the required cids.", "expected": [[1], [3]]}, {"id": "a10", "kind": "alg", "n": 10, "prompt": "Return each <code>cid<\/code> with the number of students enrolled, as columns <code>cid<\/code> and <code>n<\/code>.", "solution": "\u03b3[cid; COUNT(*) AS n](Enrolled)", "hint": "Group by cid and count.", "expected": [["C1", 3], ["C2", 3], ["C3", 3], ["C5", 3], ["C4", 3]]}, {"id": "a11", "kind": "alg", "n": 11, "prompt": "Return <code>sname<\/code> and <code>cid<\/code> for every student, keeping students with no enrollment (their <code>cid<\/code> is NULL).", "solution": "\u03c0[sname, cid](Student left join Enrolled)", "hint": "Use a left outer join so Gus is kept.", "expected": [["Ana", "C1"], ["Ana", "C2"], ["Ana", "C3"], ["Ana", "C5"], ["Ben", "C1"], ["Ben", "C2"], ["Cara", "C2"], ["Cara", "C3"], ["Cara", "C4"], ["Dan", "C3"], ["Dan", "C4"], ["Eli", "C1"], ["Eli", "C4"], ["Eli", "C5"], ["Fay", "C5"], ["Gus", null]]}, {"id": "a12", "kind": "alg", "n": 12, "prompt": "Return pairs of <code>sname<\/code> values (two columns) of different students with the same major, each pair once (use <code>a.sid &lt; b.sid<\/code>).", "solution": "\u03c0[a.sname, b.sname](\u03c3[a.sid < b.sid](\u03c1[a](Student) \u22c8 [a.major = b.major] \u03c1[b](Student)))", "hint": "Self-join with two aliases.", "expected": [["Ana", "Ben"], ["Ana", "Gus"], ["Ben", "Gus"], ["Cara", "Dan"], ["Eli", "Fay"]]}, {"id": "t1", "kind": "trc", "n": 1, "prompt": "Write a calculus query for the <code>sname<\/code> of every student whose major is MATH.", "solution": "{ s.sname | s IN Student AND s.major = \"MATH\" }", "hint": "A range atom plus one comparison.", "expected": [["Cara"], ["Dan"]]}, {"id": "t2", "kind": "trc", "n": 2, "prompt": "Write a calculus query for the <code>sname<\/code> and <code>gpa<\/code> of students with a GPA below 3.0.", "solution": "{ s.sname, s.gpa | s IN Student AND s.gpa < 3.0 }", "hint": "Two output items before the bar.", "expected": [["Dan", 2.8]]}, {"id": "t3", "kind": "trc", "n": 3, "prompt": "Write a calculus query for the <code>sname<\/code> of students enrolled in C5 (use EXISTS).", "solution": "{ s.sname | s IN Student AND EXISTS e IN Enrolled (e.sid = s.sid AND e.cid = \"C5\") }", "hint": "Connect the Enrolled tuple to the student inside the EXISTS.", "expected": [["Ana"], ["Eli"], ["Fay"]]}, {"id": "t4", "kind": "trc", "n": 4, "prompt": "Write a calculus query for the <code>title<\/code> of courses that nobody is enrolled in.", "solution": "{ c.title | c IN Course AND NOT EXISTS e IN Enrolled (e.cid = c.cid) }", "hint": "NOT EXISTS over Enrolled.", "expected": [["Ethics"]]}, {"id": "t5", "kind": "trc", "n": 5, "prompt": "Write a calculus query for the <code>sname<\/code> of students enrolled in every MATH course (use FORALL and remember the implication).", "solution": "{ s.sname | s IN Student AND FORALL c IN Course (NOT c.dept = \"MATH\" OR EXISTS e IN Enrolled (e.sid = s.sid AND e.cid = c.cid)) }", "hint": "For every course: either it is not a MATH course, or s is enrolled in it.", "expected": [["Cara"], ["Dan"]]}]};</script>
+<script>
+/* Relational algebra + tuple relational calculus engine (set semantics, SQL-style NULL logic).
+   Works in browsers and in Node (via vm). Exposes global RA. */
+var RA = (function () {
+'use strict';
+var T = 'T', F = 'F', U = 'U';
+
+/* ---------------------------------------------------------------- tokenizer */
+var SYM = { 'σ': 'select', 'π': 'project', 'ρ': 'rename', 'γ': 'group', '∪': 'union', '∩': 'intersect', '−': 'minus',
+  '×': 'cross', '⋈': 'join', '⟕': 'leftjoin', '⟖': 'rightjoin', '⟗': 'fulljoin', '÷': 'divide',
+  '∧': 'and', '∨': 'or', '¬': 'not', '≤': '<=', '≥': '>=', '≠': '!=', '→': '->', '∃': 'exists', '∀': 'forall', '∈': 'in' };
+function tokenize(src) {
+  var t = [], i = 0, n = src.length;
+  while (i < n) {
+    var c = src[i];
+    if (/\s/.test(c)) { i++; continue; }
+    if (SYM[c]) { t.push({ k: 'id', v: SYM[c], low: SYM[c], sym: true, pos: i }); i++; continue; }
+    if (c === '"' || c === "'") {
+      var j = i + 1, s = '';
+      while (j < n && src[j] !== c) { s += src[j]; j++; }
+      if (j >= n) throw new Error('Unterminated text value starting at position ' + (i + 1));
+      t.push({ k: 'str', v: s, pos: i }); i = j + 1; continue;
+    }
+    if (/[0-9]/.test(c)) { var m = /^\d+(\.\d+)?/.exec(src.slice(i)); t.push({ k: 'num', v: parseFloat(m[0]), pos: i }); i += m[0].length; continue; }
+    if (/[A-Za-z_]/.test(c)) { var m2 = /^[A-Za-z_][A-Za-z_0-9]*/.exec(src.slice(i)); t.push({ k: 'id', v: m2[0], low: m2[0].toLowerCase(), pos: i }); i += m2[0].length; continue; }
+    var two = src.substr(i, 2);
+    if (two === '<=' || two === '>=' || two === '!=' || two === '<>' || two === '->' ) { t.push({ k: 'op', v: two === '<>' ? '!=' : two, pos: i }); i += 2; continue; }
+    if ('()[],;.=<>-\\/*'.indexOf(c) >= 0) { t.push({ k: 'op', v: c, pos: i }); i++; continue; }
+    throw new Error('Unexpected character "' + c + '" at position ' + (i + 1));
+  }
+  t.push({ k: 'eof', pos: n });
+  return t;
+}
+
+/* ---------------------------------------------------------------- parser */
+function Parser(src) { this.t = tokenize(src); this.i = 0; this.src = src; }
+Parser.prototype = {
+  peek: function () { return this.t[this.i]; },
+  next: function () { return this.t[this.i++]; },
+  isKw: function (names) { var p = this.peek(); return p.k === 'id' && names.indexOf(p.low) >= 0; },
+  isOp: function (v) { var p = this.peek(); return p.k === 'op' && p.v === v; },
+  fail: function (msg) { var p = this.peek(); throw new Error(msg + (p.k === 'eof' ? ' (at the end of the expression)' : ' (near "' + (p.v === undefined ? '' : p.v) + '", position ' + (p.pos + 1) + ')')); },
+  expectOp: function (v, what) { if (!this.isOp(v)) this.fail('Expected "' + v + '"' + (what ? ' ' + what : '')); return this.next(); },
+  expectKw: function (names, what) { if (!this.isKw(names)) this.fail('Expected ' + what); return this.next(); },
+
+  parseExpr: function () {
+    var left = this.parseUnary();
+    for (;;) {
+      var p = this.peek(), op = null;
+      if (p.k === 'op' && p.v === '-') op = 'minus';
+      else if (p.k === 'op' && p.v === '/') op = 'divide';
+      else if (p.k === 'id') op = p.low;
+      if (!op) break;
+      if (op === 'natural') { this.next(); this.expectKw(['join'], '"join" after "natural"'); var rn = this.parseUnary(); left = { t: 'join', cond: null, l: left, r: rn }; continue; }
+      if (op === 'left' || op === 'right' || op === 'full') {
+        this.next(); if (this.isKw(['outer'])) this.next(); this.expectKw(['join'], '"join" after "' + op + '"');
+        var c0 = null; if (this.isOp('[')) { this.next(); c0 = this.parseCond(); this.expectOp(']'); }
+        left = { t: op + 'join', cond: c0, l: left, r: this.parseUnary() }; continue;
+      }
+      if (op === 'union' || op === 'intersect' || op === 'minus' || op === 'cross' || op === 'divide') {
+        this.next(); left = { t: op, l: left, r: this.parseUnary() }; continue;
+      }
+      if (op === 'join' || op === 'leftjoin' || op === 'rightjoin' || op === 'fulljoin') {
+        this.next();
+        var cond = null;
+        if (this.isOp('[')) { this.next(); cond = this.parseCond(); this.expectOp(']'); }
+        left = { t: op, cond: cond, l: left, r: this.parseUnary() }; continue;
+      }
+      break;
+    }
+    return left;
+  },
+  parseUnary: function () {
+    var p = this.peek();
+    if (p.k === 'id' && (p.low === 'select' || p.low === 'project' || p.low === 'rename' || p.low === 'group')) {
+      this.next(); this.expectOp('[', 'after ' + (p.sym ? 'the operator symbol' : '"' + p.v + '"'));
+      var node;
+      if (p.low === 'select') { node = { t: 'select', cond: this.parseCond() }; }
+      else if (p.low === 'project') { node = { t: 'project', attrs: this.parseAttrList() }; }
+      else if (p.low === 'rename') { node = { t: 'rename', spec: this.parseRename() }; }
+      else { node = this.parseGroup(); }
+      this.expectOp(']', 'to close the list');
+      node.child = this.parsePrimary(true);
+      return node;
+    }
+    return this.parsePrimary(false);
+  },
+  parsePrimary: function (operand) {
+    var p = this.peek();
+    if (p.k === 'op' && p.v === '(') { this.next(); var e = this.parseExpr(); this.expectOp(')', 'to close the bracket'); return e; }
+    if (p.k === 'id' && ['select', 'project', 'rename', 'group'].indexOf(p.low) < 0 && !p.sym) { this.next(); return { t: 'rel', name: p.v }; }
+    if (operand && p.k === 'id' && ['select', 'project', 'rename', 'group'].indexOf(p.low) >= 0) return this.parseUnary();
+    this.fail(operand ? 'Expected a relation name or a bracketed expression after the operator' : 'Expected a relation name, an operator or "("');
+  },
+  parseAttrRef: function () {
+    var p = this.next();
+    if (p.k !== 'id') { this.i--; this.fail('Expected an attribute name'); }
+    if (this.isOp('.')) { this.next(); var q = this.next(); if (q.k !== 'id') { this.i--; this.fail('Expected an attribute name after "."'); } return { q: p.v, n: q.v }; }
+    return { q: null, n: p.v };
+  },
+  parseAttrList: function () {
+    var a = [this.parseAttrRef()];
+    while (this.isOp(',')) { this.next(); a.push(this.parseAttrRef()); }
+    return a;
+  },
+  parseRename: function () {
+    var items = [];
+    for (;;) {
+      var a = this.parseAttrRef();
+      if (this.isOp('->')) { this.next(); var b = this.next(); if (b.k !== 'id') { this.i--; this.fail('Expected the new attribute name'); } items.push({ from: a, to: b.v }); }
+      else { if (a.q) this.fail('A relation alias must be a plain name'); items.push({ alias: a.n }); }
+      if (this.isOp(',')) { this.next(); continue; }
+      break;
+    }
+    return items;
+  },
+  parseGroup: function () {
+    var by = [], aggs = [];
+    if (!this.isOp(';')) by = this.parseAttrList();
+    this.expectOp(';', 'between the grouping attributes and the aggregates (write ";" even if there are no grouping attributes)');
+    for (;;) {
+      var f = this.next();
+      if (f.k !== 'id' || ['count', 'sum', 'avg', 'min', 'max'].indexOf(f.low) < 0) { this.i--; this.fail('Expected an aggregate function: COUNT, SUM, AVG, MIN or MAX'); }
+      this.expectOp('(');
+      var arg = null;
+      if (this.isOp('*')) { this.next(); if (f.low !== 'count') this.fail('Only COUNT accepts *'); } else arg = this.parseAttrRef();
+      this.expectOp(')');
+      var alias = f.low + (arg ? '_' + arg.n : '');
+      if (this.isKw(['as'])) { this.next(); var a = this.next(); if (a.k !== 'id') { this.i--; this.fail('Expected a name after AS'); } alias = a.v; }
+      aggs.push({ f: f.low, arg: arg, as: alias });
+      if (this.isOp(',')) { this.next(); continue; }
+      break;
+    }
+    return { t: 'group', by: by, aggs: aggs };
+  },
+  /* conditions */
+  parseCond: function () { return this.parseOr(); },
+  parseOr: function () { var l = this.parseAnd(); while (this.isKw(['or'])) { this.next(); l = { t: 'or', l: l, r: this.parseAnd() }; } return l; },
+  parseAnd: function () { var l = this.parseNot(); while (this.isKw(['and'])) { this.next(); l = { t: 'and', l: l, r: this.parseNot() }; } return l; },
+  parseNot: function () {
+    if (this.isKw(['not'])) { this.next(); return { t: 'not', c: this.parseNot() }; }
+    if (this.isOp('(')) {
+      var save = this.i; this.next();
+      try { var c = this.parseCond(); if (this.isOp(')')) { this.next(); return c; } } catch (e) { /* maybe operand parenthesis */ }
+      this.i = save;
+    }
+    return this.parseCmp();
+  },
+  parseOperand: function () {
+    var p = this.peek();
+    if (p.k === 'num') { this.next(); return { t: 'lit', v: p.v }; }
+    if (p.k === 'op' && p.v === '-') { this.next(); var n = this.next(); if (n.k !== 'num') { this.i--; this.fail('Expected a number after "-"'); } return { t: 'lit', v: -n.v }; }
+    if (p.k === 'str') { this.next(); return { t: 'lit', v: p.v }; }
+    if (p.k === 'id' && p.low === 'null') { this.next(); return { t: 'lit', v: null }; }
+    if (p.k === 'id') return { t: 'attr', ref: this.parseAttrRef() };
+    this.fail('Expected an attribute, a number or a quoted text value');
+  },
+  parseCmp: function () {
+    var a = this.parseOperand();
+    if (this.isKw(['is'])) {
+      this.next(); var neg = false; if (this.isKw(['not'])) { this.next(); neg = true; }
+      this.expectKw(['null'], '"null" after IS');
+      return { t: 'isnull', a: a, neg: neg };
+    }
+    var p = this.peek();
+    if (p.k === 'op' && ['=', '!=', '<', '<=', '>', '>='].indexOf(p.v) >= 0) { this.next(); return { t: 'cmp', op: p.v, a: a, b: this.parseOperand() }; }
+    this.fail('Expected a comparison (=, !=, <, <=, >, >=) or IS NULL');
+  }
+};
+function parse(src) {
+  var p = new Parser(src);
+  if (p.peek().k === 'eof') throw new Error('Type an expression first.');
+  var e = p.parseExpr();
+  if (p.peek().k !== 'eof') p.fail('Unexpected input after the end of the expression');
+  return e;
+}
+
+/* ---------------------------------------------------------------- evaluation helpers */
+function not3(a) { return a === T ? F : a === F ? T : U; }
+function and3(a, b) { return (a === F || b === F) ? F : (a === U || b === U) ? U : T; }
+function or3(a, b) { return (a === T || b === T) ? T : (a === U || b === U) ? U : F; }
+function cmp3(op, x, y) {
+  if (x === null || y === null) return U;
+  if (typeof x !== typeof y) throw new Error('Cannot compare a number with text (' + JSON.stringify(x) + ' ' + op + ' ' + JSON.stringify(y) + ').');
+  var r = op === '=' ? x === y : op === '!=' ? x !== y : op === '<' ? x < y : op === '<=' ? x <= y : op === '>' ? x > y : x >= y;
+  return r ? T : F;
+}
+function findAttr(attrs, ref) {
+  var hits = [];
+  for (var i = 0; i < attrs.length; i++) if (attrs[i].n === ref.n && (ref.q === null || attrs[i].q === ref.q)) hits.push(i);
+  if (hits.length === 0) throw new Error('Unknown attribute "' + (ref.q ? ref.q + '.' : '') + ref.n + '". Available: ' + attrs.map(function (a) { return a.n; }).join(', ') + '. (Text values must be written in quotes, for example "CS".)');
+  if (hits.length > 1) throw new Error('Attribute "' + ref.n + '" is ambiguous. Qualify it (for example ' + (attrs[hits[0]].q || 'R') + '.' + ref.n + ') or rename one of the relations with ρ.');
+  return hits[0];
+}
+function compileCond(c, attrs) {
+  switch (c.t) {
+    case 'and': var l1 = compileCond(c.l, attrs), r1 = compileCond(c.r, attrs); return function (row) { return and3(l1(row), r1(row)); };
+    case 'or': var l2 = compileCond(c.l, attrs), r2 = compileCond(c.r, attrs); return function (row) { return or3(l2(row), r2(row)); };
+    case 'not': var c1 = compileCond(c.c, attrs); return function (row) { return not3(c1(row)); };
+    case 'isnull': var g = operand(c.a, attrs); return function (row) { var v = g(row); return (v === null) !== c.neg ? T : F; };
+    case 'cmp': var ga = operand(c.a, attrs), gb = operand(c.b, attrs); return function (row) { return cmp3(c.op, ga(row), gb(row)); };
+  }
+  throw new Error('Bad condition');
+}
+function operand(o, attrs) {
+  if (o.t === 'lit') return function () { return o.v; };
+  var i = findAttr(attrs, o.ref); return function (row) { return row[i]; };
+}
+function key(row) { return JSON.stringify(row); }
+function dedupe(rows) { var seen = {}, out = []; rows.forEach(function (r) { var k = key(r); if (!seen[k]) { seen[k] = 1; out.push(r); } }); return out; }
+function sortRows(rows) {
+  return rows.slice().sort(function (a, b) {
+    for (var i = 0; i < a.length; i++) {
+      var x = a[i], y = b[i];
+      if (x === y) continue;
+      if (x === null) return -1; if (y === null) return 1;
+      if (typeof x === 'number' && typeof y === 'number') return x - y;
+      return String(x) < String(y) ? -1 : 1;
+    }
+    return 0;
+  });
+}
+
+/* ---------------------------------------------------------------- evaluator */
+function evaluate(node, db, tr) {
+  /* returns {attrs, rows, trace} */
+  var res;
+  function leaf(label, r, kids) { return { label: label, attrs: r.attrs, rows: r.rows, kids: kids || [] }; }
+  switch (node.t) {
+    case 'rel': {
+      var rel = db[node.name];
+      if (!rel) { var names = Object.keys(db); throw new Error('Unknown relation "' + node.name + '". Available relations: ' + names.join(', ') + '.'); }
+      var attrs = rel.attrs.map(function (n) { return { n: n, q: node.name }; });
+      var rows = dedupe(rel.rows.map(function (r) { return r.slice(); }));
+      return { attrs: attrs, rows: rows, trace: { label: node.name, attrs: attrs, rows: rows, kids: [] } };
+    }
+    case 'select': {
+      var c = evaluate(node.child, db), f = compileCond(node.cond, c.attrs);
+      var rows2 = c.rows.filter(function (r) { return f(r) === T; });
+      return { attrs: c.attrs, rows: rows2, trace: { label: 'σ [' + condStr(node.cond) + ']', attrs: c.attrs, rows: rows2, kids: [c.trace] } };
+    }
+    case 'project': {
+      var c2 = evaluate(node.child, db);
+      var idx = node.attrs.map(function (a) { return findAttr(c2.attrs, a); });
+      var attrs2 = idx.map(function (i) { return c2.attrs[i]; });
+      var rows3 = dedupe(c2.rows.map(function (r) { return idx.map(function (i) { return r[i]; }); }));
+      return { attrs: attrs2, rows: rows3, trace: { label: 'π [' + node.attrs.map(refStr).join(', ') + ']', attrs: attrs2, rows: rows3, kids: [c2.trace] } };
+    }
+    case 'rename': {
+      var c3 = evaluate(node.child, db);
+      var attrs3 = c3.attrs.map(function (a) { return { n: a.n, q: a.q }; });
+      node.spec.forEach(function (s) {
+        if (s.alias) attrs3.forEach(function (a) { a.q = s.alias; });
+        else { var i = findAttr(attrs3, s.from); attrs3[i] = { n: s.to, q: attrs3[i].q }; }
+      });
+      return { attrs: attrs3, rows: c3.rows, trace: { label: 'ρ [' + node.spec.map(function (s) { return s.alias ? s.alias : refStr(s.from) + '→' + s.to; }).join(', ') + ']', attrs: attrs3, rows: c3.rows, kids: [c3.trace] } };
+    }
+    case 'group': {
+      var c4 = evaluate(node.child, db);
+      var bi = node.by.map(function (a) { return findAttr(c4.attrs, a); });
+      var groups = {}, order = [];
+      c4.rows.forEach(function (r) { var k = key(bi.map(function (i) { return r[i]; })); if (!groups[k]) { groups[k] = []; order.push(k); } groups[k].push(r); });
+      if (!bi.length && !order.length) { groups['[]'] = []; order.push('[]'); }
+      var aggi = node.aggs.map(function (a) { return a.arg ? findAttr(c4.attrs, a.arg) : -1; });
+      var rows4 = order.map(function (k) {
+        var g = groups[k], out = bi.map(function (i) { return g.length ? g[0][i] : null; });
+        node.aggs.forEach(function (a, j) {
+          var vals = a.arg ? g.map(function (r) { return r[aggi[j]]; }).filter(function (v) { return v !== null; }) : g;
+          var v;
+          if (a.f === 'count') v = vals.length;
+          else if (!vals.length) v = null;
+          else {
+            if (a.f !== 'min' && a.f !== 'max') vals.forEach(function (x) { if (typeof x !== 'number') throw new Error(a.f.toUpperCase() + ' needs a numeric attribute, but ' + a.arg.n + ' contains text.'); });
+            if (a.f === 'sum') v = vals.reduce(function (x, y) { return x + y; }, 0);
+            else if (a.f === 'avg') v = vals.reduce(function (x, y) { return x + y; }, 0) / vals.length;
+            else { v = vals[0]; vals.forEach(function (x) { if (a.f === 'min' ? x < v : x > v) v = x; }); }
+          }
+          if (typeof v === 'number') v = Math.round(v * 1e6) / 1e6;
+          out.push(v);
+        });
+        return out;
+      });
+      var attrs4 = bi.map(function (i) { return c4.attrs[i]; }).concat(node.aggs.map(function (a) { return { n: a.as, q: null }; }));
+      return { attrs: attrs4, rows: rows4, trace: { label: 'γ [' + node.by.map(refStr).join(', ') + '; ' + node.aggs.map(function (a) { return a.f.toUpperCase() + '(' + (a.arg ? refStr(a.arg) : '*') + ') AS ' + a.as; }).join(', ') + ']', attrs: attrs4, rows: rows4, kids: [c4.trace] } };
+    }
+    case 'union': case 'intersect': case 'minus': {
+      var L = evaluate(node.l, db), R = evaluate(node.r, db);
+      if (L.attrs.length !== R.attrs.length) throw new Error('The two relations must have the same number of attributes to use ' + node.t.toUpperCase() + ' (left has ' + L.attrs.length + ', right has ' + R.attrs.length + '). Project them to matching attributes first.');
+      var rk = {}; R.rows.forEach(function (r) { rk[key(r)] = 1; });
+      var rows5;
+      if (node.t === 'union') rows5 = dedupe(L.rows.concat(R.rows));
+      else if (node.t === 'intersect') rows5 = L.rows.filter(function (r) { return rk[key(r)]; });
+      else rows5 = L.rows.filter(function (r) { return !rk[key(r)]; });
+      var sym = node.t === 'union' ? '∪' : node.t === 'intersect' ? '∩' : '−';
+      return { attrs: L.attrs, rows: rows5, trace: { label: sym, attrs: L.attrs, rows: rows5, kids: [L.trace, R.trace] } };
+    }
+    case 'cross': {
+      var L2 = evaluate(node.l, db), R2 = evaluate(node.r, db), rows6 = [];
+      L2.rows.forEach(function (a) { R2.rows.forEach(function (b) { rows6.push(a.concat(b)); }); });
+      var attrs6 = L2.attrs.concat(R2.attrs);
+      return { attrs: attrs6, rows: rows6, trace: { label: '×', attrs: attrs6, rows: rows6, kids: [L2.trace, R2.trace] } };
+    }
+    case 'join': case 'natjoin': case 'leftjoin': case 'rightjoin': case 'fulljoin': {
+      var L3 = evaluate(node.l, db), R3 = evaluate(node.r, db);
+      var outer = node.t === 'leftjoin' || node.t === 'rightjoin' || node.t === 'fulljoin';
+      var natural = node.t === 'natjoin' || (outer && !node.cond) || (node.t === 'join' && !node.cond);
+      var attrsJ, match, project = null;
+      if (natural) {
+        var common = [];
+        L3.attrs.forEach(function (a, i) { R3.attrs.forEach(function (b, j) { if (a.n === b.n) common.push([i, j]); }); });
+        var rdrop = {}; common.forEach(function (p) { rdrop[p[1]] = 1; });
+        var rkeep = []; R3.attrs.forEach(function (b, j) { if (!rdrop[j]) rkeep.push(j); });
+        attrsJ = L3.attrs.concat(rkeep.map(function (j) { return R3.attrs[j]; }));
+        match = function (a, b) { for (var k = 0; k < common.length; k++) { var x = a[common[k][0]], y = b[common[k][1]]; if (x === null || y === null || x !== y) return false; } return true; };
+        project = function (a, b) { return a.concat(rkeep.map(function (j) { return b[j]; })); };
+        var padL = function (b) { var row = L3.attrs.map(function () { return null; }); common.forEach(function (p) { row[p[0]] = b[p[1]]; }); return row.concat(rkeep.map(function (j) { return b[j]; })); };
+      } else {
+        attrsJ = L3.attrs.concat(R3.attrs);
+        var f2 = compileCond(node.cond, attrsJ);
+        match = function (a, b) { return f2(a.concat(b)) === T; };
+        project = function (a, b) { return a.concat(b); };
+        var padL = function (b) { return L3.attrs.map(function () { return null; }).concat(b); };
+      }
+      var rowsJ = [], lm = {}, rm = {};
+      L3.rows.forEach(function (a, i) { R3.rows.forEach(function (b, j) { if (match(a, b)) { rowsJ.push(project(a, b)); lm[i] = 1; rm[j] = 1; } }); });
+      if (node.t === 'leftjoin' || node.t === 'fulljoin') L3.rows.forEach(function (a, i) { if (!lm[i]) rowsJ.push(project(a, R3.attrs.map(function () { return null; }))); });
+      if (node.t === 'rightjoin' || node.t === 'fulljoin') R3.rows.forEach(function (b, j) { if (!rm[j]) rowsJ.push(padL(b)); });
+      rowsJ = dedupe(rowsJ);
+      var lbl = { join: '⋈', natjoin: '⋈', leftjoin: 'LEFT JOIN', rightjoin: 'RIGHT JOIN', fulljoin: 'FULL JOIN' }[node.t] + (node.cond ? ' [' + condStr(node.cond) + ']' : (natural ? ' (natural)' : ''));
+      return { attrs: attrsJ, rows: rowsJ, trace: { label: lbl, attrs: attrsJ, rows: rowsJ, kids: [L3.trace, R3.trace] } };
+    }
+    case 'divide': {
+      var L4 = evaluate(node.l, db), R4 = evaluate(node.r, db);
+      var bIdx = R4.attrs.map(function (b) {
+        var hits = []; L4.attrs.forEach(function (a, i) { if (a.n === b.n) hits.push(i); });
+        if (hits.length !== 1) throw new Error('For R ÷ S, every attribute of S must appear exactly once in R; "' + b.n + '" does not.');
+        return hits[0];
+      });
+      var aIdx = []; L4.attrs.forEach(function (a, i) { if (bIdx.indexOf(i) < 0) aIdx.push(i); });
+      if (!aIdx.length) throw new Error('R ÷ S needs R to have at least one attribute that S does not have.');
+      var cand = dedupe(L4.rows.map(function (r) { return aIdx.map(function (i) { return r[i]; }); }));
+      var have = {}; L4.rows.forEach(function (r) { have[key(aIdx.map(function (i) { return r[i]; })) + '|' + key(bIdx.map(function (i) { return r[i]; }))] = 1; });
+      var rowsD = cand.filter(function (t) { return R4.rows.every(function (s) { return have[key(t) + '|' + key(s)]; }); });
+      var attrsD = aIdx.map(function (i) { return L4.attrs[i]; });
+      return { attrs: attrsD, rows: rowsD, trace: { label: '÷', attrs: attrsD, rows: rowsD, kids: [L4.trace, R4.trace] } };
+    }
+  }
+  throw new Error('Unknown operator');
+}
+function refStr(a) { return (a.q ? a.q + '.' : '') + a.n; }
+function condStr(c) {
+  switch (c.t) {
+    case 'and': return '(' + condStr(c.l) + ' AND ' + condStr(c.r) + ')';
+    case 'or': return '(' + condStr(c.l) + ' OR ' + condStr(c.r) + ')';
+    case 'not': return 'NOT ' + condStr(c.c);
+    case 'isnull': return opStr(c.a) + (c.neg ? ' IS NOT NULL' : ' IS NULL');
+    case 'cmp': return opStr(c.a) + ' ' + c.op + ' ' + opStr(c.b);
+  }
+}
+function opStr(o) { return o.t === 'lit' ? (o.v === null ? 'NULL' : typeof o.v === 'string' ? "'" + o.v + "'" : String(o.v)) : refStr(o.ref); }
+
+function run(src, db) {
+  var ast = parse(src);
+  var r = evaluate(ast, db);
+  var inter = 0; (function walk(t) { t.kids.forEach(function (k) { inter += k.rows.length; walk(k); }); })(r.trace);
+  return { attrs: r.attrs, rows: r.rows, trace: r.trace, intermediate: inter, ast: ast };
+}
+
+/* ---------------------------------------------------------------- tuple relational calculus */
+/* the base tokenizer does not know braces or '|'; extend it */
+function tokenizeTRC(src) {
+  var s = src.replace(/\{/g, ' \u0001 ').replace(/\}/g, ' \u0002 ').replace(/\|/g, ' \u0003 ');
+  var toks = baseTokenizeSafe(s);
+  return toks;
+}
+function baseTokenizeSafe(s) {
+  var out = [], parts = s.split(/(\u0001|\u0002|\u0003)/);
+  var pos = 0;
+  parts.forEach(function (p) {
+    if (p === '\u0001') out.push({ k: 'op', v: '{', pos: pos });
+    else if (p === '\u0002') out.push({ k: 'op', v: '}', pos: pos });
+    else if (p === '\u0003') out.push({ k: 'op', v: '|', pos: pos });
+    else { var t = tokenize(p); t.pop(); t.forEach(function (x) { x.pos += pos; out.push(x); }); }
+    pos += p.length;
+  });
+  out.push({ k: 'eof', pos: pos });
+  return out;
+}
+function trcParse(src) {
+  var p = new Parser('x'); p.t = tokenizeTRC(src); p.i = 0;
+  p.expectOp('{', 'to start the query, for example { s.name | s IN Student AND ... }');
+  var head = [];
+  for (;;) {
+    var a = p.parseAttrRef();
+    if (!a.q) { p.i--; p.fail('Each output item must be written variable.attribute, for example s.name'); }
+    head.push(a);
+    if (p.isOp(',')) { p.next(); continue; }
+    break;
+  }
+  p.expectOp('|', 'after the output list');
+  var f = trcOr(p);
+  p.expectOp('}', 'at the end of the query');
+  if (p.peek().k !== 'eof') p.fail('Unexpected input after "}"');
+  return { head: head, f: f };
+}
+function trcOr(p) { var l = trcAnd(p); while (p.isKw(['or'])) { p.next(); l = { t: 'or', l: l, r: trcAnd(p) }; } return l; }
+function trcAnd(p) { var l = trcNot(p); while (p.isKw(['and'])) { p.next(); l = { t: 'and', l: l, r: trcNot(p) }; } return l; }
+function trcNot(p) {
+  if (p.isKw(['not'])) { p.next(); return { t: 'not', c: trcNot(p) }; }
+  if (p.isKw(['exists', 'forall'])) {
+    var q = p.next().low, v = p.next();
+    if (v.k !== 'id') { p.i--; p.fail('Expected a variable name after ' + q.toUpperCase()); }
+    p.expectKw(['in'], '"IN" and a relation name (for example EXISTS e IN Enrollment (...))');
+    var r = p.next(); if (r.k !== 'id') { p.i--; p.fail('Expected a relation name'); }
+    p.expectOp('(', 'to start the formula the quantifier applies to');
+    var body = trcOr(p); p.expectOp(')', 'to close the quantified formula');
+    return { t: q, v: v.v, rel: r.v, body: body };
+  }
+  if (p.isOp('(')) {
+    var save = p.i; p.next();
+    try { var c = trcOr(p); if (p.isOp(')')) { p.next(); return c; } } catch (e) { }
+    p.i = save;
+  }
+  /* range atom v IN Rel, or comparison */
+  var t = p.peek(), t2 = p.t[p.i + 1];
+  if (t.k === 'id' && t2 && t2.k === 'id' && t2.low === 'in') { p.next(); p.next(); var rr = p.next(); if (rr.k !== 'id') { p.i--; p.fail('Expected a relation name'); } return { t: 'range', v: t.v, rel: rr.v }; }
+  return p.parseCmp();
+}
+function trcFlatten(f, out) { if (f.t === 'and') { trcFlatten(f.l, out); trcFlatten(f.r, out); } else out.push(f); return out; }
+function trcEval(f, env, db) {
+  switch (f.t) {
+    case 'and': return and3(trcEval(f.l, env, db), trcEval(f.r, env, db));
+    case 'or': return or3(trcEval(f.l, env, db), trcEval(f.r, env, db));
+    case 'not': return not3(trcEval(f.c, env, db));
+    case 'cmp': return cmp3(f.op, tval(f.a, env, db), tval(f.b, env, db));
+    case 'isnull': return (tval(f.a, env, db) === null) !== f.neg ? T : F;
+    case 'range': throw new Error('"' + f.v + ' IN ' + f.rel + '" can only be used at the start of the query as a conjunction, or after EXISTS / FORALL.');
+    case 'exists': case 'forall': {
+      var rel = db[f.rel]; if (!rel) throw new Error('Unknown relation "' + f.rel + '". Available relations: ' + Object.keys(db).join(', ') + '.');
+      var res = f.t === 'exists' ? F : T;
+      for (var i = 0; i < rel.rows.length; i++) {
+        var e2 = Object.create(env); e2[f.v] = { rel: f.rel, row: rel.rows[i] };
+        var v = trcEval(f.body, e2, db);
+        if (f.t === 'exists') res = or3(res, v); else res = and3(res, v);
+        if (f.t === 'exists' && res === T) break; if (f.t === 'forall' && res === F) break;
+      }
+      return res;
+    }
+  }
+}
+function tval(o, env, db) {
+  if (o.t === 'lit') return o.v;
+  var b = env[o.ref.q];
+  if (!b) throw new Error('Unknown tuple variable "' + o.ref.q + '". Declare it with ' + o.ref.q + ' IN SomeRelation.');
+  var i = db[b.rel].attrs.indexOf(o.ref.n);
+  if (i < 0) throw new Error('Relation ' + b.rel + ' has no attribute "' + o.ref.n + '". Available: ' + db[b.rel].attrs.join(', ') + '.');
+  return b.row[i];
+}
+function trcRun(src, db) {
+  var q = trcParse(src);
+  var conj = trcFlatten(q.f, []);
+  var ranges = conj.filter(function (c) { return c.t === 'range'; }), rest = conj.filter(function (c) { return c.t !== 'range'; });
+  var vars = {}; ranges.forEach(function (r) { if (vars[r.v]) throw new Error('Variable ' + r.v + ' is declared twice.'); vars[r.v] = r.rel; });
+  q.head.forEach(function (h) { if (!vars[h.q]) throw new Error('The output uses "' + h.q + '" but the query never declares it. Add "' + h.q + ' IN SomeRelation" after the bar.'); });
+  var rows = [];
+  (function loop(i, env) {
+    if (i === ranges.length) {
+      var ok = T; rest.forEach(function (c) { ok = and3(ok, trcEval(c, env, db)); });
+      if (ok === T) rows.push(q.head.map(function (h) { return tval({ t: 'attr', ref: h }, env, db); }));
+      return;
+    }
+    var rel = db[ranges[i].rel]; if (!rel) throw new Error('Unknown relation "' + ranges[i].rel + '". Available relations: ' + Object.keys(db).join(', ') + '.');
+    rel.rows.forEach(function (row) { var e = Object.create(env); e[ranges[i].v] = { rel: ranges[i].rel, row: row }; loop(i + 1, e); });
+  })(0, {});
+  return { attrs: q.head.map(function (h) { return { n: h.n, q: h.q }; }), rows: dedupe(rows) };
+}
+
+/* ---------------------------------------------------------------- comparing results */
+function normVal(v) { return v === null ? null : (typeof v === 'number' ? Number(v.toFixed(4)) : String(v)); }
+function canon(rows) { return sortRows(rows.map(function (r) { return r.map(normVal); })).map(key); }
+function sameRows(a, b) { var x = canon(a), y = canon(b); if (x.length !== y.length) return false; for (var i = 0; i < x.length; i++) if (x[i] !== y[i]) return false; return true; }
+
+return { parse: parse, run: run, trcRun: trcRun, sameRows: sameRows, canon: canon, sortRows: sortRows, dedupe: dedupe, tokenize: tokenize };
+})();
+if (typeof module !== 'undefined') module.exports = RA;
+
+(function(){
+'use strict';
+var $=TK.$, $$=TK.$$, el=TK.el, store=TK.store, D=window.M3, DB=D.db;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function colNames(attrs){
+  var cnt={}; attrs.forEach(function(a){cnt[a.n]=(cnt[a.n]||0)+1});
+  return attrs.map(function(a){return (cnt[a.n]>1&&a.q)?a.q+'.'+a.n:a.n});
+}
+function relTable(attrs,rows,max){
+  max=max||40; var w=el('div');
+  w.appendChild(TK.table(colNames(attrs),rows.slice(0,max)));
+  if(rows.length>max) w.appendChild(el('p','muted','Showing the first '+max+' of '+rows.length+' tuples.'));
+  return w;
+}
+function renderTrace(t,open){
+  var d=el('details','trace'); if(open) d.open=true;
+  var s=el('summary'); s.innerHTML='<span class="mono">'+esc(t.label)+'</span> <span class="chip">'+t.rows.length+' tuple'+(t.rows.length===1?'':'s')+'</span>';
+  d.appendChild(s);
+  var body=el('div','tracebody');
+  if(t.rows.length||t.attrs.length) body.appendChild(relTable(t.attrs,t.rows,12));
+  t.kids.forEach(function(k){body.appendChild(renderTrace(k,false))});
+  d.appendChild(body); return d;
+}
+function insertAt(ta,text,back){
+  var s=ta.selectionStart,e=ta.selectionEnd,v=ta.value;
+  ta.value=v.slice(0,s)+text+v.slice(e);
+  var pos=s+text.length-(back||0); ta.focus(); ta.setSelectionRange(pos,pos);
+  ta.dispatchEvent(new Event('input'));
+}
+function palette(ta,items){
+  var p=el('div','pills'); p.setAttribute('role','group'); p.setAttribute('aria-label','Insert a symbol');
+  items.forEach(function(it){var b=el('button','pill',it[0]);b.type='button';b.title=it[2]||'';b.setAttribute('aria-label',it[2]||it[0]);b.addEventListener('click',function(){insertAt(ta,it[1],it[3]||0)});p.appendChild(b)});
+  return p;
+}
+var ALG_PAL=[['σ','σ[]()','select (rows)',4],['π','π[]()','project (columns)',4],['ρ','ρ[]()','rename',4],['γ','γ[; ]()','group and aggregate',5],['⋈',' ⋈ ','join'],['∪',' ∪ ','union'],['∩',' ∩ ','intersection'],['−',' − ','difference'],['×',' × ','Cartesian product'],['÷',' ÷ ','division']];
+var TRC_PAL=[['{ | }','{  |  }','query braces',4],['∃','EXISTS e IN Enrolled ()','exists',1],['∀','FORALL c IN Course ()','for all',1],['AND',' AND ','and'],['OR',' OR ','or'],['NOT','NOT ','not']];
+
+/* ===== algebra lab ===== */
+var labRun=null;
+(function(){
+  var box=$('#w-lab'); if(!box) return;
+  box.innerHTML='<label for="lab-in" style="font-weight:600">Expression</label><textarea id="lab-in" spellcheck="false" style="min-height:96px">π[sname](σ[major="CS"](Student))</textarea><div id="lab-pal" style="margin:8px 0"></div><div class="row" style="margin:8px 0"><label>Examples <select id="lab-ex"></select></label></div><div class="row" style="margin:8px 0"><button class="btn primary" id="lab-run" type="button">Run</button><span class="muted">Ctrl+Enter or Cmd+Enter also runs it.</span></div><div id="lab-out" aria-live="polite"></div>';
+  var ta=$('#lab-in',box), out=$('#lab-out',box), sel=$('#lab-ex',box);
+  $('#lab-pal',box).appendChild(palette(ta,ALG_PAL));
+  var o0=el('option',null,'Choose an example...'); o0.value=''; sel.appendChild(o0);
+  D.examples.forEach(function(e,i){var o=el('option',null,e[0]);o.value=i;sel.appendChild(o)});
+  var saved=store.get('lab',null); if(saved) ta.value=saved;
+  function run(){
+    store.set('lab',ta.value); out.innerHTML='';
+    var r; try{ r=RA.run(ta.value,DB) }catch(e){ out.appendChild(el('p','bad mono',e.message)); return null }
+    var h=el('div'); h.appendChild(el('h4',null,'Result: '+r.rows.length+' tuple'+(r.rows.length===1?'':'s')));
+    h.appendChild(relTable(r.attrs,r.rows,60));
+    h.appendChild(el('h4',null,'Query tree with the relation at each step'));
+    h.appendChild(el('p','muted','Open any node to see the relation it produces. Total tuples flowing through the tree (all nodes except the final result): '+r.intermediate+'.'));
+    h.appendChild(renderTrace(r.trace,true));
+    out.appendChild(h); return r;
+  }
+  labRun=run;
+  TK.labRun=function(src){ta.value=src;return run()};
+  sel.addEventListener('change',function(){ if(sel.value==='') return; ta.value=D.examples[sel.value][1]; run() });
+  $('#lab-run',box).addEventListener('click',run);
+  ta.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();run()}});
+  $$('button[data-lab]').forEach(function(b){b.addEventListener('click',function(){ta.value=b.getAttribute('data-lab');run();box.scrollIntoView({behavior:'smooth',block:'start'})})});
+  run();
+})();
+
+/* ===== division stepper ===== */
+(function(){
+  var box=$('#w-div'); if(!box) return;
+  box.innerHTML='<div class="row"><label>Required courses <select id="dv-s"></select></label></div><p class="mono" id="dv-expr" style="margin:10px 0 0"></p><div id="dv-out" aria-live="polite" style="margin-top:10px"></div>';
+  var sel=$('#dv-s',box); D.div.forEach(function(c,i){var o=el('option',null,c[0]);o.value=i;sel.appendChild(o)});
+  var E=DB.Enrolled.rows;
+  function compute(i){
+    var req=RA.run(D.div[i][1],DB).rows.map(function(r){return r[0]});
+    var stu=DB.Student.rows.map(function(s){
+      var taken=E.filter(function(e){return e[0]===s[0]}).map(function(e){return e[1]});
+      var all=req.every(function(c){return taken.indexOf(c)>=0});
+      return {sid:s[0],name:s[1],taken:taken,all:all};
+    });
+    return {req:req,stu:stu};
+  }
+  TK.divCompute=function(i){var c=compute(i);return c.stu.filter(function(s){return s.all&&s.taken.length>0}).map(function(s){return s.sid})};
+  function render(){
+    var i=+sel.value, c=compute(i), out=$('#dv-out',box); out.innerHTML='';
+    $('#dv-expr',box).textContent='π[sid, cid](Enrolled) ÷ '+D.div[i][1];
+    out.appendChild(el('p',null,'Required: '+(c.req.length?c.req.join(', '):'nothing (empty set)')));
+    var rows=c.stu.map(function(s){
+      return [s.sid,s.name,s.taken.length?s.taken.join(', '):'(none)']
+        .concat(c.req.map(function(r){return s.taken.indexOf(r)>=0?'yes':'no'}))
+        .concat([s.taken.length===0?'not a candidate (no Enrolled tuples)':(s.all?'IN THE ANSWER':'missing a course')]);
+    });
+    out.appendChild(TK.table(['sid','sname','courses taken'].concat(c.req.map(function(r){return 'took '+r})).concat(['verdict']),rows,{rowClass:function(r){return r[r.length-1]==='IN THE ANSWER'?'hit':''}}));
+    var ans=c.stu.filter(function(s){return s.all&&s.taken.length>0}).map(function(s){return s.sid});
+    var chk=RA.run('π[sid, cid](Enrolled) ÷ '+D.div[i][1],DB).rows.map(function(r){return r[0]}).sort(function(a,b){return a-b});
+    out.appendChild(el('p','fb','Answer from the engine: sid in {'+chk.join(', ')+'}.'+(c.req.length?'':' With nothing required, every candidate qualifies.')));
+    out.lastChild.id='dv-ans';
+  }
+  sel.addEventListener('change',render); render();
+})();
+
+/* ===== optimization compare ===== */
+(function(){
+  var box=$('#w-opt'); if(!box) return;
+  box.innerHTML='<div class="pills" id="op-p" role="group" aria-label="Scenario"></div><p id="op-note" class="muted"></p><div class="grid2" id="op-g"></div><p id="op-sum" class="fb" aria-live="polite"></p>';
+  var cur=0;
+  D.opt.forEach(function(o,i){var b=el('button','pill',o.title);b.type='button';b.setAttribute('aria-pressed',i===cur?'true':'false');b.addEventListener('click',function(){cur=i;$$('#op-p .pill',box).forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});render()});$('#op-p',box).appendChild(b)});
+  function render(){
+    var o=D.opt[cur], a=RA.run(o.a,DB), b=RA.run(o.b,DB);
+    $('#op-note',box).textContent=o.note;
+    var g=$('#op-g',box); g.innerHTML='';
+    [[a,o.a,'Plan 1'],[b,o.b,'Plan 2']].forEach(function(p){
+      var c=el('div','card'); c.style.margin='0';
+      c.innerHTML='<b>'+p[2]+'</b> <span class="chip">'+p[0].intermediate+' tuples through the tree</span><pre class="mono" style="white-space:pre-wrap;margin:8px 0;font-size:13px">'+esc(p[1])+'</pre>';
+      c.appendChild(renderTrace(p[0].trace,false)); g.appendChild(c);
+    });
+    var same=RA.sameRows(a.rows,b.rows);
+    $('#op-sum',box).innerHTML='<b class="'+(same?'ok':'no')+'">'+(same?'Same answer. ':'Different answers! ')+'</b>Both plans return '+a.rows.length+' tuple'+(a.rows.length===1?'':'s')+'. Plan 1 moves '+a.intermediate+' tuples through the tree; Plan 2 moves '+b.intermediate+'.';
+  }
+  TK.optCompute=function(i){var o=D.opt[i],a=RA.run(o.a,DB),b=RA.run(o.b,DB);return {ia:a.intermediate,ib:b.intermediate,same:RA.sameRows(a.rows,b.rows)}};
+  render();
+})();
+
+/* ===== calculus lab ===== */
+(function(){
+  var box=$('#w-trc'); if(!box) return;
+  box.innerHTML='<label for="trc-in" style="font-weight:600">Query</label><textarea id="trc-in" spellcheck="false" style="min-height:96px">{ s.sname | s IN Student AND s.major = "CS" }</textarea><div id="trc-pal" style="margin:8px 0"></div><div class="row" style="margin:8px 0"><label>Examples <select id="trc-ex"></select></label></div><div class="row" style="margin:8px 0"><button class="btn primary" id="trc-run" type="button">Run</button></div><div id="trc-out" aria-live="polite"></div>';
+  var ta=$('#trc-in',box), out=$('#trc-out',box), sel=$('#trc-ex',box);
+  $('#trc-pal',box).appendChild(palette(ta,TRC_PAL));
+  var o0=el('option',null,'Choose an example...'); o0.value=''; sel.appendChild(o0);
+  D.trc.forEach(function(e,i){var o=el('option',null,e[0]);o.value=i;sel.appendChild(o)});
+  var saved=store.get('trc',null); if(saved) ta.value=saved;
+  function run(){
+    store.set('trc',ta.value); out.innerHTML='';
+    var r; try{r=RA.trcRun(ta.value,DB)}catch(e){out.appendChild(el('p','bad mono',e.message));return null}
+    out.appendChild(el('h4',null,'Result: '+r.rows.length+' tuple'+(r.rows.length===1?'':'s')));
+    out.appendChild(relTable(r.attrs,r.rows,60)); return r;
+  }
+  TK.trcRun=function(src){ta.value=src;return run()};
+  sel.addEventListener('change',function(){if(sel.value==='')return;ta.value=D.trc[sel.value][1];run()});
+  $('#trc-run',box).addEventListener('click',run);
+  ta.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();run()}});
+  $$('button[data-trclab]').forEach(function(b){b.addEventListener('click',function(){ta.value=b.getAttribute('data-trclab');run();box.scrollIntoView({behavior:'smooth',block:'start'})})});
+  run();
+})();
+
+/* ===== challenges ===== */
+TK.check=function(ch,src){
+  var r; try{ r=ch.kind==='alg'?RA.run(src,DB):RA.trcRun(src,DB) }catch(e){ return {ok:false,msg:'Your expression gave an error: '+e.message} }
+  var want=ch.expected;
+  if(r.attrs.length!==want[0].length) return {ok:false,msg:'Expected '+want[0].length+' column'+(want[0].length>1?'s':'')+' but your expression returns '+r.attrs.length+'.',res:r};
+  if(r.rows.length!==want.length) return {ok:false,msg:'Your expression returns '+r.rows.length+' tuple'+(r.rows.length===1?'':'s')+'; the correct answer has '+want.length+'.',res:r};
+  if(!RA.sameRows(r.rows,want)) return {ok:false,msg:'The right number of tuples, but at least one differs. Check your conditions and the order of the columns.',res:r};
+  return {ok:true,msg:'Your tuples match the expected result.',res:r};
+};
+(function(){
+  var solved=store.get('solved',{});
+  var boxes={alg:$('#ch-alg'),trc:$('#ch-trc')}; if(!boxes.alg) return;
+  var cnt=$('#ch-score');
+  function upd(){var n=Object.keys(solved).filter(function(k){return solved[k]}).length;cnt.textContent='Solved: '+n+' of '+D.challenges.length}
+  D.challenges.forEach(function(ch){
+    var c=el('div','card'); c.id='ch-'+ch.id;
+    var title=el('h4',null,(ch.kind==='alg'?'Algebra ':'Calculus ')+ch.n); title.style.marginTop='0';
+    var badge=el('span','chip',''); badge.style.marginLeft='8px'; title.appendChild(badge); c.appendChild(title);
+    var p=el('p'); p.innerHTML=ch.prompt; c.appendChild(p);
+    var ta=el('textarea'); ta.spellcheck=false; ta.style.minHeight='70px'; ta.setAttribute('aria-label','Your answer for '+title.textContent);
+    ta.value=store.get('ans'+ch.id,''); ta.placeholder=ch.kind==='alg'?'Type your relational algebra expression...':'Type your calculus query...';
+    c.appendChild(ta);
+    c.appendChild(Object.assign(el('div'),{style:'margin:6px 0'})).appendChild(palette(ta,ch.kind==='alg'?ALG_PAL:TRC_PAL));
+    var row=el('div','row'); row.style.margin='8px 0';
+    var bChk=el('button','btn primary','Check my answer'); bChk.type='button'; row.appendChild(bChk); c.appendChild(row);
+    var res=el('div'); res.setAttribute('aria-live','polite'); c.appendChild(res); var fb=el('p','fb'); c.appendChild(fb);
+    var d1=el('details','sol'); d1.innerHTML='<summary>Hint</summary><div><p>'+ch.hint+'</p></div>'; c.appendChild(d1);
+    var d2=el('details','sol'); d2.innerHTML='<summary>Show a solution</summary><div><div class="code"><div class="bar"><span>'+(ch.kind==='alg'?'Relational algebra':'Tuple calculus')+'</span></div><pre>'+esc(ch.solution)+'</pre></div><p class="muted">Other correct answers exist. The checker accepts any expression that returns the right tuples.</p></div>'; c.appendChild(d2);
+    function paint(){badge.textContent=solved[ch.id]?'solved ✓':'';badge.style.display=solved[ch.id]?'':'none'}
+    paint();
+    ta.addEventListener('input',function(){store.set('ans'+ch.id,ta.value)});
+    ta.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();bChk.click()}});
+    bChk.addEventListener('click',function(){
+      var r=TK.check(ch,ta.value); res.innerHTML='';
+      if(r.res) res.appendChild(relTable(r.res.attrs,r.res.rows,20));
+      fb.innerHTML='<b class="'+(r.ok?'ok':'no')+'">'+(r.ok?'Correct! ':'Not yet. ')+'</b>'+esc(r.msg);
+      if(r.ok){solved[ch.id]=true;store.set('solved',solved);paint();upd()}
+    });
+    boxes[ch.kind].appendChild(c);
+  });
+  upd();
+})();
+})();
+
+</script>
+<!--dbm-end-->
+<nav class="dbm-end" aria-label="Previous and next tutorial"><a href="../data-modeling/" rel="prev"><small>&larr; Previous tutorial</small><b>Module 2: Data modeling and the relational model</b></a><a class="dbm-next" href="../sql-programming/" rel="next"><small>Next tutorial &rarr;</small><b>Module 4: SQL programming</b></a><a class="dbm-hub" href="../"><small>Course home</small><b>All tutorials</b></a></nav>
+<!--/dbm-end-->
+</body>
+</html>

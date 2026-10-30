@@ -1,0 +1,475 @@
+<!doctype html>
+<html lang="en" data-slug="environment-setup">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Environment Setup: MySQL Server and Workbench: Interactive Tutorial</title>
+<meta name="description" content="Step-by-step setup of MySQL Community Server 8.4 LTS and MySQL Workbench, with a verification script, a version checker and a diagnostic for the ten most common MySQL errors, using real outputs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2EF; --surface:#FFFFFF; --surface2:#F4F8F6; --ink:#0E2420; --soft:#46605A; --line:#C5D5CE;
+  --accent:#5B3FD0; --accent-tint:#E9E4FB; --accent-ink:#35208F;
+  --teal:#0F766E; --teal-tint:#DDF1ED; --warn:#9A4A0A; --warn-tint:#FBEBD0;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1;
+  --code-bg:#0D1F1C; --code-bar:#16322D; --code-ink:#DDEBE7;
+  --kw:#C9BEFF; --st:#8FE0C0; --nu:#F2C77B; --cm:#7C9A93; --out-bg:#E4ECE8;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1614; --surface:#12231F; --surface2:#0F1D1A; --ink:#E5F0EC; --soft:#9BB3AC; --line:#274039;
+    --accent:#A99BFF; --accent-tint:#2B2552; --accent-ink:#D4CCFF;
+    --teal:#4FD1C5; --teal-tint:#14332E; --warn:#F0B45A; --warn-tint:#3A2C12;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D;
+    --code-bg:#08130F; --code-bar:#12302A; --out-bg:#0E1C19;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,h4{font-family:"Familjen Grotesk","Public Sans",system-ui,sans-serif;line-height:1.15;letter-spacing:-.005em;margin:0}
+a{color:var(--accent-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre,kbd{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+code{font-size:.88em;background:var(--accent-tint);color:var(--accent-ink);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1320px;margin:0 auto}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:700 20px "Familjen Grotesk",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+header.hero{padding:44px 40px 30px;border-bottom:1px solid var(--line)}
+.eyebrow{font:600 13px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+header.hero h1{font-size:clamp(34px,5vw,56px);font-weight:700;max-width:18ch;margin-top:8px}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:62ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:10px;margin:22px 0 0;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Familjen Grotesk",sans-serif;font-size:17px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:52px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:700}
+section.mod>h2 .num{font:600 14px "IBM Plex Mono",monospace;color:var(--accent-ink);display:block;margin-bottom:6px;letter-spacing:.06em}
+section.mod h3{font-size:22px;margin:30px 0 6px}
+section.mod h4{font-size:17px;margin:20px 0 4px}
+.lead{font-size:18.5px;color:var(--soft);max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:18px 0;min-width:0}
+.card>h3:first-child,.card>h4:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.grid2>*{min-width:0}
+.callout{border-radius:var(--radius);padding:12px 16px;margin:16px 0;border:1px solid var(--line);background:var(--teal-tint)}
+.callout.warn{background:var(--warn-tint);border-color:var(--warn)}
+.callout.bad{background:var(--bad-tint);border-color:var(--bad)}
+.callout b.tag{display:block;font:700 12px "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;color:var(--teal)}
+.callout.warn b.tag{color:var(--warn)} .callout.bad b.tag{color:var(--bad)}
+.callout p:first-of-type{margin-top:0}.callout p:last-child{margin-bottom:0}
+.tested{border:1px dashed var(--line);border-radius:var(--radius);padding:12px 16px;margin:22px 0 0;font-size:15px;color:var(--soft);background:var(--surface2)}
+.tested b{color:var(--ink)}
+.tested table{margin:8px 0 0;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin:14px 0;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font:600 12px "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--soft);background:var(--surface2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.code{border-radius:var(--radius);overflow:hidden;background:var(--code-bg);margin:14px 0;min-width:0}
+.code .bar{display:flex;justify-content:space-between;align-items:center;background:var(--code-bar);color:#9fc2b8;padding:5px 8px 5px 14px;font:600 12px "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase}
+.code button{font:500 12px "Public Sans",sans-serif;background:transparent;color:var(--code-ink);border:1px solid #2c5148;border-radius:6px;padding:3px 10px;cursor:pointer}
+.code button:hover{background:#1d423a}
+pre{margin:0;padding:13px 16px;overflow-x:auto;font-size:14px;line-height:1.6;color:var(--code-ink);tab-size:2}
+.code pre .kw{color:var(--kw);font-weight:600}.code pre .st{color:var(--st)}.code pre .nu{color:var(--nu)}.code pre .cm{color:var(--cm);font-style:italic}
+.out{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);margin:-6px 0 14px;background:var(--out-bg);min-width:0}
+.out .bar{padding:4px 14px;font:600 11.5px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--line)}
+.out pre{color:var(--ink);font-size:13.5px}
+.out.err pre{color:var(--bad)}
+details.sol{border:1px solid var(--line);border-radius:var(--radius);margin:12px 0;background:var(--surface)}
+details.sol>summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:15px;background:var(--surface2);border-radius:var(--radius)}
+details.sol[open]>summary{border-bottom:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0}
+details.sol>div{padding:4px 14px 10px}
+.btn{font:600 14px "Public Sans",sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:600 13px "IBM Plex Mono",monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);cursor:pointer;color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+select,textarea,input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+textarea{width:100%;font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:1.55;min-height:120px;resize:vertical}
+.quiz{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.q{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 18px;margin:0;min-width:0}
+.q legend{font-weight:700;padding:0 6px;font-family:"Familjen Grotesk",sans-serif;font-size:18px}
+.q .opts{display:grid;gap:8px;margin-top:8px}
+.opt{text-align:left;font:inherit;font-size:16px;padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.45}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.fb{font-size:15.5px;color:var(--soft);margin:10px 0 0}
+.fb b.ok{color:var(--ok)}.fb b.no{color:var(--bad)}
+.score{font-weight:700}
+.rs{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rs table{font-size:14px}
+.rs td.null{color:var(--soft);font-style:italic}
+.mono{font-family:"IBM Plex Mono",monospace}
+.muted{color:var(--soft)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-block;font:600 12px "IBM Plex Mono",monospace;padding:2px 9px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.erd{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:14px 0}
+.erd>div{border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:170px;flex:1 1 170px}
+.erd h4{font:700 14px "IBM Plex Mono",monospace;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface2);margin:0}
+.erd ul{list-style:none;margin:0;padding:8px 12px;font:400 13px/1.7 "IBM Plex Mono",monospace}
+.erd b{color:var(--accent-ink)}
+.nav-foot{margin-top:60px;color:var(--soft);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px}
+  nav.side ol{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto}
+  header.hero{padding:30px 18px 24px}
+  main{padding:0 16px 60px}
+}
+.row label{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 220px;font-size:14px;color:var(--soft);font-weight:600}
+.row label select{width:100%;font-weight:400;color:var(--ink)}
+
+
+</style>
+
+</head>
+<body>
+<!--dbm-top-->
+<style>
+.dbm-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 20px;background:#0F1F33;color:#E6EEF8;font:600 14.5px/1.3 "Public Sans",system-ui,sans-serif}
+.dbm-bar a{color:#E6EEF8;text-decoration:none;padding:5px 10px;border-radius:8px;border:1px solid #33506f}
+.dbm-bar a:hover,.dbm-bar a:focus-visible{background:#1d3a5c;outline:none}
+.dbm-bar .dbm-where{color:#9DB2CC;font-weight:400;margin-right:auto}
+.dbm-bar .dbm-home{border-color:transparent;padding-left:0}
+.dbm-bar .dbm-home:hover{background:none;text-decoration:underline}
+.dbm-end{max-width:1320px;margin:0 auto;padding:30px 24px 56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-family:"Public Sans",system-ui,sans-serif}
+.dbm-end a{display:block;text-decoration:none;color:inherit;border:1px solid var(--line,#C7D3E1);background:var(--surface,#fff);border-radius:12px;padding:14px 18px;min-width:0}
+.dbm-end a:hover,.dbm-end a:focus-visible{border-color:var(--accent,#1F5FBF);outline:none}
+.dbm-end small{display:block;color:var(--soft,#475C75);font-size:13.5px}
+.dbm-end b{display:block;font-size:18px;overflow-wrap:anywhere}
+.dbm-end .dbm-next{text-align:right;grid-column:2}
+.dbm-end .dbm-hub{grid-column:1/-1;text-align:center}
+@media (max-width:560px){.dbm-end{grid-template-columns:minmax(0,1fr)}.dbm-end .dbm-next{grid-column:auto}.dbm-bar .dbm-where{display:none}.dbm-bar{padding:8px 14px}}
+</style>
+<nav class="dbm-bar" aria-label="Course navigation"><a class="dbm-home" href="../">&larr; All tutorials</a><span class="dbm-where">Module 0 of 10</span><a href="../database-fundamentals/" rel="next">Module 1: Database fundamentals &rarr;</a></nav>
+<!--/dbm-top-->
+<div class="wrap">
+<nav class="side" aria-label="Sections"><div class="brand">Environment Setup: MySQL Server and Workbench</div><div class="sub">COSC 431 · Module 0</div>
+<ol><li><a href="#start" data-sec="start"><span>What you are installing</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#install" data-sec="install"><span>Install the server and Workbench</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#connect" data-sec="connect"><span>Connect</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#verify" data-sec="verify"><span>Verify your environment</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#errors" data-sec="errors"><span>When something goes wrong</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#tour" data-sec="tour"><span>Course tour</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#final" data-sec="final"><span>Final check</span><span class="tick" aria-hidden="true"></span></a></li></ol><button type="button" id="tk-reset">Reset my progress</button></nav>
+<div>
+<header class="hero"><div class="eyebrow">COSC 431 · Module 0</div><h1>Environment Setup: MySQL Server and Workbench</h1><p class="lede">Install MySQL Community Server 8.4 LTS and MySQL Workbench, connect to your server, prove the setup works by creating and removing a test database, and learn what the common error messages mean.</p>
+<ul class="outcomes"><li><b>Install</b>MySQL Server 8.4 LTS and Workbench</li><li><b>Connect</b>From the command line and Workbench</li><li><b>Verify</b>Create a test database and query it</li><li><b>Diagnose</b>Read the ten most common errors</li><li><b>Navigate</b>Find your way around Blackboard</li></ul><div class="tested"><b>Tested with.</b> The server, SQL and error messages were run on real software on <b>October 29, 2026</b>. The installer, Docker and Workbench steps were <b>not</b> run. If you install a newer release, small differences in wording or formatting are normal.<div class="tablewrap"><table><thead><tr><th>Tool</th><th>Version</th><th>Used for</th></tr></thead><tbody><tr><td>MySQL Community Server</td><td><b>8.4.2 (8.4 LTS series), on a freshly initialized server</b></td><td>The verification script, all outputs and all ten error messages</td></tr><tr><td>mysql command line client</td><td><b>8.4.2 for Linux on x86_64 (conda-forge)</b></td><td>Connection tests</td></tr><tr><td>Newest releases on October 29, 2026</td><td><b>Server 8.4.13, Workbench 8.0.47</b></td><td>Read from Oracle's release-note pages; not installed here</td></tr><tr><td>Installers, Docker, Workbench screens</td><td><b>Not run</b></td><td>Steps follow Oracle documentation and are marked "not run here"</td></tr></tbody></table></div></div></header>
+<main>
+<section class="mod" id="start"><h2><span class="num">01</span>What you are installing</h2><p class="lead">This module gets a working MySQL server and a client on your own computer, proves that they work, and shows you where everything else in the course lives. Plan on 30 to 45 minutes. Do it before Module 1.</p>
+<div class="callout warn"><b class="tag">Read this first</b><p><b>What was and was not tested.</b> The server, every SQL statement and every error message on this page come from a real MySQL 8.4.2 server. The installer screens for Windows, macOS and Linux, the Docker commands and the MySQL Workbench screens were <b>not run</b> when this page was built. Those steps follow Oracle's documentation and the vendors' download pages, and each is marked in the lists below. If a screen looks different from the description, trust the screen and the official guide.</p></div>
+<h3>What you are installing</h3>
+<div class="tablewrap"><table><thead><tr><th>Piece</th><th>What it is</th><th>Version for this course</th></tr></thead><tbody><tr><td><b>MySQL Community Server</b></td><td>The DBMS itself: a program that runs in the background and stores your data.</td><td><b>8.4 LTS</b>. The newest 8.4 release on the tutorial date is 8.4.13 (released 2026-10-20).</td></tr><tr><td><b>MySQL Workbench</b></td><td>A graphical client for writing SQL, browsing tables and drawing EER diagrams. It connects to the server over the network.</td><td>Workbench 8.0.x. The newest release on the tutorial date is 8.0.47 (2026-04-23).</td></tr><tr><td><b>The <code>mysql</code> command line client</b></td><td>A text client installed with the server. Useful when a graphical tool misbehaves.</td><td>Same series as the server</td></tr></tbody></table></div>
+<h3>Why 8.4 LTS?</h3>
+<ul>
+<li><b>LTS</b> means long-term support: the 8.4 series receives bug and security fixes without feature changes, so what you learn this term stays true.</li>
+<li>Oracle also publishes <b>Innovation</b> releases (the 9.x series) that change faster. The download page may show one of them first. Choose 8.4 instead.</li>
+<li><b>MySQL 8.0</b> reached end of life in April 2026. Some operating systems still ship it as their default package, so check the version before you trust a package manager.</li>
+</ul>
+<h3>Client and server are separate</h3>
+<p>The server and the client are different programs. The server runs in the background and listens on a network port (3306 by default). Workbench and the <code>mysql</code> command are clients that connect to that port and send SQL. This is the client/server architecture from Module 1. When something fails, the first question is always: <em>is the server running, and is my client pointed at the right place?</em></p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="start"></div><p><button type="button" class="btn" data-markdone="start">Mark section as done</button></p></section>
+<section class="mod" id="install"><h2><span class="num">02</span>Install the server and Workbench</h2><p class="lead">Choose your operating system and tick off each step as you complete it. Ticks are saved in this browser so you can come back later.</p>
+<div id="w-os" class="card"></div>
+<p class="muted">Steps marked "not run here" were not performed during the build of this tutorial. The official guide is <a href="https://dev.mysql.com/doc/refman/8.4/en/installing.html" target="_blank" rel="noopener noreferrer">Installing MySQL 8.4</a>.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="install"></div><p><button type="button" class="btn" data-markdone="install">Mark section as done</button></p></section>
+<section class="mod" id="connect"><h2><span class="num">03</span>Connect</h2><p class="lead">Before using Workbench, try the plain command line client. If it connects, the server side is fine, and any later Workbench problem is about Workbench's settings.</p>
+<h3>Step 1. Connect from a terminal</h3>
+<div class="code"><div class="bar"><span>Terminal (Windows: open "MySQL 8.4 Command Line Client" or Command Prompt)</span><button type="button">Copy</button></div><pre>mysql -u root -p</pre></div>
+<p>Type your root password when asked (nothing appears as you type). You should land at a <code>mysql&gt;</code> prompt. If the command is not found, the program's folder is not on your PATH; use the full path or the Start menu entry the installer created.</p>
+<h3>Step 2. Connect from Workbench <span class="muted">(not run here)</span></h3>
+<ol>
+<li>Open Workbench. On the home screen, click the <b>+</b> next to <b>MySQL Connections</b>.</li>
+<li>Name it (for example <code>COSC431 local</code>). Leave the method as <b>Standard (TCP/IP)</b>.</li>
+<li>Hostname <code>127.0.0.1</code> (your own computer), Port <code>3306</code>, Username <code>root</code>. If the installer used another port, use that.</li>
+<li>Click <b>Test Connection</b>, enter the password, and look for a success message. Then click <b>OK</b>.</li>
+<li>Double-click the new connection tile. A SQL editor tab opens.</li>
+</ol>
+<h3>The Workbench editor in four facts</h3>
+<ul>
+<li>Type SQL in the large editor. <b>Execute the current statement</b> with <kbd>Ctrl</kbd>+<kbd>Enter</kbd> (<kbd>Cmd</kbd>+<kbd>Enter</kbd> on a Mac). <b>Execute everything</b> with <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Enter</kbd>.</li>
+<li>Results appear in a grid under the editor, with an output log below it showing success or the error.</li>
+<li>The Schemas panel on the left does not refresh by itself after you create a database. Use its refresh button.</li>
+<li>Workbench starts with <b>safe update mode</b> on. It blocks an <code>UPDATE</code> or <code>DELETE</code> that has no key column in its <code>WHERE</code>. That is Error 1175, shown in the last section of this page.</li>
+</ul>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="connect"></div><p><button type="button" class="btn" data-markdone="connect">Mark section as done</button></p></section>
+<section class="mod" id="verify"><h2><span class="num">04</span>Verify your environment</h2><p class="lead">This is the module's learning outcome: create a test database, run a query, and clean up. The script below was run on a brand-new MySQL 8.4.2 server, so the results are exactly what a fresh install shows. Run the same lines in Workbench or the <code>mysql</code> client.</p>
+<h3>The verification script</h3>
+<div class="code"><div class="bar"><span>SQL: run this on your machine</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> VERSION();
+<span class="kw">SHOW</span> <span class="kw">DATABASES</span>;
+<span class="kw">CREATE</span> <span class="kw">DATABASE</span> setup_check;
+<span class="kw">USE</span> setup_check;
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> hello (id INT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>, message VARCHAR(<span class="nu">40</span>));
+<span class="kw">INSERT</span> <span class="kw">INTO</span> hello <span class="kw">VALUES</span> (<span class="nu">1</span>, <span class="st">'My MySQL server works'</span>);
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> hello;
+<span class="kw">SHOW</span> <span class="kw">DATABASES</span>;
+<span class="kw">DROP</span> <span class="kw">DATABASE</span> setup_check;</pre></div><div class="out"><div class="bar">Output of: SELECT VERSION()</div><pre>+-----------+
+| VERSION() |
++-----------+
+| 8.4.2     |
++-----------+
+1 row in set</pre></div><div class="out"><div class="bar">Output of: SHOW DATABASES</div><pre>+--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sys                |
++--------------------+
+4 rows in set</pre></div><div class="out"><div class="bar">Output of: SELECT * FROM hello</div><pre>+----+-----------------------+
+| id | message               |
++----+-----------------------+
+|  1 | My MySQL server works |
++----+-----------------------+
+1 row in set</pre></div><div class="out"><div class="bar">Output of: SHOW DATABASES</div><pre>+--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| setup_check        |
+| sys                |
++--------------------+
+5 rows in set</pre></div>
+<h3>What to look for</h3>
+<ul>
+<li><code>SELECT VERSION()</code> returns a number beginning with <b>8.4</b>. Your patch number (the last part) may be higher than 8.4.2.</li>
+<li>The first <code>SHOW DATABASES</code> lists exactly four built-in databases on a fresh install: <code>information_schema</code>, <code>mysql</code>, <code>performance_schema</code> and <code>sys</code>. If you have used the server before, you will see more.</li>
+<li>After <code>CREATE DATABASE</code>, the list gains <code>setup_check</code>. After <code>DROP DATABASE</code> it is gone again.</li>
+<li>The table query returns one row with the message you inserted.</li>
+</ul>
+<h3>Check your version</h3>
+<p>Paste the output of <code>SELECT VERSION();</code> or <code>mysql --version</code> and see how it fits this course.</p>
+<div id="w-ver" class="card"></div>
+<h3>Setup checklist</h3>
+<div id="w-chk" class="card"></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="verify"></div><p><button type="button" class="btn" data-markdone="verify">Mark section as done</button></p></section>
+<section class="mod" id="errors"><h2><span class="num">05</span>When something goes wrong</h2><p class="lead">Most setup problems are one of about ten errors. Each message below was produced by a real MySQL 8.4.2 server by doing the thing that causes it. Pick a message, or paste one from Workbench or the terminal, and the diagnostic explains what it means and what to try.</p>
+<div id="w-err" class="card"></div>
+<h3>The ten errors at a glance</h3>
+<div class="tablewrap"><table><thead><tr><th>Error</th><th>SQLSTATE</th><th>Meaning</th></tr></thead><tbody><tr><td><code>2003</code></td><td><code>HY000</code></td><td>Can't connect to MySQL server</td></tr><tr><td><code>1045</code></td><td><code>28000</code></td><td>Access denied for user</td></tr><tr><td><code>1049</code></td><td><code>42000</code></td><td>Unknown database</td></tr><tr><td><code>1044</code></td><td><code>42000</code></td><td>Access denied to database</td></tr><tr><td><code>1046</code></td><td><code>3D000</code></td><td>No database selected</td></tr><tr><td><code>1146</code></td><td><code>42S02</code></td><td>Table doesn't exist</td></tr><tr><td><code>1064</code></td><td><code>42000</code></td><td>You have an error in your SQL syntax</td></tr><tr><td><code>1007</code></td><td><code>HY000</code></td><td>Can't create database; database exists</td></tr><tr><td><code>1175</code></td><td><code>HY000</code></td><td>Safe update mode</td></tr><tr><td><code>1524</code></td><td><code>HY000</code></td><td>Plugin 'mysql_native_password' is not loaded</td></tr></tbody></table></div>
+<p class="muted">Workbench shows the same errors as <code>Error Code: 1146. Table ... doesn't exist</code> in its output panel. The number is what matters.</p>
+<h3>A general method</h3>
+<ol>
+<li>Read the <b>number</b> and the message. Search the manual for the number if you do not know it.</li>
+<li>Decide which side failed: <b>cannot connect</b> (2xxx numbers, 1045) is about the server, host, port or login; <b>everything else</b> is about the statement you sent.</li>
+<li>Check the basics: is the server running, which database is selected, did you spell the names correctly?</li>
+<li>Change one thing at a time and run again.</li>
+</ol>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="errors"></div><p><button type="button" class="btn" data-markdone="errors">Mark section as done</button></p></section>
+<section class="mod" id="tour"><h2><span class="num">06</span>Course tour</h2><p class="lead">The last learning objective is to find your way around the course materials. Every course module on Blackboard follows one pattern, and every module has an interactive tutorial on this site.</p>
+<h3>How each Blackboard module is organized</h3>
+<ul>
+<li><b>Learning objectives</b>: what you should be able to do afterwards. Use them as your study checklist.</li>
+<li><b>Slides</b>: the lecture deck, where one exists.</li>
+<li><b>Resources</b>: readings and exercises, each tagged <b>Required</b> or <b>Optional</b>, with a type (Reading, Interactive, Reference, Video) and an estimated time.</li>
+<li><b>How to use these resources</b>: a short note on the order to work in. Read it before opening the links.</li>
+</ul>
+<h3>Course map</h3>
+<div class="tablewrap"><table><thead><tr><th>Module</th><th>Interactive tutorial on this site</th></tr></thead><tbody><tr><td>0</td><td>Environment Setup</td></tr><tr><td>1</td><td><a href="../database-fundamentals/">Database Fundamentals and Architecture</a></td></tr><tr><td>2</td><td><a href="../data-modeling/">Data Modeling and the Relational Model</a></td></tr><tr><td>3</td><td><a href="../relational-algebra/">Relational Algebra, Calculus and Query Foundations</a></td></tr><tr><td>4</td><td><a href="../sql-programming/">SQL Programming and Data Manipulation</a></td></tr><tr><td>5</td><td><a href="../alternative-databases/">Alternative Database Systems</a></td></tr><tr><td>6</td><td><a href="../er-eer/">Conceptual and Logical Database Design (ER/EER)</a></td></tr><tr><td>7</td><td><a href="../normalization/">Normalization and Schema Refinement</a></td></tr><tr><td>8</td><td><a href="../db-connectivity/">Database Connectivity: Java and Python APIs</a></td></tr><tr><td>9</td><td><a href="../physical-design-indexing/">Physical Design and Indexing</a></td></tr><tr><td>10</td><td><a href="../transactions-security/">Transactions and Database Security</a></td></tr></tbody></table></div>
+<h3>Tour checklist</h3>
+<div id="w-tour" class="card"></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="course"></div><p><button type="button" class="btn" data-markdone="tour">Mark section as done</button></p></section>
+<section class="mod" id="final"><h2><span class="num">07</span>Final check</h2><p class="lead">Eight questions covering the whole module.</p>
+<div class="quiz" data-quiz="final"></div>
+<h3>Files</h3>
+<ul><li><a href="labs/setup_check.sql">labs/setup_check.sql</a>: the verification script from section 4. It creates and removes the database <code>setup_check</code>.</li></ul></section>
+
+<p class="nav-foot">Tutorial date: October 29, 2026. Progress, quiz answers and drafts stay in your own browser.</p>
+</main>
+</div>
+</div>
+<script>window.TK_QUIZ={"start": [{"q": "Which program stores your data and runs in the background?", "o": ["MySQL Workbench", "The mysql command", "The operating system", "MySQL Server"], "a": 3, "e": "Workbench and the <code>mysql<\/code> command are only clients. The server is the DBMS."}, {"q": "The download page lists several versions. Which one does this course use?", "o": ["The newest Innovation release (9.x)", "MySQL 8.0", "MySQL 8.4 LTS", "Any version"], "a": 2, "e": "The course is written and tested for the 8.4 LTS series."}, {"q": "What must be true before Workbench can connect?", "o": ["A database must already contain tables", "The server must be running and reachable at the host and port you enter", "You must have a Blackboard account", "Nothing, it contains its own server"], "a": 1, "e": "Workbench is a client. Without a running server there is nothing to connect to."}], "install": [{"q": "On Ubuntu 24.04, <code>sudo apt install mysql-server<\/code> from the default archive gives which series?", "o": ["No MySQL at all", "8.0, which has reached end of life", "9.x", "8.4 LTS"], "a": 1, "e": "Add Oracle's MySQL APT repository and select mysql-8.4-lts to get the series this course uses."}, {"q": "The download page offers an Innovation release first. What should you do?", "o": ["Skip the install", "Select 8.4 LTS in the version list", "Install it, newer is better", "Install both"], "a": 1, "e": "Stay on the LTS series so your results match the tutorials."}, {"q": "What does the installer ask you to create that you must remember?", "o": ["A root password", "A table", "A Blackboard login", "A port number you invent"], "a": 0, "e": "You need the root password every time you connect."}], "connect": [{"q": "What host do you enter in Workbench for a server on your own computer?", "o": ["root", "www.mysql.com", "blackboard", "127.0.0.1"], "a": 3, "e": "<code>127.0.0.1<\/code> (also called localhost) always means \"this computer\"."}, {"q": "Which key combination runs <em>all<\/em> statements in the Workbench editor?", "o": ["Ctrl+Enter", "Ctrl+S", "Ctrl+Shift+Enter", "Esc"], "a": 2, "e": "Ctrl+Enter runs only the current statement; add Shift to run everything."}, {"q": "The command line client connects but Workbench does not. Where is the problem most likely?", "o": ["The Workbench connection settings (host, port, user or password)", "The server is broken", "Your computer has no memory", "The database has no tables"], "a": 0, "e": "If the command line works, the server is up and your account is fine."}], "verify": [{"q": "Which statement lists the databases on the server?", "o": ["LIST DATABASES;", "SHOW DATABASES;", "SHOW TABLES;", "SELECT DATABASES;"], "a": 1, "e": "<code>SHOW TABLES<\/code> lists tables of the current database. <code>LIST DATABASES<\/code> is not MySQL syntax."}, {"q": "You run <code>CREATE TABLE hello (...)<\/code> and get Error 1046, No database selected. What is missing?", "o": ["A <code>USE database_name;<\/code> (or a qualified table name)", "A semicolon", "More memory", "A restart"], "a": 0, "e": "A table is created inside a database, so MySQL must know which one."}, {"q": "What does <code>DROP DATABASE setup_check;<\/code> do?", "o": ["Backs it up", "Deletes the database and everything in it", "Renames it", "Hides the database"], "a": 1, "e": "It is permanent. There is no undo, so be careful on real data."}], "errors": [{"q": "Error 2003 \"Can't connect to MySQL server\" most likely means:", "o": ["A missing semicolon", "The server is not running or the host or port is wrong", "A typo in a column name", "A table does not exist"], "a": 1, "e": "The client could not even reach a server. No SQL was run."}, {"q": "Error 1045 \"Access denied for user ... (using password: YES)\" means:", "o": ["The login was rejected, usually a wrong password or user", "The table is missing", "The server is off", "The disk is full"], "a": 0, "e": "The server answered and refused the credentials you sent."}, {"q": "You get Error 1146 for <code>SELECT * FROM student;<\/code>. What do you check first?", "o": ["<code>SELECT DATABASE();<\/code> and <code>SHOW TABLES;<\/code>", "Restart the computer", "Reinstall MySQL", "Change your password"], "a": 0, "e": "Most often the wrong database is selected or the table was never created."}, {"q": "Why does a tutorial's <code>CREATE USER ... IDENTIFIED WITH mysql_native_password<\/code> fail on MySQL 8.4?", "o": ["That authentication plugin is no longer enabled by default", "Passwords may not be set", "Only root can create users", "The syntax needs a semicolon"], "a": 0, "e": "Leave out the clause to use the default <code>caching_sha2_password<\/code>."}, {"q": "Workbench refuses <code>DELETE FROM t WHERE v &gt; 0;<\/code> with Error 1175. Why?", "o": ["DELETE is not allowed in Workbench", "Safe update mode requires a key column in the WHERE clause", "The server is full", "The table is locked"], "a": 1, "e": "It is a deliberate protection, not a fault."}], "course": [{"q": "In a module's resource list, what does the tag <b>Optional<\/b> mean?", "o": ["Useful extra help, not required for the assessments", "Required for grading", "Only for instructors", "Skip it, it is wrong"], "a": 0, "e": "Required items come first; Optional ones are for a second explanation or review."}, {"q": "Where do you find the order in which to use a module's resources?", "o": ["The SHOW DATABASES output", "It is not given", "The \"How to use these resources\" note", "The server log"], "a": 2, "e": "It is at the end of each module page."}], "final": [{"q": "Which pair is correct?", "o": ["Both are databases", "Both are servers", "The server stores data; Workbench and mysql are clients", "Workbench is the server; mysql is the client"], "a": 2, "e": "Clients send SQL; the server stores and answers."}, {"q": "Which MySQL series does this course use?", "o": ["The newest 9.x Innovation release", "5.7", "8.0", "8.4 LTS"], "a": 3, "e": "8.4 LTS."}, {"q": "Which host name means \"this computer\"?", "o": ["127.0.0.1", "255.255.255.255", "server", "example.com"], "a": 0, "e": "<code>127.0.0.1<\/code> is the loopback address."}, {"q": "The default MySQL port is:", "o": ["80", "3306", "22", "443"], "a": 1, "e": "3306. An installer may pick another if 3306 is busy."}, {"q": "Which result proves your environment works?", "o": ["A query you run returns the row you inserted into a database you created", "The installer finished", "The password was accepted", "Workbench opens"], "a": 0, "e": "Only a complete create, insert and select proves server, login and client all work together."}, {"q": "<code>SELECT VERSION()<\/code> returns <code>8.0.41<\/code>. What should you do?", "o": ["Switch to 9.x", "Install 8.4 LTS, because 8.0 has reached end of life and differs from the course", "Uninstall Workbench", "Nothing, it is fine"], "a": 1, "e": "Some commands in the course assume 8.4 behavior."}, {"q": "Error 1049 means:", "o": ["Unknown database", "Wrong password", "Syntax error", "Table missing"], "a": 0, "e": "Check the spelling with <code>SHOW DATABASES<\/code>."}, {"q": "Which is the safest first test after installing?", "o": ["Reinstall", "Run SELECT VERSION() and SHOW DATABASES", "Delete the mysql database", "Change the port"], "a": 1, "e": "Harmless, and it shows the version and that you are connected."}]};</script>
+<script>
+(function(){
+'use strict';
+var SLUG = document.documentElement.getAttribute('data-slug') || 'tutorial';
+var $ = function(s,r){return (r||document).querySelector(s)};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('tk:'+SLUG+':'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem('tk:'+SLUG+':'+k,JSON.stringify(v))}catch(e){}},
+  clear:function(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('tk:'+SLUG+':')===0)localStorage.removeItem(k)})}catch(e){}}
+};
+window.TK={$:$,$$:$$,el:el,store:store,slug:SLUG};
+
+/* copy buttons */
+$$('.code').forEach(function(c){
+  var b=$('button',c); if(!b) return;
+  b.addEventListener('click',function(){
+    var t=$('pre',c).textContent;
+    function done(){var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o},1200)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fallback(t,done)})}else fallback(t,done);
+  });
+});
+function fallback(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb()}catch(e){}document.body.removeChild(ta)}
+
+/* section nav */
+var secs=$$('section.mod'), links=$$('nav.side a[data-sec]');
+var done=store.get('done',{});
+function paintDone(){links.forEach(function(a){var t=$('.tick',a);if(t)t.textContent=done[a.getAttribute('data-sec')]?'✓':''})}
+paintDone();
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('active',a.getAttribute('data-sec')===e.target.id)})}
+  })},{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(function(s){io.observe(s)});
+}
+$$('button[data-markdone]').forEach(function(b){
+  var id=b.getAttribute('data-markdone');
+  function paint(){b.textContent=done[id]?'Marked as done ✓':'Mark section as done';b.setAttribute('aria-pressed',done[id]?'true':'false')}
+  paint();
+  b.addEventListener('click',function(){done[id]=!done[id];store.set('done',done);paint();paintDone()});
+});
+var reset=$('#tk-reset'); if(reset) reset.addEventListener('click',function(){if(confirm('Clear your saved progress and quiz answers in this browser?')){store.clear();location.reload()}});
+
+/* quizzes: data in window.TK_QUIZ = {id:[{q,o:[],a,e}]} */
+TK.quiz=function(box){
+  var id=box.getAttribute('data-quiz'), qs=(window.TK_QUIZ||{})[id]||[];
+  var saved=store.get('quiz:'+id,{});
+  box.innerHTML='';
+  var score=el('p','score'); score.setAttribute('aria-live','polite');
+  var retry=el('button','btn','Try again'); retry.type='button'; retry.hidden=true;
+  function refresh(){
+    var n=Object.keys(saved).length, r=0; qs.forEach(function(q,i){if(saved[i]===q.a)r++});
+    score.textContent=n<qs.length?'Answer each question. Feedback appears right away.':'Score: '+r+' of '+qs.length+'.';
+    retry.hidden=n<qs.length;
+  }
+  qs.forEach(function(q,i){
+    var fs=el('fieldset','q'); var lg=el('legend'); lg.innerHTML=(i+1)+'. '+q.q; fs.appendChild(lg);
+    if(q.code){var pre=el('pre','',q.code);pre.style.cssText='background:var(--code-bg);color:var(--code-ink);border-radius:8px;margin:8px 0';fs.appendChild(pre)}
+    var opts=el('div','opts'), fb=el('p','fb'); fb.setAttribute('aria-live','polite'); var bs=[];
+    function reveal(c){
+      bs.forEach(function(b,j){b.disabled=true;if(j===q.a)b.classList.add('right');else if(j===c)b.classList.add('wrong')});
+      fb.textContent=''; fb.appendChild(el('b',c===q.a?'ok':'no',c===q.a?'Correct. ':'Not quite. ')); var ex=el('span'); ex.innerHTML=q.e; fb.appendChild(ex);
+    }
+    q.o.forEach(function(t,j){var b=el('button','opt');b.innerHTML=t;b.type='button';b.addEventListener('click',function(){saved[i]=j;store.set('quiz:'+id,saved);reveal(j);refresh()});bs.push(b);opts.appendChild(b)});
+    fs.appendChild(opts); fs.appendChild(fb); box.appendChild(fs);
+    if(saved[i]!==undefined) reveal(saved[i]);
+  });
+  retry.addEventListener('click',function(){store.set('quiz:'+id,{});TK.quiz(box)});
+  box.appendChild(score); box.appendChild(retry); refresh();
+};
+$$('[data-quiz]').forEach(TK.quiz);
+
+/* result-set table builder: cols[], rows[][] */
+TK.table=function(cols,rows,opt){
+  opt=opt||{};
+  var w=el('div','rs'), t=el('table'), th=el('thead'), tr=el('tr');
+  cols.forEach(function(c,ci){var isnum=rows.length&&rows.some(function(r){return typeof r[ci]==='number'})&&rows.every(function(r){return r[ci]===null||typeof r[ci]==='number'});tr.appendChild(el('th',isnum?'num':null,c))}); th.appendChild(tr); t.appendChild(th);
+  var tb=el('tbody');
+  rows.forEach(function(r,ri){var tr=el('tr'); if(opt.rowClass){var c=opt.rowClass(r,ri);if(c)tr.className=c}
+    r.forEach(function(v){var td=el('td',v===null?'null':(typeof v==='number'?'num':''),v===null?'NULL':String(v));tr.appendChild(td)});tb.appendChild(tr)});
+  t.appendChild(tb); w.appendChild(t); return w;
+};
+})();
+
+</script>
+<script>window.M0={"os": {"win": {"name": "Windows", "steps": [["Download MySQL Installer", "Open <a href=\"https://dev.mysql.com/downloads/installer/\" target=\"_blank\" rel=\"noopener noreferrer\">dev.mysql.com/downloads/installer<\/a> and download the Windows installer (the larger \"full\" file works without internet during setup). The installer program may carry a different version number than the server it installs; what matters is the server version you pick in the next steps.", "A file ending in .msi in your Downloads folder."], ["Choose a custom setup", "Run it, choose <b>Custom<\/b> as the setup type so you can pick versions, and add <b>MySQL Server 8.4.x<\/b> (LTS) and <b>MySQL Workbench 8.0.x<\/b> to the products to install.", "Both products listed under \"Products to be installed\", server showing 8.4."], ["Configure the server", "On the configuration pages keep the defaults: Development Computer, TCP/IP, port <code>3306<\/code>, strong password encryption. Set a <b>root password<\/b> you will remember, and let MySQL run as a Windows service that starts with Windows.", "The installer reports each configuration step as complete."], ["Confirm the server is running", "Press <kbd>Win<\/kbd> + <kbd>R<\/kbd>, type <code>services.msc<\/code> and look for the MySQL entry (its name contains 84 for the 8.4 series).", "Status: Running."]], "note": ""}, "mac": {"name": "macOS", "steps": [["Pick the right download", "Open <a href=\"https://dev.mysql.com/downloads/mysql/\" target=\"_blank\" rel=\"noopener noreferrer\">dev.mysql.com/downloads/mysql<\/a>. In the version list choose <b>8.4 LTS<\/b>, choose macOS, and download the DMG that matches your Mac: <b>ARM, 64-bit<\/b> for Apple silicon (M1 and later) or <b>x86, 64-bit<\/b> for Intel. The page may offer a newer \"Innovation\" release first. Do not pick that one.", "A .dmg file whose name contains 8.4."], ["Run the installer", "Open the DMG, run the package and follow the prompts. Set a <b>root password<\/b> when asked and keep the default (strong) password encryption.", "The installer finishes with a success message."], ["Put mysql on your PATH", "In Terminal run <code>echo 'export PATH=\"/usr/local/mysql/bin:$PATH\"' &gt;&gt; ~/.zshrc<\/code>, then open a new Terminal window and run <code>mysql --version<\/code>.", "A line starting with <code>mysql  Ver 8.4<\/code>."], ["Make sure the server is running", "The installer normally starts the server. If your install includes a MySQL entry in System Settings, you can start and stop the server there. A quick test is <code>mysql -u root -p<\/code> in Terminal (next section).", "You get a <code>mysql&gt;<\/code> prompt after entering the password."], ["Install Workbench", "Download <a href=\"https://dev.mysql.com/downloads/workbench/\" target=\"_blank\" rel=\"noopener noreferrer\">MySQL Workbench<\/a> for macOS, open the DMG and drag it to Applications.", "Workbench opens and shows the home screen."]], "note": "Homebrew users: a <code>mysql@8.4<\/code> formula exists, but it is \"keg-only\", so you must add its <code>bin<\/code> folder to your PATH and start it with <code>brew services<\/code>. The official installer above is the path this course assumes."}, "linux": {"name": "Linux (Ubuntu or Debian)", "steps": [["See what your distribution offers", "Run <code>apt-cache policy mysql-server<\/code>. On Ubuntu 24.04 the package from Ubuntu's own archive is MySQL <b>8.0<\/b>, which reached end of life in April 2026. It is not the version for this course.", "A candidate version. If it starts with 8.0, continue to the next step."], ["Add Oracle's MySQL repository", "Download the <code>mysql-apt-config<\/code> .deb from <a href=\"https://dev.mysql.com/downloads/repo/apt/\" target=\"_blank\" rel=\"noopener noreferrer\">dev.mysql.com/downloads/repo/apt<\/a>, install it with <code>sudo dpkg -i mysql-apt-config_*.deb<\/code>, and in the menu choose <b>MySQL Server &amp; Cluster<\/b>, then <b>mysql-8.4-lts<\/b>. Select OK.", "The menu shows mysql-8.4-lts as the selected server series."], ["Install the server", "Run <code>sudo apt update<\/code> and then <code>sudo apt install mysql-server<\/code>. Set a root password if you are asked for one.", "<code>mysql --version<\/code> prints <code>Ver 8.4<\/code>."], ["Check that it is running", "Run <code>systemctl status mysql<\/code>.", "Active: active (running)."], ["Log in", "Run <code>mysql -u root -p<\/code>. If the installation did not ask for a root password, use <code>sudo mysql<\/code> instead.", "A <code>mysql&gt;<\/code> prompt."], ["Install Workbench (optional)", "Download the Workbench .deb for your Ubuntu release from <a href=\"https://dev.mysql.com/downloads/workbench/\" target=\"_blank\" rel=\"noopener noreferrer\">dev.mysql.com/downloads/workbench<\/a> and install it with <code>sudo apt install ./&lt;file&gt;.deb<\/code>. If it is not available for your distribution, use the command line client; every exercise in the course works there too.", "Workbench starts from your application menu."]], "note": ""}, "docker": {"name": "Docker (any system)", "steps": [["Start the server container", "With Docker installed, run <code>docker run --name cosc431-mysql -e MYSQL_ROOT_PASSWORD=ChangeMe#84 -p 3306:3306 -d mysql:8.4<\/code>. The tag <code>8.4<\/code> selects the LTS series. Pick your own password.", "Docker prints a long container id."], ["Wait until it is ready", "Run <code>docker logs cosc431-mysql<\/code> and wait for a line containing \"ready for connections\". The first start takes a little while.", "The log ends with \"ready for connections\" on port 3306."], ["Open a SQL prompt", "Run <code>docker exec -it cosc431-mysql mysql -u root -p<\/code>, or connect Workbench to <code>127.0.0.1<\/code> port <code>3306<\/code>.", "A <code>mysql&gt;<\/code> prompt."], ["Stop and start it later", "<code>docker stop cosc431-mysql<\/code> and <code>docker start cosc431-mysql<\/code>. Removing the container deletes its data unless you added a volume with <code>-v<\/code>.", "The container appears in <code>docker ps<\/code> when running."]], "note": ""}}, "diag": {"2003": {"title": "Can't connect to MySQL server", "cause": "The client could not reach a server at that host and port. The server is not running, or the host or port is wrong, or a firewall is blocking it.", "fix": ["Start the server (Windows: Services; Linux: <code>sudo systemctl start mysql<\/code>; Docker: <code>docker start cosc431-mysql<\/code>).", "Check the port. The installer may have used something other than 3306.", "The number in parentheses is the operating system's code (111 on Linux, 61 on macOS, 10061 on Windows). They all mean \"connection refused\"."]}, "1045": {"title": "Access denied for user", "cause": "The server is running and reachable, but rejected the user name or password. \"using password: YES\" means a password was sent, so it was wrong. \"using password: NO\" means none was sent.", "fix": ["Retype the password. Passwords are case sensitive.", "Check the user name and which host it is allowed from.", "If you forgot the root password, follow the official reset procedure in the MySQL manual; do not reinstall."]}, "1049": {"title": "Unknown database", "cause": "You named a database that does not exist on this server.", "fix": ["Run <code>SHOW DATABASES;<\/code> and check the spelling.", "Create it with <code>CREATE DATABASE name;<\/code> if it should exist."]}, "1044": {"title": "Access denied to database", "cause": "You are logged in, but your account has no privilege on that database.", "fix": ["Use the account that owns it (for example root in your own install).", "An administrator can run <code>GRANT ... ON db.* TO user;<\/code> (Module 10)."]}, "1046": {"title": "No database selected", "cause": "The statement names a table but MySQL does not know which database holds it.", "fix": ["Run <code>USE database_name;<\/code> first.", "Or write the full name, <code>database_name.table_name<\/code>.", "In Workbench, double-click the schema so it is shown in bold."]}, "1146": {"title": "Table doesn't exist", "cause": "There is no table with that name in the selected database. Common reasons: a typo, the wrong database selected, or the script that creates the table has not been run.", "fix": ["Run <code>SHOW TABLES;<\/code> and compare.", "Check the current database with <code>SELECT DATABASE();<\/code>.", "On Linux, table names are case sensitive by default."]}, "1064": {"title": "You have an error in your SQL syntax", "cause": "MySQL could not parse the statement. The text after \"near\" is where it gave up, which is usually at or just after the real mistake.", "fix": ["Read the quoted fragment after \"near\" and look just before it.", "Look for a misspelled keyword, a missing comma, an unclosed quote or a missing parenthesis."]}, "1007": {"title": "Can't create database; database exists", "cause": "A database with that name is already there.", "fix": ["Use it as it is, or choose another name.", "Use <code>CREATE DATABASE IF NOT EXISTS name;<\/code> to make the statement safe to repeat.", "Use <code>DROP DATABASE name;<\/code> only if you are sure you want to delete it."]}, "1175": {"title": "Safe update mode", "cause": "Safe update mode is on (Workbench turns it on by default). It refuses an UPDATE or DELETE whose WHERE clause does not use a key column, to protect you from changing every row by accident.", "fix": ["Prefer a WHERE on the primary key.", "If you really mean it, turn the protection off for your session with <code>SET SQL_SAFE_UPDATES = 0;<\/code>, run the statement, then turn it back on with <code>= 1<\/code>."]}, "1524": {"title": "Plugin 'mysql_native_password' is not loaded", "cause": "Many older tutorials create users with <code>IDENTIFIED WITH mysql_native_password<\/code>. MySQL 8.4 no longer enables that plugin by default.", "fix": ["Leave out the plugin clause: <code>CREATE USER 'name'@'localhost' IDENTIFIED BY 'password';<\/code> uses the default <code>caching_sha2_password<\/code>."]}}, "errs": [{"code": 2003, "text": "ERROR 2003 (HY000): Can't connect to MySQL server on '127.0.0.1:3398' (111)"}, {"code": 1045, "text": "ERROR 1045 (28000): Access denied for user 'student'@'localhost' (using password: YES)"}, {"code": 1049, "text": "ERROR 1049 (42000): Unknown database 'nosuchdb'"}, {"code": 1044, "text": "ERROR 1044 (42000): Access denied for user 'student'@'localhost' to database 'secretdb'"}, {"code": 1046, "text": "ERROR 1046 (3D000): No database selected"}, {"code": 1146, "text": "ERROR 1146 (42S02): Table 'class_db.missing' doesn't exist"}, {"code": 1064, "text": "ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELEC * FROM class_db.t'"}, {"code": 1007, "text": "ERROR 1007 (HY000): Can't create database 'class_db'; database exists"}, {"code": 1175, "text": "ERROR 1175 (HY000): You are using safe update mode and you tried to update a table without a WHERE that uses a KEY column."}, {"code": 1524, "text": "ERROR 1524 (HY000): Plugin 'mysql_native_password' is not loaded"}], "latest": {"server": "8.4.13", "patch": 13, "workbench": "8.0.47"}};</script>
+<script>
+(function(){
+'use strict';
+var $=TK.$, $$=TK.$$, el=TK.el, D=window.M0;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function checks(box,key,items){
+  var saved=TK.store.get(key,{}); var cnt=el('p','muted'); cnt.setAttribute('aria-live','polite');
+  function upd(){var n=0;items.forEach(function(_,i){if(saved[i])n++});cnt.textContent=n+' of '+items.length+' done'}
+  var ul=el('ul'); ul.style.cssText='list-style:none;padding:0;margin:0';
+  items.forEach(function(t,i){var li=el('li'); li.style.margin='6px 0';
+    var l=el('label'); l.style.cssText='display:flex;gap:8px;align-items:flex-start;cursor:pointer;font-weight:400;color:var(--ink)';
+    var cb=el('input'); cb.type='checkbox'; cb.checked=!!saved[i]; cb.style.cssText='width:auto;margin-top:5px'; cb.setAttribute('data-i',i);
+    cb.addEventListener('change',function(){saved[i]=cb.checked;TK.store.set(key,saved);upd()});
+    var s=el('span'); s.innerHTML=t; l.appendChild(cb); l.appendChild(s); li.appendChild(l); ul.appendChild(li)});
+  box.appendChild(ul); box.appendChild(cnt); upd();
+}
+
+/* ===== OS picker ===== */
+(function(){
+  var box=$('#w-os'); if(!box) return;
+  var keys=Object.keys(D.os), plat=(navigator.platform||'').toLowerCase();
+  var cur=/win/.test(plat)?'win':/mac/.test(plat)?'mac':/linux/.test(plat)?'linux':'win';
+  box.innerHTML='<div class="row"><label>Your system <select id="os-s"></select></label></div><div id="os-b" style="margin-top:12px"></div>';
+  var sel=$('#os-s',box); keys.forEach(function(k){var o=el('option',null,D.os[k].name);o.value=k;sel.appendChild(o)}); sel.value=cur;
+  function draw(){
+    var o=D.os[sel.value], b=$('#os-b',box); b.innerHTML='';
+    var items=o.steps.map(function(s,i){return '<b>'+(i+1)+'. '+s[0]+'</b> <span class="muted">(not run here)</span><br>'+s[1]+'<br><span class="muted"><b>You should see:</b> '+s[2]+'</span>'});
+    checks(b,'os:'+sel.value,items);
+    if(o.note) b.appendChild(el('p','muted')).innerHTML=o.note;
+  }
+  sel.addEventListener('change',draw); draw();
+})();
+
+/* ===== version check ===== */
+(function(){
+  var box=$('#w-ver'); if(!box) return;
+  box.innerHTML='<div class="row"><label>Paste your version output <input id="vr-i" placeholder="for example: 8.4.2   or   mysql  Ver 8.4.2 for Linux"></label></div><p><button type="button" class="btn primary" id="vr-b">Check</button></p><p id="vr-o" aria-live="polite"></p>';
+  TK.checkVersion=function(t){
+    if(/mariadb/i.test(t)) return {k:'warn',m:'This is MariaDB, a different database system that started as a fork of MySQL. Some course material will behave differently. Install MySQL Community Server 8.4 LTS.'};
+    var m=t.match(/Ver\s+(\d+)\.(\d+)\.(\d+)/)||t.match(/(\d+)\.(\d+)\.(\d+)/);
+    if(!m) return {k:'none',m:'No version number found. Paste the output of SELECT VERSION(); or mysql --version.'};
+    var a=+m[1],b=+m[2],c=+m[3], v=a+'.'+b+'.'+c;
+    if(a===8&&b===4) return {k:'ok',m:v+' is in the 8.4 LTS series: exactly what this course uses.'+(c<D.latest.patch?' A newer patch ('+D.latest.server+') exists. Updating is optional for the course.':'')};
+    if(a===8&&b===0) return {k:'warn',m:v+' is the 8.0 series, which reached end of life in April 2026. Install 8.4 LTS so your results match the tutorials.'};
+    if(a>=9) return {k:'warn',m:v+' is an Innovation release. Most of the course works, but some behavior differs from 8.4. Install 8.4 LTS to match the tutorials.'};
+    return {k:'warn',m:v+' is older than 8.0 and is no longer supported. Install 8.4 LTS.'};
+  };
+  function go(){var r=TK.checkVersion($('#vr-i',box).value), o=$('#vr-o',box); o.innerHTML='<b class="'+(r.k==='ok'?'ok':'no')+'">'+(r.k==='ok'?'Good. ':'Note. ')+'</b>'+esc(r.m)}
+  $('#vr-b',box).addEventListener('click',go); $('#vr-i',box).addEventListener('keydown',function(e){if(e.key==='Enter')go()});
+})();
+
+/* ===== checklist ===== */
+(function(){
+  var box=$('#w-chk'); if(!box) return;
+  checks(box,'setup',['<code>SELECT VERSION();</code> starts with <b>8.4</b>','I can log in with the <code>mysql</code> command line client','I created a Workbench connection and the test succeeded','I ran the verification script without errors','The final <code>SELECT</code> returned my message and <code>setup_check</code> is dropped']);
+})();
+(function(){
+  var box=$('#w-tour'); if(!box) return;
+  checks(box,'tour',['I found Module 0 in Blackboard and opened it','I read the learning objectives of Module 1','I can tell a Required resource from an Optional one','I know where each module\'s "How to use these resources" note is','I opened the course map above and found my next tutorial']);
+})();
+
+/* ===== error diagnostic ===== */
+(function(){
+  var box=$('#w-err'); if(!box) return;
+  box.innerHTML='<div class="row"><label>Sample message from a real server <select id="er-s"><option value="">(choose one)</option></select></label></div>'+
+   '<div class="row" style="margin-top:8px"><label>Or paste your own <textarea id="er-t" rows="3" style="width:100%;font-family:\'IBM Plex Mono\',monospace" placeholder="ERROR 1146 (42S02): Table ... doesn\'t exist"></textarea></label></div>'+
+   '<p><button type="button" class="btn primary" id="er-b">Diagnose</button></p><div id="er-o" aria-live="polite"></div>';
+  var s=$('#er-s',box); D.errs.forEach(function(e,i){var o=el('option',null,e.code+': '+D.diag[e.code].title);o.value=i;s.appendChild(o)});
+  TK.diagnose=function(t){var m=t.match(/(?:ERROR|Error Code:?)\s*(\d{4})/i); if(!m) return null; return {code:+m[1],d:D.diag[+m[1]]||null}};
+  function show(t){
+    var r=TK.diagnose(t), o=$('#er-o',box);
+    if(!r){o.innerHTML='<p>No error number found. Look for text like <code>ERROR 1146</code> or <code>Error Code: 1146</code>.</p>';return}
+    if(!r.d){o.innerHTML='<p>Error <b>'+r.code+'</b> is not covered here. Search the MySQL error reference for that number.</p>';return}
+    o.innerHTML='<h4 id="er-h" style="margin:6px 0">Error '+r.code+': '+esc(r.d.title)+'</h4><p><b>What it means.</b> '+r.d.cause+'</p><p><b>What to try.</b></p><ol>'+r.d.fix.map(function(f){return '<li>'+f+'</li>'}).join('')+'</ol>';
+  }
+  s.addEventListener('change',function(){if(s.value==='')return;$('#er-t',box).value=D.errs[+s.value].text;show($('#er-t',box).value)});
+  $('#er-b',box).addEventListener('click',function(){show($('#er-t',box).value)});
+})();
+})();
+
+</script>
+<!--dbm-end-->
+<nav class="dbm-end" aria-label="Previous and next tutorial"><span></span><a class="dbm-next" href="../database-fundamentals/" rel="next"><small>Next tutorial &rarr;</small><b>Module 1: Database fundamentals</b></a><a class="dbm-hub" href="../"><small>Course home</small><b>All tutorials</b></a></nav>
+<!--/dbm-end-->
+</body>
+</html>

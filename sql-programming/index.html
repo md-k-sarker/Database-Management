@@ -1,0 +1,1637 @@
+<!doctype html>
+<html lang="en" data-slug="sql-programming">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL Programming and Data Manipulation: Interactive Tutorial</title>
+<meta name="description" content="Interactive SQL tutorial for MySQL 8.4: DDL, DML, SELECT, joins, GROUP BY, subqueries, CTEs, transactions, views, debugging and EXPLAIN, with real outputs and an in-browser practice lab.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2EF; --surface:#FFFFFF; --surface2:#F4F8F6; --ink:#0E2420; --soft:#46605A; --line:#C5D5CE;
+  --accent:#5B3FD0; --accent-tint:#E9E4FB; --accent-ink:#35208F;
+  --teal:#0F766E; --teal-tint:#DDF1ED; --warn:#9A4A0A; --warn-tint:#FBEBD0;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1;
+  --code-bg:#0D1F1C; --code-bar:#16322D; --code-ink:#DDEBE7;
+  --kw:#C9BEFF; --st:#8FE0C0; --nu:#F2C77B; --cm:#7C9A93; --out-bg:#E4ECE8;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1614; --surface:#12231F; --surface2:#0F1D1A; --ink:#E5F0EC; --soft:#9BB3AC; --line:#274039;
+    --accent:#A99BFF; --accent-tint:#2B2552; --accent-ink:#D4CCFF;
+    --teal:#4FD1C5; --teal-tint:#14332E; --warn:#F0B45A; --warn-tint:#3A2C12;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D;
+    --code-bg:#08130F; --code-bar:#12302A; --out-bg:#0E1C19;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,h4{font-family:"Familjen Grotesk","Public Sans",system-ui,sans-serif;line-height:1.15;letter-spacing:-.005em;margin:0}
+a{color:var(--accent-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre,kbd{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+code{font-size:.88em;background:var(--accent-tint);color:var(--accent-ink);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1320px;margin:0 auto}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:700 20px "Familjen Grotesk",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+header.hero{padding:44px 40px 30px;border-bottom:1px solid var(--line)}
+.eyebrow{font:600 13px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+header.hero h1{font-size:clamp(34px,5vw,56px);font-weight:700;max-width:18ch;margin-top:8px}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:62ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:10px;margin:22px 0 0;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Familjen Grotesk",sans-serif;font-size:17px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:52px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:700}
+section.mod>h2 .num{font:600 14px "IBM Plex Mono",monospace;color:var(--accent-ink);display:block;margin-bottom:6px;letter-spacing:.06em}
+section.mod h3{font-size:22px;margin:30px 0 6px}
+section.mod h4{font-size:17px;margin:20px 0 4px}
+.lead{font-size:18.5px;color:var(--soft);max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:18px 0;min-width:0}
+.card>h3:first-child,.card>h4:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.grid2>*{min-width:0}
+.callout{border-radius:var(--radius);padding:12px 16px;margin:16px 0;border:1px solid var(--line);background:var(--teal-tint)}
+.callout.warn{background:var(--warn-tint);border-color:var(--warn)}
+.callout.bad{background:var(--bad-tint);border-color:var(--bad)}
+.callout b.tag{display:block;font:700 12px "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;color:var(--teal)}
+.callout.warn b.tag{color:var(--warn)} .callout.bad b.tag{color:var(--bad)}
+.callout p:first-of-type{margin-top:0}.callout p:last-child{margin-bottom:0}
+.tested{border:1px dashed var(--line);border-radius:var(--radius);padding:12px 16px;margin:22px 0 0;font-size:15px;color:var(--soft);background:var(--surface2)}
+.tested b{color:var(--ink)}
+.tested table{margin:8px 0 0;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin:14px 0;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font:600 12px "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--soft);background:var(--surface2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.code{border-radius:var(--radius);overflow:hidden;background:var(--code-bg);margin:14px 0;min-width:0}
+.code .bar{display:flex;justify-content:space-between;align-items:center;background:var(--code-bar);color:#9fc2b8;padding:5px 8px 5px 14px;font:600 12px "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase}
+.code button{font:500 12px "Public Sans",sans-serif;background:transparent;color:var(--code-ink);border:1px solid #2c5148;border-radius:6px;padding:3px 10px;cursor:pointer}
+.code button:hover{background:#1d423a}
+pre{margin:0;padding:13px 16px;overflow-x:auto;font-size:14px;line-height:1.6;color:var(--code-ink);tab-size:2}
+.code pre .kw{color:var(--kw);font-weight:600}.code pre .st{color:var(--st)}.code pre .nu{color:var(--nu)}.code pre .cm{color:var(--cm);font-style:italic}
+.out{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);margin:-6px 0 14px;background:var(--out-bg);min-width:0}
+.out .bar{padding:4px 14px;font:600 11.5px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--line)}
+.out pre{color:var(--ink);font-size:13.5px}
+.out.err pre{color:var(--bad)}
+details.sol{border:1px solid var(--line);border-radius:var(--radius);margin:12px 0;background:var(--surface)}
+details.sol>summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:15px;background:var(--surface2);border-radius:var(--radius)}
+details.sol[open]>summary{border-bottom:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0}
+details.sol>div{padding:4px 14px 10px}
+.btn{font:600 14px "Public Sans",sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:600 13px "IBM Plex Mono",monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);cursor:pointer;color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+select,textarea,input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+textarea{width:100%;font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:1.55;min-height:120px;resize:vertical}
+.quiz{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.q{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 18px;margin:0;min-width:0}
+.q legend{font-weight:700;padding:0 6px;font-family:"Familjen Grotesk",sans-serif;font-size:18px}
+.q .opts{display:grid;gap:8px;margin-top:8px}
+.opt{text-align:left;font:inherit;font-size:16px;padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.45}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.fb{font-size:15.5px;color:var(--soft);margin:10px 0 0}
+.fb b.ok{color:var(--ok)}.fb b.no{color:var(--bad)}
+.score{font-weight:700}
+.rs{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rs table{font-size:14px}
+.rs td.null{color:var(--soft);font-style:italic}
+.mono{font-family:"IBM Plex Mono",monospace}
+.muted{color:var(--soft)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-block;font:600 12px "IBM Plex Mono",monospace;padding:2px 9px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.erd{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:14px 0}
+.erd>div{border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:170px;flex:1 1 170px}
+.erd h4{font:700 14px "IBM Plex Mono",monospace;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface2);margin:0}
+.erd ul{list-style:none;margin:0;padding:8px 12px;font:400 13px/1.7 "IBM Plex Mono",monospace}
+.erd b{color:var(--accent-ink)}
+.nav-foot{margin-top:60px;color:var(--soft);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px}
+  nav.side ol{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto}
+  header.hero{padding:30px 18px 24px}
+  main{padding:0 16px 60px}
+}
+.row label{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 220px;font-size:14px;color:var(--soft);font-weight:600}
+.row label select{width:100%;font-weight:400;color:var(--ink)}
+
+
+</style>
+
+</head>
+<body>
+<!--dbm-top-->
+<style>
+.dbm-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 20px;background:#0F1F33;color:#E6EEF8;font:600 14.5px/1.3 "Public Sans",system-ui,sans-serif}
+.dbm-bar a{color:#E6EEF8;text-decoration:none;padding:5px 10px;border-radius:8px;border:1px solid #33506f}
+.dbm-bar a:hover,.dbm-bar a:focus-visible{background:#1d3a5c;outline:none}
+.dbm-bar .dbm-where{color:#9DB2CC;font-weight:400;margin-right:auto}
+.dbm-bar .dbm-home{border-color:transparent;padding-left:0}
+.dbm-bar .dbm-home:hover{background:none;text-decoration:underline}
+.dbm-end{max-width:1320px;margin:0 auto;padding:30px 24px 56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-family:"Public Sans",system-ui,sans-serif}
+.dbm-end a{display:block;text-decoration:none;color:inherit;border:1px solid var(--line,#C7D3E1);background:var(--surface,#fff);border-radius:12px;padding:14px 18px;min-width:0}
+.dbm-end a:hover,.dbm-end a:focus-visible{border-color:var(--accent,#1F5FBF);outline:none}
+.dbm-end small{display:block;color:var(--soft,#475C75);font-size:13.5px}
+.dbm-end b{display:block;font-size:18px;overflow-wrap:anywhere}
+.dbm-end .dbm-next{text-align:right;grid-column:2}
+.dbm-end .dbm-hub{grid-column:1/-1;text-align:center}
+@media (max-width:560px){.dbm-end{grid-template-columns:minmax(0,1fr)}.dbm-end .dbm-next{grid-column:auto}.dbm-bar .dbm-where{display:none}.dbm-bar{padding:8px 14px}}
+</style>
+<nav class="dbm-bar" aria-label="Course navigation"><a class="dbm-home" href="../">&larr; All tutorials</a><span class="dbm-where">Module 4 of 10</span><a href="../relational-algebra/" rel="prev">&larr; Module 3: Relational algebra and calculus</a><a href="../alternative-databases/" rel="next">Module 5: Alternative database systems &rarr;</a></nav>
+<!--/dbm-top-->
+<div class="wrap">
+<nav class="side" aria-label="Sections"><div class="brand">SQL Programming and Data Manipulation</div><div class="sub">COSC 431 · Module 4</div>
+<ol><li><a href="#start" data-sec="start"><span>Start here</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#ddl" data-sec="ddl"><span>Defining tables (DDL)</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#dml" data-sec="dml"><span>Changing data (DML)</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#select" data-sec="select"><span>Asking questions (SELECT)</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#joins" data-sec="joins"><span>Combining tables (joins)</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#aggregates" data-sec="aggregates"><span>Summarizing data (GROUP BY)</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#subqueries" data-sec="subqueries"><span>Subqueries and CTEs</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#tx-views" data-sec="tx-views"><span>Transactions and views</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#debug" data-sec="debug"><span>Debugging and EXPLAIN</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#lab" data-sec="lab"><span>Practice lab</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#final" data-sec="final"><span>Final check</span><span class="tick" aria-hidden="true"></span></a></li></ol><button type="button" id="tk-reset">Reset my progress</button></nav>
+<div>
+<header class="hero"><div class="eyebrow">COSC 431 · Module 4</div><h1>SQL Programming and Data Manipulation</h1><p class="lede">Write the SQL you will use for the rest of the course: create tables with constraints, change data safely, join and summarize, use subqueries, and keep your data correct with transactions. Every output was produced by a real MySQL server.</p>
+<ul class="outcomes"><li><b>DDL</b>Create and change schemas</li><li><b>DML</b>Insert, update and delete safely</li><li><b>Queries</b>Joins, subqueries, grouping</li><li><b>Integrity</b>Constraints, views, transactions</li><li><b>Debugging</b>Read errors, use EXPLAIN</li></ul><div class="tested"><b>Tested with.</b> Every command, output and answer in this tutorial was run on real software on <b>October 29, 2026</b>. If you install a newer release, small differences in wording or formatting are normal.<div class="tablewrap"><table><thead><tr><th>Tool</th><th>Version</th><th>Used for</th></tr></thead><tbody><tr><td>MySQL Community Server</td><td><b>8.4.2 (8.4 LTS series)</b></td><td>All SQL, outputs and error messages shown in MySQL</td></tr><tr><td>SQLite via sql.js</td><td><b>3.54.0 (sql.js 1.15.2, WebAssembly)</b></td><td>The in-browser practice lab</td></tr><tr><td>Sample database</td><td><b>university, 5 tables, 12 students</b></td><td>Download it from the Files list in section 11</td></tr></tbody></table></div></div></header>
+<main>
+<section class="mod" id="start"><h2><span class="num">01</span>Start here</h2><p class="lead">SQL is the language you use to talk to a relational database. This module teaches the five groups of statements you will use for the rest of the course: defining tables, changing data, asking questions, combining tables, and keeping the data correct.</p>
+<h3>How this tutorial works</h3>
+<ul>
+<li>Every code block can be copied. Paste it into <b>MySQL Workbench</b> and run it yourself. Type the examples at least once; your fingers learn syntax faster than your eyes.</li>
+<li>Every <b>Output</b> box was produced by a real MySQL 8.4 server, not typed by hand. Row order without <code>ORDER BY</code> can differ on your machine, so do not worry if it does.</li>
+<li>Near the end there is an <b>in-browser practice lab</b> with auto-checked challenges. It runs SQLite inside your browser, so you can practice without installing anything. The page tells you where SQLite and MySQL differ.</li>
+</ul>
+<div class="callout "><b class="tag">Before you start</b><p>You need a working MySQL server and Workbench from Module 0. In Workbench, open a connection to your local server before you continue.</p></div>
+<h3>The University database</h3>
+<p>All examples use one small database about a university: five tables, twelve students, ten courses. The people and numbers are invented for teaching. Notice the foreign keys (<b>FK</b>): they are how tables point at each other.</p>
+<div class="erd"><div><h4>department</h4><ul><li><b>dept_name</b> (PK)</li><li>building</li></ul></div><div><h4>student</h4><ul><li><b>sid</b> (PK)</li><li>name</li><li>major (FK)</li><li>gpa</li><li>phone</li></ul></div><div><h4>instructor</h4><ul><li><b>iid</b> (PK)</li><li>name</li><li>dept_name (FK)</li><li>hired_year</li></ul></div><div><h4>course</h4><ul><li><b>course_id</b> (PK)</li><li>title</li><li>credits</li><li>dept_name (FK)</li><li>iid (FK)</li></ul></div><div><h4>enrollment</h4><ul><li><b>sid</b> (PK, FK)</li><li><b>course_id</b> (PK, FK)</li><li><b>term</b> (PK)</li><li>grade</li></ul></div></div>
+<p>Some data is deliberately awkward, because real data is: a student with no phone number, a student with no GPA yet, a student who has not declared a major, students who have not enrolled in anything, and a course nobody teaches or takes. You will use those rows to see how <code>NULL</code> and outer joins behave.</p>
+<h3>Load it</h3>
+<p>Download <a href="labs/university_mysql.sql">university_mysql.sql</a>, open it in Workbench (File, Open SQL Script) and click the lightning-bolt button to execute the whole script. It drops and recreates a database called <code>university</code>, so you can run it again at any time to start fresh. Then check that it worked:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> university;
+<span class="kw">SHOW</span> <span class="kw">TABLES</span>;
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> students <span class="kw">FROM</span> student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----------------------+
+| Tables_in_university |
++----------------------+
+| course               |
+| department           |
+| enrollment           |
+| instructor           |
+| student              |
++----------------------+
+5 rows in set
+
++----------+
+| students |
++----------+
+|       12 |
++----------+
+1 row in set</pre></div>
+<p>Two commands you will use constantly to inspect a table:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">DESCRIBE</span> student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+--------------+------+-----+---------+-------+
+| Field | Type         | Null | Key | Default | Extra |
++-------+--------------+------+-----+---------+-------+
+| sid   | int          | NO   | PRI | NULL    |       |
+| name  | varchar(60)  | NO   |     | NULL    |       |
+| major | varchar(40)  | YES  | MUL | NULL    |       |
+| gpa   | decimal(3,2) | YES  |     | NULL    |       |
+| phone | varchar(20)  | YES  |     | NULL    |       |
++-------+--------------+------+-----+---------+-------+
+5 rows in set</pre></div>
+<p><code>Key</code> shows <code>PRI</code> for the primary key and <code>MUL</code> for a column that is part of a non-unique index (here created by the foreign key on <code>major</code>). Now look at the data:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+----------------+------------------+------+----------+
+| sid | name           | major            | gpa  | phone    |
++-----+----------------+------------------+------+----------+
+|   1 | Ada Lovelace   | Computer Science | 3.90 | 555-0101 |
+|   2 | Ben Carter     | Mathematics      | 3.40 | NULL     |
+|   3 | Carla Diaz     | Computer Science | 3.70 | 555-0103 |
+|   4 | Dev Patel      | Data Science     | 3.20 | NULL     |
+|   5 | Emma Johnson   | Computer Science | 3.55 | 555-0105 |
+|   6 | Farid Rahman   | Mathematics      | 2.90 | 555-0106 |
+|   7 | Grace Kim      | Data Science     | 3.85 | 555-0107 |
+|   8 | Hector Alvarez | Physics          | 3.10 | NULL     |
+|   9 | Imani Brown    | Computer Science | NULL | 555-0109 |
+|  10 | Jun Park       | Data Science     | 3.60 | 555-0110 |
+|  11 | Kayla Nguyen   | Mathematics      | 3.75 | 555-0111 |
+|  12 | Liam O'Connor  | NULL             | 3.00 | NULL     |
++-----+----------------+------------------+------+----------+
+12 rows in set</pre></div>
+<p><code>NULL</code> means "no value is known". It is not zero and not an empty string, and it follows its own logic, which you will meet in section 4.</p>
+<h3>Five families of SQL</h3>
+<div class="tablewrap"><table><thead><tr><th>Family</th><th>Stands for</th><th>Statements</th><th>Section</th></tr></thead><tbody><tr><td>DDL</td><td>Data Definition Language</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code>, <code>TRUNCATE</code></td><td>2</td></tr><tr><td>DML</td><td>Data Manipulation Language</td><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td><td>3</td></tr><tr><td>DQL</td><td>Data Query Language</td><td><code>SELECT</code></td><td>4 to 7</td></tr><tr><td>TCL</td><td>Transaction Control Language</td><td><code>START TRANSACTION</code>, <code>COMMIT</code>, <code>ROLLBACK</code></td><td>8</td></tr><tr><td>DCL</td><td>Data Control Language</td><td><code>GRANT</code>, <code>REVOKE</code> (Module 10)</td><td>-</td></tr></tbody></table></div><p class="muted">Some books fold <code>SELECT</code> into DML. Both groupings are common, so do not be surprised by either.</p><p><button type="button" class="btn" data-markdone="start">Mark section as done</button></p></section>
+<section class="mod" id="ddl"><h2><span class="num">02</span>Defining tables (DDL)</h2><p class="lead">DDL statements define the structure of the database: its tables, columns, data types and rules. The rules (<b>constraints</b>) are what keep bad data out, so they are the most important part.</p>
+<h3>Data types you will use most</h3>
+<div class="tablewrap"><table><thead><tr><th>Type</th><th>Holds</th><th>Example</th></tr></thead><tbody><tr><td><code>INT</code></td><td>Whole numbers (about plus or minus 2.1 billion)</td><td><code>42</code></td></tr><tr><td><code>DECIMAL(p,s)</code></td><td>Exact numbers: <i>p</i> digits in total, <i>s</i> after the point. Use for money and GPA.</td><td><code>DECIMAL(3,2)</code> holds <code>3.90</code>, up to <code>9.99</code></td></tr><tr><td><code>FLOAT</code>, <code>DOUBLE</code></td><td>Approximate numbers. Rounding error is possible; avoid for money.</td><td><code>0.1 + 0.2</code></td></tr><tr><td><code>VARCHAR(n)</code></td><td>Text up to <i>n</i> characters, stored at its real length</td><td><code>VARCHAR(60)</code> for a name</td></tr><tr><td><code>CHAR(n)</code></td><td>Text of fixed length <i>n</i></td><td><code>CHAR(2)</code> for a state code</td></tr><tr><td><code>TEXT</code></td><td>Long text</td><td>a description</td></tr><tr><td><code>DATE</code>, <code>DATETIME</code>, <code>TIMESTAMP</code></td><td>Dates and times</td><td><code>'2026-10-29'</code></td></tr><tr><td><code>BOOLEAN</code></td><td>True or false. MySQL stores it as <code>TINYINT(1)</code>, with 0 and 1.</td><td><code>TRUE</code></td></tr></tbody></table></div>
+<h3>CREATE TABLE with constraints</h3>
+<p>We will build a tiny club-membership design in a separate practice database called <code>dbm_demo</code>, so your <code>university</code> data stays untouched. Read the comments: each constraint is one rule the database will enforce for you.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">DATABASE</span> dbm_demo;
+<span class="kw">USE</span> dbm_demo;
+
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> club (
+  club_id  INT <span class="kw">AUTO_INCREMENT</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,   <span class="cm">-- unique, never NULL, numbered automatically</span>
+  name     VARCHAR(<span class="nu">50</span>) <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">UNIQUE</span>,      <span class="cm">-- required, and no two clubs share a name</span>
+  founded  INT <span class="kw">CHECK</span> (founded &gt;= <span class="nu">1800</span>)       <span class="cm">-- a rule about the value itself</span>
+);
+
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> member (
+  member_id INT <span class="kw">AUTO_INCREMENT</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,
+  club_id   INT <span class="kw">NOT</span> <span class="kw">NULL</span>,
+  email     VARCHAR(<span class="nu">80</span>) <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">UNIQUE</span>,
+  joined    DATE <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">DEFAULT</span> (CURRENT_DATE),   <span class="cm">-- used when you do not supply a value</span>
+  <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (club_id) <span class="kw">REFERENCES</span> club(club_id)    <span class="cm">-- every member must belong to a real club</span>
+);</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 1 row affected
+
+Query OK, 0 rows affected
+
+Query OK, 0 rows affected</pre></div>
+<p>Check what MySQL stored. <code>SHOW CREATE TABLE</code> prints the exact definition, including the constraint names MySQL generated for you (such as <code>member_ibfk_1</code>). The <code>\G</code> at the end prints one column per line, which is easier to read.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">SHOW</span> <span class="kw">CREATE</span> <span class="kw">TABLE</span> member\G</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>*************************** 1. row ***************************
+       Table: member
+Create Table: CREATE TABLE `member` (
+  `member_id` int NOT NULL AUTO_INCREMENT,
+  `club_id` int NOT NULL,
+  `email` varchar(80) NOT NULL,
+  `joined` date NOT NULL DEFAULT (curdate()),
+  PRIMARY KEY (`member_id`),
+  UNIQUE KEY `email` (`email`),
+  KEY `club_id` (`club_id`),
+  CONSTRAINT `member_ibfk_1` FOREIGN KEY (`club_id`) REFERENCES `club` (`club_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+1 row in set</pre></div>
+<h3>Make every constraint fire</h3>
+<p>The best way to understand a constraint is to break it. Run each statement and read the message; every one of these is <em>meant</em> to fail. First, put in some valid rows:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> club (name, founded) <span class="kw">VALUES</span> (<span class="st">'Chess Club'</span>, <span class="nu">1995</span>), (<span class="st">'Robotics'</span>, <span class="nu">2008</span>);
+<span class="kw">INSERT</span> <span class="kw">INTO</span> member (club_id, email) <span class="kw">VALUES</span> (<span class="nu">1</span>, <span class="st">'ada@example.edu'</span>);
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> club;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> member;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------+------------+---------+
+| club_id | name       | founded |
++---------+------------+---------+
+|       1 | Chess Club |    1995 |
+|       2 | Robotics   |    2008 |
++---------+------------+---------+
+2 rows in set
+
++-----------+---------+-----------------+------------+
+| member_id | club_id | email           | joined     |
++-----------+---------+-----------------+------------+
+|         1 |       1 | ada@example.edu | 2026-10-29 |
++-----------+---------+-----------------+------------+
+1 row in set</pre></div>
+<p>Notice that <code>club_id</code>, <code>member_id</code> and <code>joined</code> were filled in for you. Now the failures:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> club (name, founded) <span class="kw">VALUES</span> (<span class="st">'Chess Club'</span>, <span class="nu">2001</span>);                  <span class="cm">-- UNIQUE</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> club (name, founded) <span class="kw">VALUES</span> (<span class="kw">NULL</span>, <span class="nu">2001</span>);                          <span class="cm">-- NOT NULL</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> club (name, founded) <span class="kw">VALUES</span> (<span class="st">'Time Travel Society'</span>, <span class="nu">1066</span>);         <span class="cm">-- CHECK</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> member (club_id, email) <span class="kw">VALUES</span> (<span class="nu">99</span>, <span class="st">'ghost@example.edu'</span>);          <span class="cm">-- FOREIGN KEY (child side)</span>
+<span class="kw">DELETE</span> <span class="kw">FROM</span> club <span class="kw">WHERE</span> club_id = <span class="nu">1</span>;                                            <span class="cm">-- FOREIGN KEY (parent side)</span></pre></div><div class="out err"><div class="bar">Output (MySQL 8.4)</div><pre>mysql&gt; INSERT INTO club (name, founded) VALUES ('Chess Club', 2001)
+ERROR 1062 (23000): Duplicate entry 'Chess Club' for key 'club.name'
+
+mysql&gt; INSERT INTO club (name, founded) VALUES (NULL, 2001)
+ERROR 1048 (23000): Column 'name' cannot be null
+
+mysql&gt; INSERT INTO club (name, founded) VALUES ('Time Travel Society', 1066)
+ERROR 3819 (HY000): Check constraint 'club_chk_1' is violated.
+
+mysql&gt; INSERT INTO member (club_id, email) VALUES (99, 'ghost@example.edu')
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`dbm_demo`.`member`, CONSTRAINT `member_ibfk_1` FOREIGN KEY (`club_id`) REFERENCES `club` (`club_id`))
+
+mysql&gt; DELETE FROM club WHERE club_id = 1
+ERROR 1451 (23000): Cannot delete or update a parent row: a foreign key constraint fails (`dbm_demo`.`member`, CONSTRAINT `member_ibfk_1` FOREIGN KEY (`club_id`) REFERENCES `club` (`club_id`))</pre></div>
+<div class="callout "><b class="tag">Reading errors</b><p>Read an error message from left to right: the number (<code>1062</code>), the SQLSTATE code in brackets, then the explanation. The explanation almost always names the table, the column or the constraint that was violated. Google the number if the words do not help.</p></div>
+<h3>What happens to the children? ON DELETE and ON UPDATE</h3>
+<p>By default a foreign key <em>blocks</em> the deletion of a parent row that still has children (the last error above). You can choose a different behaviour when you declare the key:</p>
+<div class="tablewrap"><table><thead><tr><th>Option</th><th>Meaning when the parent row is deleted</th></tr></thead><tbody><tr><td><code>RESTRICT</code> or <code>NO ACTION</code> (default)</td><td>Refuse the delete.</td></tr><tr><td><code>CASCADE</code></td><td>Delete the child rows too.</td></tr><tr><td><code>SET NULL</code></td><td>Keep the child rows but set the foreign key column to <code>NULL</code> (the column must allow <code>NULL</code>).</td></tr></tbody></table></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> post (
+  post_id INT <span class="kw">AUTO_INCREMENT</span> <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,
+  club_id INT <span class="kw">NOT</span> <span class="kw">NULL</span>,
+  body    VARCHAR(<span class="nu">100</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,
+  <span class="kw">FOREIGN</span> <span class="kw">KEY</span> (club_id) <span class="kw">REFERENCES</span> club(club_id) <span class="kw">ON</span> <span class="kw">DELETE</span> <span class="kw">CASCADE</span>
+);
+<span class="kw">INSERT</span> <span class="kw">INTO</span> post (club_id, body) <span class="kw">VALUES</span> (<span class="nu">2</span>, <span class="st">'First meeting Friday'</span>), (<span class="nu">2</span>, <span class="st">'Bring a laptop'</span>);
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> post;
+<span class="kw">DELETE</span> <span class="kw">FROM</span> club <span class="kw">WHERE</span> club_id = <span class="nu">2</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> post;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------+---------+----------------------+
+| post_id | club_id | body                 |
++---------+---------+----------------------+
+|       1 |       2 | First meeting Friday |
+|       2 |       2 | Bring a laptop       |
++---------+---------+----------------------+
+2 rows in set
+
+Empty set</pre></div>
+<p>Deleting the Robotics club removed its posts automatically. <code>CASCADE</code> is powerful and therefore dangerous: use it only when the children truly have no meaning without the parent.</p>
+<h3>ALTER TABLE and DROP TABLE</h3>
+<p><code>ALTER TABLE</code> changes a table that already exists, and it can do it even when the table holds data.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">ALTER</span> <span class="kw">TABLE</span> club <span class="kw">ADD</span> <span class="kw">COLUMN</span> website VARCHAR(<span class="nu">100</span>);                  <span class="cm">-- new column, NULL for existing rows</span>
+<span class="kw">ALTER</span> <span class="kw">TABLE</span> club <span class="kw">MODIFY</span> <span class="kw">COLUMN</span> website VARCHAR(<span class="nu">200</span>);               <span class="cm">-- change its type</span>
+<span class="kw">ALTER</span> <span class="kw">TABLE</span> club <span class="kw">RENAME</span> <span class="kw">COLUMN</span> website <span class="kw">TO</span> url;                     <span class="cm">-- rename</span>
+<span class="kw">ALTER</span> <span class="kw">TABLE</span> club <span class="kw">ADD</span> <span class="kw">CONSTRAINT</span> uq_club_url <span class="kw">UNIQUE</span> (url);          <span class="cm">-- add a rule later</span>
+<span class="kw">ALTER</span> <span class="kw">TABLE</span> club <span class="kw">DROP</span> <span class="kw">COLUMN</span> url;                                  <span class="cm">-- remove (the unique rule goes with it)</span>
+<span class="kw">DESCRIBE</span> club;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------+-------------+------+-----+---------+----------------+
+| Field   | Type        | Null | Key | Default | Extra          |
++---------+-------------+------+-----+---------+----------------+
+| club_id | int         | NO   | PRI | NULL    | auto_increment |
+| name    | varchar(50) | NO   | UNI | NULL    |                |
+| founded | int         | YES  |     | NULL    |                |
++---------+-------------+------+-----+---------+----------------+
+3 rows in set</pre></div>
+<p>To remove a table, use <code>DROP TABLE</code>. Order matters when tables are linked: MySQL refuses to drop a parent while a child still points at it.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">DROP</span> <span class="kw">TABLE</span> club;                    <span class="cm">-- member and post still reference it</span>
+<span class="kw">DROP</span> <span class="kw">TABLE</span> post, member, club;      <span class="cm">-- children first (listing them together also works)</span>
+<span class="kw">SHOW</span> <span class="kw">TABLES</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>ERROR 3730 (HY000): Cannot drop table 'club' referenced by a foreign key constraint 'member_ibfk_1' on table 'member'.
+
+Empty set</pre></div><div class="callout warn"><b class="tag">Watch out</b><p><code>DROP TABLE</code> and <code>TRUNCATE TABLE</code> cannot be undone, and in MySQL they end any open transaction. There is no recycle bin. Always check which database you are in (<code>SELECT DATABASE();</code>) before running them.</p></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="ddl"></div><p><button type="button" class="btn" data-markdone="ddl">Mark section as done</button></p></section>
+<section class="mod" id="dml"><h2><span class="num">03</span>Changing data (DML)</h2><p class="lead">DML statements change the <em>data</em> inside tables that already exist: <code>INSERT</code> adds rows, <code>UPDATE</code> changes them, <code>DELETE</code> removes them. They are short to write and easy to get wrong, so this section is about doing them safely.</p>
+<div class="callout "><b class="tag">Work on a copy</b><p>To protect your <code>university</code> data, we first make a throwaway copy of the <code>student</code> table and practise on the copy. This is a good habit on real systems too. <code>CREATE TABLE ... LIKE</code> copies the columns and indexes (not the foreign keys), and <code>INSERT ... SELECT</code> copies the rows.</p></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">TABLE</span> student_copy <span class="kw">LIKE</span> student;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> student_copy <span class="kw">SELECT</span> * <span class="kw">FROM</span> student;
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> copied <span class="kw">FROM</span> student_copy;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 0 rows affected
+
+Query OK, 12 rows affected
+Records: 12  Duplicates: 0  Warnings: 0
+
++--------+
+| copied |
++--------+
+|     12 |
++--------+
+1 row in set</pre></div>
+<h3>INSERT</h3>
+<p>Always list the columns you are filling. It keeps working when someone adds a column later, and it makes the statement readable. Columns you leave out get their default value, which is <code>NULL</code> unless you declared another.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">INSERT</span> <span class="kw">INTO</span> student_copy (sid, name, major, gpa)
+<span class="kw">VALUES</span> (<span class="nu">13</span>, <span class="st">'Maya Singh'</span>, <span class="st">'Physics'</span>, <span class="nu">3.45</span>);
+
+<span class="cm">-- several rows in one statement</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> student_copy (sid, name, major, gpa) <span class="kw">VALUES</span>
+  (<span class="nu">14</span>, <span class="st">'Noah Fischer'</span>,  <span class="st">'History'</span>, <span class="nu">3.25</span>),
+  (<span class="nu">15</span>, <span class="st">'Olivia Grant'</span>,  <span class="st">'Physics'</span>, <span class="nu">3.80</span>);
+
+<span class="kw">SELECT</span> sid, name, phone <span class="kw">FROM</span> student_copy <span class="kw">WHERE</span> sid &gt;= <span class="nu">13</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 1 row affected
+
+Query OK, 0 rows affected
+
+Query OK, 2 rows affected
+Records: 2  Duplicates: 0  Warnings: 0
+
++-----+--------------+-------+
+| sid | name         | phone |
++-----+--------------+-------+
+|  13 | Maya Singh   | NULL  |
+|  14 | Noah Fischer | NULL  |
+|  15 | Olivia Grant | NULL  |
++-----+--------------+-------+
+3 rows in set</pre></div>
+<p>The first two statements report how many rows they touched; the <code>phone</code> column is <code>NULL</code> because we never supplied it. Now two ways to fail:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">INSERT</span> <span class="kw">INTO</span> student_copy (sid, name) <span class="kw">VALUES</span> (<span class="nu">13</span>, <span class="st">'Duplicate Id'</span>);      <span class="cm">-- sid 13 already exists</span>
+<span class="kw">INSERT</span> <span class="kw">INTO</span> student_copy (sid, name) <span class="kw">VALUES</span> (<span class="nu">16</span>);                       <span class="cm">-- 2 columns, 1 value</span></pre></div><div class="out err"><div class="bar">Output (MySQL 8.4)</div><pre>mysql&gt; INSERT INTO student_copy (sid, name) VALUES (13, 'Duplicate Id')
+ERROR 1062 (23000): Duplicate entry '13' for key 'student_copy.PRIMARY'
+
+mysql&gt; INSERT INTO student_copy (sid, name) VALUES (16)
+ERROR 1136 (21S01): Column count doesn't match value count at row 1</pre></div>
+<h3>UPDATE</h3>
+<p><code>UPDATE</code> sets new values on the rows chosen by <code>WHERE</code>. <b>Without a <code>WHERE</code>, it changes every row.</b></p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">UPDATE</span> student_copy <span class="kw">SET</span> phone = <span class="st">'555-0113'</span> <span class="kw">WHERE</span> sid = <span class="nu">13</span>;
+<span class="kw">UPDATE</span> student_copy <span class="kw">SET</span> major = <span class="st">'Data Science'</span>, gpa = gpa + <span class="nu">0.05</span> <span class="kw">WHERE</span> sid <span class="kw">IN</span> (<span class="nu">14</span>, <span class="nu">15</span>);
+<span class="kw">SELECT</span> sid, name, major, gpa, phone <span class="kw">FROM</span> student_copy <span class="kw">WHERE</span> sid &gt;= <span class="nu">13</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 1 row affected
+Rows matched: 1  Changed: 1  Warnings: 0
+
+Query OK, 2 rows affected
+Rows matched: 2  Changed: 2  Warnings: 0
+
++-----+--------------+--------------+------+----------+
+| sid | name         | major        | gpa  | phone    |
++-----+--------------+--------------+------+----------+
+|  13 | Maya Singh   | Physics      | 3.45 | 555-0113 |
+|  14 | Noah Fischer | Data Science | 3.30 | NULL     |
+|  15 | Olivia Grant | Data Science | 3.85 | NULL     |
++-----+--------------+--------------+------+----------+
+3 rows in set</pre></div>
+<p>The second statement matched two rows and changed two. The line <code>Rows matched: 2  Changed: 2</code> is your proof that it touched exactly what you expected. <b>Always read it.</b></p>
+<div class="callout bad"><b class="tag">Common mistake</b><p>Forgetting the <code>WHERE</code> is the classic disaster: <code>UPDATE student_copy SET gpa = 0.00;</code> zeroes every student. MySQL Workbench has a <b>Safe Updates</b> option (Edit, Preferences, SQL Editor) that refuses an <code>UPDATE</code> or <code>DELETE</code> that has no key in its <code>WHERE</code>. The command-line client has the same protection with <code>--safe-updates</code>. This is the message you get:</p><div class="out err"><div class="bar">Output (MySQL 8.4, safe updates on)</div><pre>ERROR 1175 (HY000): You are using safe update mode and you tried to update a table without a WHERE that uses a KEY column.</pre></div><p>A good routine: first run <code>SELECT ... WHERE ...</code> to see which rows you are about to change, and only then turn the <code>SELECT</code> into an <code>UPDATE</code> or <code>DELETE</code>.</p></div>
+<h3>DELETE and TRUNCATE</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">DELETE</span> <span class="kw">FROM</span> student_copy <span class="kw">WHERE</span> sid = <span class="nu">15</span>;
+<span class="kw">DELETE</span> <span class="kw">FROM</span> student_copy <span class="kw">WHERE</span> gpa <span class="kw">IS</span> <span class="kw">NULL</span>;
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> remaining <span class="kw">FROM</span> student_copy;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 1 row affected
+
+Query OK, 1 row affected
+
++-----------+
+| remaining |
++-----------+
+|        13 |
++-----------+
+1 row in set</pre></div>
+<p><code>DELETE</code> removes the rows you select, one by one, and can be undone inside a transaction (section 8). <code>TRUNCATE TABLE</code> empties the whole table at once. It is faster, it resets <code>AUTO_INCREMENT</code> counters, and it is a DDL statement, so it commits immediately and cannot be rolled back. MySQL also refuses to truncate a table that another table's foreign key points at.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">TRUNCATE</span> <span class="kw">TABLE</span> student;                <span class="cm">-- student is referenced by enrollment</span>
+<span class="kw">TRUNCATE</span> <span class="kw">TABLE</span> student_copy;           <span class="cm">-- the copy has no foreign keys</span>
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> in_copy <span class="kw">FROM</span> student_copy;
+<span class="kw">DROP</span> <span class="kw">TABLE</span> student_copy;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>mysql&gt; TRUNCATE TABLE student
+ERROR 1701 (42000): Cannot truncate a table referenced in a foreign key constraint (`university`.`enrollment`, CONSTRAINT `enrollment_ibfk_1`)
+
+mysql&gt; SELECT COUNT(*) AS in_copy FROM student_copy
++---------+
+| in_copy |
++---------+
+|       0 |
++---------+
+1 row in set</pre></div>
+<h3>Upsert: insert or update in one statement</h3>
+<p>MySQL's <code>INSERT ... ON DUPLICATE KEY UPDATE</code> inserts a row, or, if the primary key (or a unique key) already exists, updates the existing row instead. PostgreSQL and SQLite spell this <code>ON CONFLICT</code>, as Module 5 shows.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> visit_count (page VARCHAR(<span class="nu">30</span>) <span class="kw">PRIMARY</span> <span class="kw">KEY</span>, hits INT <span class="kw">NOT</span> <span class="kw">NULL</span>);
+<span class="kw">INSERT</span> <span class="kw">INTO</span> visit_count <span class="kw">VALUES</span> (<span class="st">'home'</span>, <span class="nu">1</span>) <span class="kw">ON</span> DUPLICATE <span class="kw">KEY</span> <span class="kw">UPDATE</span> hits = hits + <span class="nu">1</span>;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> visit_count <span class="kw">VALUES</span> (<span class="st">'home'</span>, <span class="nu">1</span>) <span class="kw">ON</span> DUPLICATE <span class="kw">KEY</span> <span class="kw">UPDATE</span> hits = hits + <span class="nu">1</span>;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> visit_count <span class="kw">VALUES</span> (<span class="st">'about'</span>, <span class="nu">1</span>) <span class="kw">ON</span> DUPLICATE <span class="kw">KEY</span> <span class="kw">UPDATE</span> hits = hits + <span class="nu">1</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> visit_count <span class="kw">ORDER</span> <span class="kw">BY</span> page;
+<span class="kw">DROP</span> <span class="kw">TABLE</span> visit_count;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------+------+
+| page  | hits |
++-------+------+
+| about |    1 |
+| home  |    2 |
++-------+------+
+2 rows in set</pre></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="dml"></div><p><button type="button" class="btn" data-markdone="dml">Mark section as done</button></p></section>
+<section class="mod" id="select"><h2><span class="num">04</span>Asking questions (SELECT)</h2><p class="lead"><code>SELECT</code> is how you ask questions. Its power comes from a handful of clauses that you combine like Lego: choose columns, filter rows, sort, and limit.</p>
+<h3>The anatomy of a query</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span>   column_list            <span class="cm">-- 5. which columns (and expressions) to show</span>
+<span class="kw">FROM</span>     table_name             <span class="cm">-- 1. which table to read</span>
+<span class="kw">WHERE</span>    row_condition          <span class="cm">-- 2. keep only rows that satisfy this</span>
+<span class="kw">GROUP</span> <span class="kw">BY</span> grouping_columns       <span class="cm">-- 3. (section 6) form groups</span>
+<span class="kw">HAVING</span>   group_condition        <span class="cm">-- 4. (section 6) keep only some groups</span>
+<span class="kw">ORDER</span> <span class="kw">BY</span> sort_columns           <span class="cm">-- 6. sort the result</span>
+<span class="kw">LIMIT</span>    row_count;             <span class="cm">-- 7. keep only the first rows</span></pre></div>
+<p>The numbers show the order in which the database <em>logically</em> works, which is not the order you write the clauses. That explains a classic error: a column alias created in <code>SELECT</code> (step 5) does not exist yet when <code>WHERE</code> (step 2) runs.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, gpa * <span class="nu">10</span> <span class="kw">AS</span> score <span class="kw">FROM</span> student <span class="kw">WHERE</span> score &gt; <span class="nu">35</span>;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4)</div><pre>mysql&gt; SELECT name, gpa * 10 AS score FROM student WHERE score &gt; 35
+ERROR 1054 (42S22): Unknown column 'score' in 'where clause'</pre></div>
+<h3>Choosing columns and computing new ones</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, major <span class="kw">FROM</span> student;                                 <span class="cm">-- two columns</span>
+<span class="kw">SELECT</span> name <span class="kw">AS</span> student_name, gpa <span class="kw">AS</span> grade_point <span class="kw">FROM</span> student <span class="kw">LIMIT</span> <span class="nu">3</span>;   <span class="cm">-- aliases rename the output</span>
+<span class="kw">SELECT</span> name, ROUND(gpa, <span class="nu">1</span>) <span class="kw">AS</span> gpa_1dp, gpa * <span class="nu">25</span> <span class="kw">AS</span> score_out_of_100 <span class="kw">FROM</span> student <span class="kw">WHERE</span> sid &lt;= <span class="nu">3</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----------------+------------------+
+| name           | major            |
++----------------+------------------+
+| Ada Lovelace   | Computer Science |
+| Ben Carter     | Mathematics      |
+| Carla Diaz     | Computer Science |
+| Dev Patel      | Data Science     |
+| Emma Johnson   | Computer Science |
+| Farid Rahman   | Mathematics      |
+| Grace Kim      | Data Science     |
+| Hector Alvarez | Physics          |
+| Imani Brown    | Computer Science |
+| Jun Park       | Data Science     |
+| Kayla Nguyen   | Mathematics      |
+| Liam O'Connor  | NULL             |
++----------------+------------------+
+12 rows in set
+
++--------------+-------------+
+| student_name | grade_point |
++--------------+-------------+
+| Ada Lovelace |        3.90 |
+| Ben Carter   |        3.40 |
+| Carla Diaz   |        3.70 |
++--------------+-------------+
+3 rows in set
+
++--------------+---------+------------------+
+| name         | gpa_1dp | score_out_of_100 |
++--------------+---------+------------------+
+| Ada Lovelace |     3.9 |            97.50 |
+| Ben Carter   |     3.4 |            85.00 |
+| Carla Diaz   |     3.7 |            92.50 |
++--------------+---------+------------------+
+3 rows in set</pre></div><div class="callout warn"><b class="tag">Watch out</b><p><code>SELECT *</code> is fine for exploring, but in real code and in your project, name the columns you need. It keeps queries fast and stops them breaking when columns are added.</p></div>
+<h3>Filtering rows with WHERE</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, gpa <span class="kw">FROM</span> student <span class="kw">WHERE</span> gpa &gt;= <span class="nu">3.7</span>;
+<span class="kw">SELECT</span> name, major <span class="kw">FROM</span> student <span class="kw">WHERE</span> major <span class="kw">IN</span> (<span class="st">'Mathematics'</span>, <span class="st">'Physics'</span>);
+<span class="kw">SELECT</span> name, gpa <span class="kw">FROM</span> student <span class="kw">WHERE</span> gpa <span class="kw">BETWEEN</span> <span class="nu">3.2</span> <span class="kw">AND</span> <span class="nu">3.6</span>;   <span class="cm">-- both ends are included</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+------+
+| name         | gpa  |
++--------------+------+
+| Ada Lovelace | 3.90 |
+| Carla Diaz   | 3.70 |
+| Grace Kim    | 3.85 |
+| Kayla Nguyen | 3.75 |
++--------------+------+
+4 rows in set
+
++----------------+-------------+
+| name           | major       |
++----------------+-------------+
+| Ben Carter     | Mathematics |
+| Farid Rahman   | Mathematics |
+| Kayla Nguyen   | Mathematics |
+| Hector Alvarez | Physics     |
++----------------+-------------+
+4 rows in set
+
++--------------+------+
+| name         | gpa  |
++--------------+------+
+| Ben Carter   | 3.40 |
+| Dev Patel    | 3.20 |
+| Emma Johnson | 3.55 |
+| Jun Park     | 3.60 |
++--------------+------+
+4 rows in set</pre></div>
+<h4>Combining conditions: AND binds tighter than OR</h4>
+<p>This is a frequent source of wrong answers. <code>AND</code> is evaluated before <code>OR</code>, exactly like multiplication before addition. When in doubt, add parentheses.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="cm">-- reads as: Mathematics  OR  (Physics AND gpa &gt; 3.2)</span>
+<span class="kw">SELECT</span> name, major, gpa <span class="kw">FROM</span> student
+<span class="kw">WHERE</span> major = <span class="st">'Mathematics'</span> <span class="kw">OR</span> major = <span class="st">'Physics'</span> <span class="kw">AND</span> gpa &gt; <span class="nu">3.2</span>;
+
+<span class="cm">-- what you probably meant: (Mathematics OR Physics) AND gpa &gt; 3.2</span>
+<span class="kw">SELECT</span> name, major, gpa <span class="kw">FROM</span> student
+<span class="kw">WHERE</span> (major = <span class="st">'Mathematics'</span> <span class="kw">OR</span> major = <span class="st">'Physics'</span>) <span class="kw">AND</span> gpa &gt; <span class="nu">3.2</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+-------------+------+
+| name         | major       | gpa  |
++--------------+-------------+------+
+| Ben Carter   | Mathematics | 3.40 |
+| Farid Rahman | Mathematics | 2.90 |
+| Kayla Nguyen | Mathematics | 3.75 |
++--------------+-------------+------+
+3 rows in set
+
++--------------+-------------+------+
+| name         | major       | gpa  |
++--------------+-------------+------+
+| Ben Carter   | Mathematics | 3.40 |
+| Kayla Nguyen | Mathematics | 3.75 |
++--------------+-------------+------+
+2 rows in set</pre></div>
+<h4>Pattern matching with LIKE</h4>
+<p><code>%</code> matches any number of characters (including none) and <code>_</code> matches exactly one. In MySQL's default collation, <code>LIKE</code> ignores upper and lower case (and accents), unlike PostgreSQL, where <code>LIKE</code> is case-sensitive.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name <span class="kw">FROM</span> student <span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="st">'c%'</span>;       <span class="cm">-- starts with c or C</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> student <span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="st">'%son'</span>;     <span class="cm">-- ends with son</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> student <span class="kw">WHERE</span> name <span class="kw">LIKE</span> <span class="st">'_a%'</span>;      <span class="cm">-- second letter is a</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------+
+| name       |
++------------+
+| Carla Diaz |
++------------+
+1 row in set
+
++--------------+
+| name         |
++--------------+
+| Emma Johnson |
++--------------+
+1 row in set
+
++--------------+
+| name         |
++--------------+
+| Carla Diaz   |
+| Farid Rahman |
+| Kayla Nguyen |
++--------------+
+3 rows in set</pre></div>
+<h3>NULL: the value that is not a value</h3>
+<p><code>NULL</code> means "unknown" or "not applicable". Because the truth of a comparison with an unknown is itself unknown, SQL uses <b>three-valued logic</b>: <code>TRUE</code>, <code>FALSE</code> and <code>UNKNOWN</code>. A <code>WHERE</code> clause keeps a row <em>only if the condition is TRUE</em>; rows where it is FALSE <em>or UNKNOWN</em> are dropped.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, gpa <span class="kw">FROM</span> student <span class="kw">WHERE</span> gpa = <span class="kw">NULL</span>;        <span class="cm">-- never true, not even for NULL rows</span>
+<span class="kw">SELECT</span> name, gpa <span class="kw">FROM</span> student <span class="kw">WHERE</span> gpa <span class="kw">IS</span> <span class="kw">NULL</span>;       <span class="cm">-- the correct test</span>
+<span class="kw">SELECT</span> name, phone <span class="kw">FROM</span> student <span class="kw">WHERE</span> phone <span class="kw">IS</span> <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">AND</span> sid &lt;= <span class="nu">5</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Empty set
+
++-------------+------+
+| name        | gpa  |
++-------------+------+
+| Imani Brown | NULL |
++-------------+------+
+1 row in set
+
++--------------+----------+
+| name         | phone    |
++--------------+----------+
+| Ada Lovelace | 555-0101 |
+| Carla Diaz   | 555-0103 |
+| Emma Johnson | 555-0105 |
++--------------+----------+
+3 rows in set</pre></div>
+<p>Try the explorer below. Pick a student and a condition and watch how <code>NULL</code> propagates. Students 2, 9 and 12 each have a NULL in a different column.</p>
+<div class="card" id="w-null"></div>
+<div class="tablewrap"><table><thead><tr><th>A</th><th>B</th><th>A AND B</th><th>A OR B</th><th>NOT A</th></tr></thead><tbody><tr><td>TRUE</td><td>TRUE</td><td>TRUE</td><td>TRUE</td><td>FALSE</td></tr><tr><td>TRUE</td><td>FALSE</td><td>FALSE</td><td>TRUE</td><td>FALSE</td></tr><tr><td>TRUE</td><td>UNKNOWN</td><td>UNKNOWN</td><td>TRUE</td><td>FALSE</td></tr><tr><td>FALSE</td><td>FALSE</td><td>FALSE</td><td>FALSE</td><td>TRUE</td></tr><tr><td>FALSE</td><td>UNKNOWN</td><td>FALSE</td><td>UNKNOWN</td><td>TRUE</td></tr><tr><td>UNKNOWN</td><td>UNKNOWN</td><td>UNKNOWN</td><td>UNKNOWN</td><td>UNKNOWN</td></tr></tbody></table></div>
+<p>Two more places <code>NULL</code> surprises people. Arithmetic and string functions return <code>NULL</code> if any input is <code>NULL</code>. <code>COALESCE(a, b, ...)</code> returns the first non-null argument, which is the standard way to supply a default.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, CONCAT(name, <span class="st">' ('</span>, major, <span class="st">')'</span>) <span class="kw">AS</span> label <span class="kw">FROM</span> student <span class="kw">WHERE</span> sid <span class="kw">IN</span> (<span class="nu">1</span>, <span class="nu">12</span>);
+<span class="kw">SELECT</span> name, COALESCE(major, <span class="st">'Undeclared'</span>) <span class="kw">AS</span> major, COALESCE(phone, <span class="st">'no phone'</span>) <span class="kw">AS</span> phone <span class="kw">FROM</span> student <span class="kw">WHERE</span> sid <span class="kw">IN</span> (<span class="nu">2</span>, <span class="nu">12</span>);</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------------+---------------------------------+
+| name          | label                           |
++---------------+---------------------------------+
+| Ada Lovelace  | Ada Lovelace (Computer Science) |
+| Liam O'Connor | NULL                            |
++---------------+---------------------------------+
+2 rows in set
+
++---------------+-------------+----------+
+| name          | major       | phone    |
++---------------+-------------+----------+
+| Ben Carter    | Mathematics | no phone |
+| Liam O'Connor | Undeclared  | no phone |
++---------------+-------------+----------+
+2 rows in set</pre></div>
+<h3>Sorting, limiting and removing duplicates</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, gpa <span class="kw">FROM</span> student <span class="kw">ORDER</span> <span class="kw">BY</span> gpa <span class="kw">DESC</span> <span class="kw">LIMIT</span> <span class="nu">3</span>;                 <span class="cm">-- top three</span>
+<span class="kw">SELECT</span> name, major, gpa <span class="kw">FROM</span> student <span class="kw">ORDER</span> <span class="kw">BY</span> major, gpa <span class="kw">DESC</span> <span class="kw">LIMIT</span> <span class="nu">5</span>;    <span class="cm">-- by major, then best first</span>
+<span class="kw">SELECT</span> <span class="kw">DISTINCT</span> major <span class="kw">FROM</span> student <span class="kw">ORDER</span> <span class="kw">BY</span> major;                        <span class="cm">-- each major once</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+------+
+| name         | gpa  |
++--------------+------+
+| Ada Lovelace | 3.90 |
+| Grace Kim    | 3.85 |
+| Kayla Nguyen | 3.75 |
++--------------+------+
+3 rows in set
+
++---------------+------------------+------+
+| name          | major            | gpa  |
++---------------+------------------+------+
+| Liam O'Connor | NULL             | 3.00 |
+| Ada Lovelace  | Computer Science | 3.90 |
+| Carla Diaz    | Computer Science | 3.70 |
+| Emma Johnson  | Computer Science | 3.55 |
+| Imani Brown   | Computer Science | NULL |
++---------------+------------------+------+
+5 rows in set
+
++------------------+
+| major            |
++------------------+
+| NULL             |
+| Computer Science |
+| Data Science     |
+| Mathematics      |
+| Physics          |
++------------------+
+5 rows in set</pre></div><div class="callout "><b class="tag">Note</b><p>In MySQL, <code>NULL</code> sorts as the <em>smallest</em> value: first in <code>ASC</code>, last in <code>DESC</code>. Other databases differ. Also, <code>LIMIT</code> without <code>ORDER BY</code> returns an <em>unspecified</em> set of rows; always sort first when the choice of rows matters. <code>LIMIT 5 OFFSET 10</code> skips ten rows and then returns five.</p></div>
+<h3>A few built-in functions</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> UPPER(<span class="st">'database'</span>) <span class="kw">AS</span> up, LENGTH(<span class="st">'database'</span>) <span class="kw">AS</span> len, SUBSTRING(<span class="st">'database'</span>, <span class="nu">1</span>, <span class="nu">4</span>) <span class="kw">AS</span> first4,
+       ROUND(<span class="nu">3.14159</span>, <span class="nu">2</span>) <span class="kw">AS</span> rounded, ABS(-<span class="nu">7</span>) <span class="kw">AS</span> abs_val, MOD(<span class="nu">17</span>, <span class="nu">5</span>) <span class="kw">AS</span> remainder,
+       DATEDIFF(<span class="st">'2026-12-25'</span>, <span class="st">'2026-10-29'</span>) <span class="kw">AS</span> days_between, YEAR(<span class="st">'2026-10-29'</span>) <span class="kw">AS</span> yr;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----------+-----+--------+---------+---------+-----------+--------------+------+
+| up       | len | first4 | rounded | abs_val | remainder | days_between | yr   |
++----------+-----+--------+---------+---------+-----------+--------------+------+
+| DATABASE |   8 | data   |    3.14 |       7 |         2 |           57 | 2026 |
++----------+-----+--------+---------+---------+-----------+--------------+------+
+1 row in set</pre></div>
+<p>Function names differ a little between databases (for example date functions), so keep the MySQL reference handy. Module 5 shows the same tasks in SQLite and PostgreSQL.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="select"></div><p><button type="button" class="btn" data-markdone="select">Mark section as done</button></p></section>
+<section class="mod" id="joins"><h2><span class="num">05</span>Combining tables (joins)</h2><p class="lead">Good database design splits data across tables, so almost every useful question needs a <b>join</b>: combine rows from two tables whose key values match. The join type decides what happens to the rows that have no match.</p>
+<h3>INNER JOIN: only the matches</h3>
+<p>Which course titles has each student taken? Student names live in <code>student</code>, course titles in <code>course</code>, and <code>enrollment</code> is the bridge between them.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s.name, c.title, e.term
+<span class="kw">FROM</span> student <span class="kw">AS</span> s
+<span class="kw">JOIN</span> enrollment <span class="kw">AS</span> e <span class="kw">ON</span> e.sid = s.sid
+<span class="kw">JOIN</span> course <span class="kw">AS</span> c     <span class="kw">ON</span> c.course_id = e.course_id
+<span class="kw">WHERE</span> s.sid <span class="kw">IN</span> (<span class="nu">1</span>, <span class="nu">4</span>)
+<span class="kw">ORDER</span> <span class="kw">BY</span> s.name, c.title;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+-----------------------+-----------+
+| name         | title                 | term      |
++--------------+-----------------------+-----------+
+| Ada Lovelace | Calculus I            | Fall 2025 |
+| Ada Lovelace | Data Structures       | Fall 2026 |
+| Ada Lovelace | Intro to Programming  | Fall 2025 |
+| Dev Patel    | Calculus I            | Fall 2025 |
+| Dev Patel    | Intro to Data Science | Fall 2025 |
+| Dev Patel    | Intro to Programming  | Fall 2025 |
++--------------+-----------------------+-----------+
+6 rows in set</pre></div>
+<p>Read it as: start with <code>student</code>, attach each matching <code>enrollment</code> row, attach each matching <code>course</code> row, and then filter. <code>s</code>, <code>e</code> and <code>c</code> are <b>table aliases</b>; they save typing and are required when you join a table to itself. The rule that matches rows is the <code>ON</code> condition, almost always <code>foreign_key = primary_key</code>.</p>
+<p>When both columns have the same name you can write <code>JOIN enrollment USING (sid)</code>, which also merges the two <code>sid</code> columns into one in <code>SELECT *</code>.</p>
+<h3>Why the join type matters</h3>
+<p>Students 9 and 12 have no enrollments. An inner join silently drops them. That is correct when you only care about enrolled students, and a bug when you wanted "all students and their course counts".</p>
+<div class="card" id="w-join"></div>
+<p>The explorer above uses two tiny tables (their rows are shown). Experiment with every join type and watch which rows get a <code>NULL</code> partner. Next, the same idea on the real data.</p>
+<h3>LEFT JOIN: keep everything from the left table</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s.sid, s.name, e.course_id
+<span class="kw">FROM</span> student <span class="kw">AS</span> s
+<span class="kw">LEFT</span> <span class="kw">JOIN</span> enrollment <span class="kw">AS</span> e <span class="kw">ON</span> e.sid = s.sid
+<span class="kw">WHERE</span> s.sid <span class="kw">IN</span> (<span class="nu">8</span>, <span class="nu">9</span>, <span class="nu">12</span>)
+<span class="kw">ORDER</span> <span class="kw">BY</span> s.sid, e.course_id;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+----------------+-----------+
+| sid | name           | course_id |
++-----+----------------+-----------+
+|   8 | Hector Alvarez | MATH101   |
+|   8 | Hector Alvarez | PHYS101   |
+|   9 | Imani Brown    | NULL      |
+|  12 | Liam O'Connor  | NULL      |
++-----+----------------+-----------+
+4 rows in set</pre></div>
+<p>Students 9 and 12 appear with <code>NULL</code> where the enrollment columns would be. This gives a very useful pattern, the <b>anti-join</b>: "find the rows that have <em>no</em> match" means left join, then keep the rows where the right side is <code>NULL</code>.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s.sid, s.name
+<span class="kw">FROM</span> student <span class="kw">AS</span> s
+<span class="kw">LEFT</span> <span class="kw">JOIN</span> enrollment <span class="kw">AS</span> e <span class="kw">ON</span> e.sid = s.sid
+<span class="kw">WHERE</span> e.sid <span class="kw">IS</span> <span class="kw">NULL</span>;            <span class="cm">-- no matching enrollment row</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+---------------+
+| sid | name          |
++-----+---------------+
+|   9 | Imani Brown   |
+|  12 | Liam O'Connor |
++-----+---------------+
+2 rows in set</pre></div><div class="callout bad"><b class="tag">Filter in WHERE or in ON?</b><p>Where you put a condition on the right-hand table matters in a <code>LEFT JOIN</code>. A condition in <code>WHERE</code> runs <em>after</em> the join and can silently turn it back into an inner join; a condition in <code>ON</code> only decides what counts as a match. Compare:</p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s.name, e.course_id <span class="kw">FROM</span> student s
+<span class="kw">LEFT</span> <span class="kw">JOIN</span> enrollment e <span class="kw">ON</span> e.sid = s.sid
+<span class="kw">WHERE</span> e.term = <span class="st">'Fall 2026'</span> <span class="kw">AND</span> s.sid <span class="kw">IN</span> (<span class="nu">1</span>, <span class="nu">9</span>);      <span class="cm">-- student 9 vanishes</span>
+
+<span class="kw">SELECT</span> s.name, e.course_id <span class="kw">FROM</span> student s
+<span class="kw">LEFT</span> <span class="kw">JOIN</span> enrollment e <span class="kw">ON</span> e.sid = s.sid <span class="kw">AND</span> e.term = <span class="st">'Fall 2026'</span>
+<span class="kw">WHERE</span> s.sid <span class="kw">IN</span> (<span class="nu">1</span>, <span class="nu">9</span>);                                 <span class="cm">-- student 9 stays, with NULL</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+-----------+
+| name         | course_id |
++--------------+-----------+
+| Ada Lovelace | CS201     |
++--------------+-----------+
+1 row in set
+
++--------------+-----------+
+| name         | course_id |
++--------------+-----------+
+| Ada Lovelace | CS201     |
+| Imani Brown  | NULL      |
++--------------+-----------+
+2 rows in set</pre></div></div>
+<h3>RIGHT JOIN and FULL OUTER JOIN</h3>
+<p><code>RIGHT JOIN</code> is simply <code>LEFT JOIN</code> with the tables swapped; most people always write <code>LEFT</code> for readability. A <b>full outer join</b> (keep unmatched rows from both sides) exists in standard SQL but <b>MySQL does not have it</b>. You emulate it by uniting a left and a right join. The two tiny tables below are the ones from the explorer: <code>jl</code> has ids 1 to 4, <code>jr</code> has ids 2, 3, 3 and 5.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> jl.id, jl.name, jr.id <span class="kw">AS</span> r_id, jr.course
+<span class="kw">FROM</span> jl <span class="kw">LEFT</span> <span class="kw">JOIN</span> jr <span class="kw">ON</span> jl.id = jr.id
+<span class="kw">UNION</span>
+<span class="kw">SELECT</span> jl.id, jl.name, jr.id, jr.course
+<span class="kw">FROM</span> jl <span class="kw">RIGHT</span> <span class="kw">JOIN</span> jr <span class="kw">ON</span> jl.id = jr.id
+<span class="kw">ORDER</span> <span class="kw">BY</span> id, r_id, course;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------+-------+------+---------+
+| id   | name  | r_id | course  |
++------+-------+------+---------+
+| NULL | NULL  |    5 | PHYS101 |
+|    1 | Ada   | NULL | NULL    |
+|    2 | Ben   |    2 | MATH101 |
+|    3 | Carla |    3 | CS101   |
+|    3 | Carla |    3 | CS201   |
+|    4 | Dev   | NULL | NULL    |
++------+-------+------+---------+
+6 rows in set</pre></div>
+<p><code>UNION</code> removes duplicate rows between the two halves; the inner-join rows appear in both, so without it they would be repeated. (<code>UNION ALL</code> keeps duplicates.)</p>
+<h3>CROSS JOIN and the missing ON clause</h3>
+<p>A <b>cross join</b> pairs every row of one table with every row of the other. With 12 students and 10 courses that is 120 rows. This is rarely what you want, and it is exactly what you get if you list two tables and forget the join condition.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> rows_from_cross_join <span class="kw">FROM</span> student <span class="kw">CROSS</span> <span class="kw">JOIN</span> course;
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> forgot_the_on_clause <span class="kw">FROM</span> student, course;      <span class="cm">-- the old comma syntax</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----------------------+
+| rows_from_cross_join |
++----------------------+
+|                  120 |
++----------------------+
+1 row in set
+
++----------------------+
+| forgot_the_on_clause |
++----------------------+
+|                  120 |
++----------------------+
+1 row in set</pre></div>
+<p>If a query suddenly returns far too many rows, check that every table in the <code>FROM</code> clause is connected by an <code>ON</code> condition.</p>
+<h3>Self join: a table joined to itself</h3>
+<p>Which pairs of students share a major? Treat the same table as two copies with different aliases. <code>s1.sid &lt; s2.sid</code> keeps each pair once and removes pairing a student with themselves.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s1.name <span class="kw">AS</span> student_1, s2.name <span class="kw">AS</span> student_2, s1.major
+<span class="kw">FROM</span> student s1
+<span class="kw">JOIN</span> student s2 <span class="kw">ON</span> s1.major = s2.major <span class="kw">AND</span> s1.sid &lt; s2.sid
+<span class="kw">WHERE</span> s1.major = <span class="st">'Mathematics'</span>
+<span class="kw">ORDER</span> <span class="kw">BY</span> s1.sid, s2.sid;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+--------------+-------------+
+| student_1    | student_2    | major       |
++--------------+--------------+-------------+
+| Ben Carter   | Farid Rahman | Mathematics |
+| Ben Carter   | Kayla Nguyen | Mathematics |
+| Farid Rahman | Kayla Nguyen | Mathematics |
++--------------+--------------+-------------+
+3 rows in set</pre></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="joins"></div><p><button type="button" class="btn" data-markdone="joins">Mark section as done</button></p></section>
+<section class="mod" id="aggregates"><h2><span class="num">06</span>Summarizing data (GROUP BY)</h2><p class="lead">Aggregate functions collapse many rows into one answer: how many, how much, what average. <code>GROUP BY</code> does that once per group instead of once for the whole table.</p>
+<h3>The five aggregates</h3>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> COUNT(*)             <span class="kw">AS</span> all_rows,
+       COUNT(gpa)           <span class="kw">AS</span> rows_with_gpa,
+       COUNT(<span class="kw">DISTINCT</span> major) <span class="kw">AS</span> distinct_majors,
+       MIN(gpa)             <span class="kw">AS</span> lowest,
+       MAX(gpa)             <span class="kw">AS</span> highest,
+       ROUND(AVG(gpa), <span class="nu">3</span>)   <span class="kw">AS</span> average,
+       SUM(gpa)             <span class="kw">AS</span> total
+<span class="kw">FROM</span> student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----------+---------------+-----------------+--------+---------+---------+-------+
+| all_rows | rows_with_gpa | distinct_majors | lowest | highest | average | total |
++----------+---------------+-----------------+--------+---------+---------+-------+
+|       12 |            11 |               4 |   2.90 |    3.90 |   3.450 | 37.95 |
++----------+---------------+-----------------+--------+---------+---------+-------+
+1 row in set</pre></div>
+<p>Three things to remember:</p>
+<ul>
+<li><code>COUNT(*)</code> counts rows. <code>COUNT(column)</code> counts rows where that column is <em>not NULL</em>. That is why the table above shows 12 rows but only 11 GPAs.</li>
+<li>Every aggregate except <code>COUNT(*)</code> <b>ignores NULLs</b>. The average is over 11 students, not 12. If you want NULL treated as zero, say so with <code>AVG(COALESCE(gpa, 0))</code>, and think about whether that is honest.</li>
+<li><code>COUNT(DISTINCT col)</code> counts different values: four majors, because <code>NULL</code> is not counted.</li>
+</ul>
+<h3>GROUP BY</h3>
+<p>Add <code>GROUP BY</code> and the aggregates are computed separately for each value of the grouping column.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major,
+       COUNT(*)           <span class="kw">AS</span> students,
+       ROUND(AVG(gpa), <span class="nu">2</span>) <span class="kw">AS</span> avg_gpa,
+       MAX(gpa)           <span class="kw">AS</span> best
+<span class="kw">FROM</span> student
+<span class="kw">GROUP</span> <span class="kw">BY</span> major
+<span class="kw">ORDER</span> <span class="kw">BY</span> students <span class="kw">DESC</span>, major;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------------+----------+---------+------+
+| major            | students | avg_gpa | best |
++------------------+----------+---------+------+
+| Computer Science |        4 |    3.72 | 3.90 |
+| Data Science     |        3 |    3.55 | 3.85 |
+| Mathematics      |        3 |    3.35 | 3.75 |
+| NULL             |        1 |    3.00 | 3.00 |
+| Physics          |        1 |    3.10 | 3.10 |
++------------------+----------+---------+------+
+5 rows in set</pre></div>
+<p>Students with <code>major IS NULL</code> form a group of their own (the row with <code>NULL</code> above). Computer Science has 4 students but an average over only 3 GPAs, since Imani has none yet.</p>
+<p>Step through it below to see how the groups are formed before the aggregates are computed.</p>
+<div class="card" id="w-group"></div>
+<h3>WHERE filters rows, HAVING filters groups</h3>
+<p><code>WHERE</code> runs <em>before</em> grouping, so it cannot see an aggregate. <code>HAVING</code> runs <em>after</em> grouping and can. Use <code>WHERE</code> for conditions on individual rows and <code>HAVING</code> for conditions on aggregates; putting row conditions in <code>WHERE</code> is also faster, because fewer rows reach the grouping step.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major, COUNT(*) <span class="kw">AS</span> students, ROUND(AVG(gpa), <span class="nu">2</span>) <span class="kw">AS</span> avg_gpa
+<span class="kw">FROM</span> student
+<span class="kw">WHERE</span> gpa <span class="kw">IS</span> <span class="kw">NOT</span> <span class="kw">NULL</span>            <span class="cm">-- row filter, before grouping</span>
+<span class="kw">GROUP</span> <span class="kw">BY</span> major
+<span class="kw">HAVING</span> COUNT(*) &gt;= <span class="nu">3</span>             <span class="cm">-- group filter, after grouping</span>
+<span class="kw">ORDER</span> <span class="kw">BY</span> avg_gpa <span class="kw">DESC</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------------+----------+---------+
+| major            | students | avg_gpa |
++------------------+----------+---------+
+| Computer Science |        3 |    3.72 |
+| Data Science     |        3 |    3.55 |
+| Mathematics      |        3 |    3.35 |
++------------------+----------+---------+
+3 rows in set</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major, AVG(gpa) <span class="kw">FROM</span> student <span class="kw">WHERE</span> AVG(gpa) &gt; <span class="nu">3.5</span> <span class="kw">GROUP</span> <span class="kw">BY</span> major;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4)</div><pre>mysql&gt; SELECT major, AVG(gpa) FROM student WHERE AVG(gpa) &gt; 3.5 GROUP BY major
+ERROR 1111 (HY000): Invalid use of group function</pre></div>
+<h3>The ONLY_FULL_GROUP_BY rule</h3>
+<p>Every column in <code>SELECT</code> must either be in the <code>GROUP BY</code> list or be inside an aggregate. Otherwise the database would have to guess which of the group's values to show. MySQL's default <code>sql_mode</code> enforces this:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major, name, COUNT(*) <span class="kw">FROM</span> student <span class="kw">GROUP</span> <span class="kw">BY</span> major;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4)</div><pre>mysql&gt; SELECT major, name, COUNT(*) FROM student GROUP BY major
+ERROR 1055 (42000): Expression #2 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'university.student.name' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by</pre></div>
+<p>Fix it by deciding what you really want: add <code>name</code> to the <code>GROUP BY</code> (one group per student, probably not intended), drop it, or aggregate it (<code>MAX(name)</code>, <code>GROUP_CONCAT(name)</code>).</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major, COUNT(*) <span class="kw">AS</span> students, GROUP_CONCAT(name <span class="kw">ORDER</span> <span class="kw">BY</span> name SEPARATOR <span class="st">', '</span>) <span class="kw">AS</span> who
+<span class="kw">FROM</span> student
+<span class="kw">WHERE</span> major <span class="kw">IS</span> <span class="kw">NOT</span> <span class="kw">NULL</span>
+<span class="kw">GROUP</span> <span class="kw">BY</span> major
+<span class="kw">ORDER</span> <span class="kw">BY</span> major;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------------+----------+-----------------------------------------------------+
+| major            | students | who                                                 |
++------------------+----------+-----------------------------------------------------+
+| Computer Science |        4 | Ada Lovelace, Carla Diaz, Emma Johnson, Imani Brown |
+| Data Science     |        3 | Dev Patel, Grace Kim, Jun Park                      |
+| Mathematics      |        3 | Ben Carter, Farid Rahman, Kayla Nguyen              |
+| Physics          |        1 | Hector Alvarez                                      |
++------------------+----------+-----------------------------------------------------+
+4 rows in set</pre></div>
+<h3>Grouping over a join, and the COUNT(*) trap</h3>
+<p>How many students are enrolled in each course, including courses nobody takes? That needs a left join from <code>course</code>. Watch the difference between <code>COUNT(*)</code> and <code>COUNT(e.sid)</code>:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> c.course_id, c.title,
+       COUNT(*)     <span class="kw">AS</span> count_star,      <span class="cm">-- counts the row, even the NULL-padded one</span>
+       COUNT(e.sid) <span class="kw">AS</span> enrolled         <span class="cm">-- counts only real enrollments</span>
+<span class="kw">FROM</span> course c
+<span class="kw">LEFT</span> <span class="kw">JOIN</span> enrollment e <span class="kw">ON</span> e.course_id = c.course_id
+<span class="kw">GROUP</span> <span class="kw">BY</span> c.course_id, c.title
+<span class="kw">ORDER</span> <span class="kw">BY</span> enrolled <span class="kw">DESC</span>, c.course_id;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----------+-----------------------+------------+----------+
+| course_id | title                 | count_star | enrolled |
++-----------+-----------------------+------------+----------+
+| CS101     | Intro to Programming  |          7 |        7 |
+| MATH101   | Calculus I            |          6 |        6 |
+| CS201     | Data Structures       |          3 |        3 |
+| DS110     | Intro to Data Science |          3 |        3 |
+| MATH201   | Linear Algebra        |          3 |        3 |
+| DS210     | Machine Learning      |          2 |        2 |
+| PHYS101   | Physics I             |          2 |        2 |
+| CS301     | Database Management   |          1 |        1 |
+| HIST101   | World History         |          1 |        1 |
+| CS450     | Special Topics        |          1 |        0 |
++-----------+-----------------------+------------+----------+
+10 rows in set</pre></div>
+<p><code>CS450</code> has nobody enrolled, yet <code>COUNT(*)</code> reports 1, because the left join produced one row with <code>NULL</code> in the enrollment columns. <code>COUNT(e.sid)</code> correctly says 0. Whenever you count over an outer join, count a column from the <em>optional</em> side.</p>
+<h3>Subtotals with WITH ROLLUP</h3>
+<p>MySQL can add subtotal and grand-total rows. The extra rows show <code>NULL</code> in the grouping column.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major, COUNT(*) <span class="kw">AS</span> students
+<span class="kw">FROM</span> student
+<span class="kw">WHERE</span> major <span class="kw">IS</span> <span class="kw">NOT</span> <span class="kw">NULL</span>
+<span class="kw">GROUP</span> <span class="kw">BY</span> major <span class="kw">WITH</span> ROLLUP;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------------+----------+
+| major            | students |
++------------------+----------+
+| Computer Science |        4 |
+| Data Science     |        3 |
+| Mathematics      |        3 |
+| Physics          |        1 |
+| NULL             |       11 |
++------------------+----------+
+5 rows in set</pre></div>
+<p>The last row, with <code>NULL</code> instead of a major, is the grand total (11 students who have a declared major).</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="agg"></div><p><button type="button" class="btn" data-markdone="aggregates">Mark section as done</button></p></section>
+<section class="mod" id="subqueries"><h2><span class="num">07</span>Subqueries and CTEs</h2><p class="lead">A <b>subquery</b> is a query inside another query. It lets you answer a question in steps: first find something, then use it. This section also introduces common table expressions (CTEs), set operators and window functions, all available in MySQL 8.4.</p>
+<h3>Scalar subquery: one value</h3>
+<p>Who has a GPA above the university average? The inner query returns a single number that the outer query compares against.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name, gpa <span class="kw">FROM</span> student
+<span class="kw">WHERE</span> gpa &gt; (<span class="kw">SELECT</span> AVG(gpa) <span class="kw">FROM</span> student)
+<span class="kw">ORDER</span> <span class="kw">BY</span> gpa <span class="kw">DESC</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+------+
+| name         | gpa  |
++--------------+------+
+| Ada Lovelace | 3.90 |
+| Grace Kim    | 3.85 |
+| Kayla Nguyen | 3.75 |
+| Carla Diaz   | 3.70 |
+| Jun Park     | 3.60 |
+| Emma Johnson | 3.55 |
++--------------+------+
+6 rows in set</pre></div>
+<h3>IN and EXISTS: a list, or a yes/no</h3>
+<p>Who is enrolled in a Computer Science course? Two equivalent formulations:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="cm">-- with IN: is the student's sid in the list of CS enrolments?</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> student
+<span class="kw">WHERE</span> sid <span class="kw">IN</span> (<span class="kw">SELECT</span> e.sid <span class="kw">FROM</span> enrollment e <span class="kw">JOIN</span> course c <span class="kw">ON</span> c.course_id = e.course_id
+              <span class="kw">WHERE</span> c.dept_name = <span class="st">'Computer Science'</span>)
+<span class="kw">ORDER</span> <span class="kw">BY</span> name;
+
+<span class="cm">-- with EXISTS: does at least one matching row exist for this student?</span>
+<span class="kw">SELECT</span> s.name <span class="kw">FROM</span> student s
+<span class="kw">WHERE</span> <span class="kw">EXISTS</span> (<span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> enrollment e <span class="kw">JOIN</span> course c <span class="kw">ON</span> c.course_id = e.course_id
+              <span class="kw">WHERE</span> e.sid = s.sid <span class="kw">AND</span> c.dept_name = <span class="st">'Computer Science'</span>)
+<span class="kw">ORDER</span> <span class="kw">BY</span> s.name;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+
+| name         |
++--------------+
+| Ada Lovelace |
+| Ben Carter   |
+| Carla Diaz   |
+| Dev Patel    |
+| Emma Johnson |
+| Grace Kim    |
+| Jun Park     |
++--------------+
+7 rows in set
+
++--------------+
+| name         |
++--------------+
+| Ada Lovelace |
+| Ben Carter   |
+| Carla Diaz   |
+| Dev Patel    |
+| Emma Johnson |
+| Grace Kim    |
+| Jun Park     |
++--------------+
+7 rows in set</pre></div>
+<p>The second subquery mentions <code>s.sid</code> from the outer query. That makes it a <b>correlated subquery</b>: conceptually it is re-evaluated for each outer row. Modern MySQL usually rewrites both forms into the same efficient join, so choose whichever reads more clearly.</p>
+<h3>The NOT IN trap</h3>
+<p>Find the instructors who do <em>not</em> teach a Computer Science course. The natural query returns nothing, which is wrong:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name <span class="kw">FROM</span> instructor
+<span class="kw">WHERE</span> iid <span class="kw">NOT</span> <span class="kw">IN</span> (<span class="kw">SELECT</span> iid <span class="kw">FROM</span> course <span class="kw">WHERE</span> dept_name = <span class="st">'Computer Science'</span>);</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Empty set</pre></div>
+<p>Why? Course <code>CS450</code> has <code>iid = NULL</code>, so the list contains a <code>NULL</code>. For any instructor, <code>iid NOT IN (1, 2, NULL)</code> means <code>iid &lt;&gt; 1 AND iid &lt;&gt; 2 AND iid &lt;&gt; NULL</code>, and the last comparison is <code>UNKNOWN</code>, so the whole condition is never true. Two safe fixes:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="cm">-- fix 1: remove the NULLs from the list</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> instructor
+<span class="kw">WHERE</span> iid <span class="kw">NOT</span> <span class="kw">IN</span> (<span class="kw">SELECT</span> iid <span class="kw">FROM</span> course <span class="kw">WHERE</span> dept_name = <span class="st">'Computer Science'</span> <span class="kw">AND</span> iid <span class="kw">IS</span> <span class="kw">NOT</span> <span class="kw">NULL</span>);
+
+<span class="cm">-- fix 2: NOT EXISTS ignores NULLs naturally</span>
+<span class="kw">SELECT</span> i.name <span class="kw">FROM</span> instructor i
+<span class="kw">WHERE</span> <span class="kw">NOT</span> <span class="kw">EXISTS</span> (<span class="kw">SELECT</span> <span class="nu">1</span> <span class="kw">FROM</span> course c <span class="kw">WHERE</span> c.iid = i.iid <span class="kw">AND</span> c.dept_name = <span class="st">'Computer Science'</span>);</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------------+
+| name          |
++---------------+
+| Mei Tanaka    |
+| Samuel Brooks |
+| Hana Petrov   |
+| Jonah Reyes   |
++---------------+
+4 rows in set
+
++---------------+
+| name          |
++---------------+
+| Mei Tanaka    |
+| Samuel Brooks |
+| Hana Petrov   |
+| Jonah Reyes   |
++---------------+
+4 rows in set</pre></div><div class="callout warn"><b class="tag">Watch out</b><p>Prefer <code>NOT EXISTS</code> (or the <code>LEFT JOIN ... IS NULL</code> anti-join from section 5) over <code>NOT IN</code> whenever the subquery column might contain <code>NULL</code>.</p></div>
+<h3>Correlated subquery: compare a row to its own group</h3>
+<p>Which students have a GPA above the average of <em>their own major</em>?</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> s.name, s.major, s.gpa
+<span class="kw">FROM</span> student s
+<span class="kw">WHERE</span> s.gpa &gt; (<span class="kw">SELECT</span> AVG(s2.gpa) <span class="kw">FROM</span> student s2 <span class="kw">WHERE</span> s2.major = s.major)
+<span class="kw">ORDER</span> <span class="kw">BY</span> s.major, s.gpa <span class="kw">DESC</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+------------------+------+
+| name         | major            | gpa  |
++--------------+------------------+------+
+| Ada Lovelace | Computer Science | 3.90 |
+| Grace Kim    | Data Science     | 3.85 |
+| Jun Park     | Data Science     | 3.60 |
+| Kayla Nguyen | Mathematics      | 3.75 |
+| Ben Carter   | Mathematics      | 3.40 |
++--------------+------------------+------+
+5 rows in set</pre></div>
+<h3>Derived tables and CTEs</h3>
+<p>A subquery in the <code>FROM</code> clause behaves like a temporary table. A <b>common table expression</b> (<code>WITH</code>) gives the same thing a name and reads top to bottom, which is much easier to debug. CTEs have been available since MySQL 8.0.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">WITH</span> major_stats <span class="kw">AS</span> (
+  <span class="kw">SELECT</span> major, COUNT(*) <span class="kw">AS</span> students, AVG(gpa) <span class="kw">AS</span> avg_gpa
+  <span class="kw">FROM</span> student
+  <span class="kw">WHERE</span> major <span class="kw">IS</span> <span class="kw">NOT</span> <span class="kw">NULL</span>
+  <span class="kw">GROUP</span> <span class="kw">BY</span> major
+)
+<span class="kw">SELECT</span> major, students, ROUND(avg_gpa, <span class="nu">2</span>) <span class="kw">AS</span> avg_gpa
+<span class="kw">FROM</span> major_stats
+<span class="kw">WHERE</span> avg_gpa &gt; (<span class="kw">SELECT</span> AVG(gpa) <span class="kw">FROM</span> student)
+<span class="kw">ORDER</span> <span class="kw">BY</span> avg_gpa <span class="kw">DESC</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------------+----------+---------+
+| major            | students | avg_gpa |
++------------------+----------+---------+
+| Computer Science |        4 |    3.72 |
+| Data Science     |        3 |    3.55 |
++------------------+----------+---------+
+2 rows in set</pre></div>
+<h3>Set operators: UNION, INTERSECT, EXCEPT</h3>
+<p>These combine the <em>results</em> of two queries that have the same number of columns. <code>UNION</code> removes duplicates, <code>UNION ALL</code> keeps them (and is faster). <code>INTERSECT</code> and <code>EXCEPT</code> need MySQL 8.0.31 or newer.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> name <span class="kw">FROM</span> student <span class="kw">WHERE</span> gpa &gt; <span class="nu">3.5</span>          <span class="cm">-- strong GPA</span>
+<span class="kw">INTERSECT</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> student <span class="kw">WHERE</span> major = <span class="st">'Computer Science'</span>
+<span class="kw">ORDER</span> <span class="kw">BY</span> name;
+
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> student <span class="kw">WHERE</span> gpa &gt; <span class="nu">3.5</span>
+<span class="kw">EXCEPT</span>                                            <span class="cm">-- ...but not in Computer Science</span>
+<span class="kw">SELECT</span> name <span class="kw">FROM</span> student <span class="kw">WHERE</span> major = <span class="st">'Computer Science'</span>
+<span class="kw">ORDER</span> <span class="kw">BY</span> name;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+
+| name         |
++--------------+
+| Ada Lovelace |
+| Carla Diaz   |
+| Emma Johnson |
++--------------+
+3 rows in set
+
++--------------+
+| name         |
++--------------+
+| Grace Kim    |
+| Jun Park     |
+| Kayla Nguyen |
++--------------+
+3 rows in set</pre></div>
+<h3>Window functions: rank without collapsing rows</h3>
+<p>An aggregate with <code>GROUP BY</code> returns one row per group. A <b>window function</b> computes across a group of rows but keeps every row. <code>PARTITION BY</code> defines the groups and <code>ORDER BY</code> inside <code>OVER</code> defines the ordering. Available since MySQL 8.0.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> major, name, gpa,
+       RANK() <span class="kw">OVER</span> (<span class="kw">PARTITION</span> <span class="kw">BY</span> major <span class="kw">ORDER</span> <span class="kw">BY</span> gpa <span class="kw">DESC</span>) <span class="kw">AS</span> rank_in_major
+<span class="kw">FROM</span> student
+<span class="kw">WHERE</span> gpa <span class="kw">IS</span> <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">AND</span> major <span class="kw">IN</span> (<span class="st">'Computer Science'</span>, <span class="st">'Data Science'</span>)
+<span class="kw">ORDER</span> <span class="kw">BY</span> major, rank_in_major;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------------------+--------------+------+---------------+
+| major            | name         | gpa  | rank_in_major |
++------------------+--------------+------+---------------+
+| Computer Science | Ada Lovelace | 3.90 |             1 |
+| Computer Science | Carla Diaz   | 3.70 |             2 |
+| Computer Science | Emma Johnson | 3.55 |             3 |
+| Data Science     | Grace Kim    | 3.85 |             1 |
+| Data Science     | Jun Park     | 3.60 |             2 |
+| Data Science     | Dev Patel    | 3.20 |             3 |
++------------------+--------------+------+---------------+
+6 rows in set</pre></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="sub"></div><p><button type="button" class="btn" data-markdone="subqueries">Mark section as done</button></p></section>
+<section class="mod" id="tx-views"><h2><span class="num">08</span>Transactions and views</h2><p class="lead">Two tools keep data trustworthy as it changes: <b>transactions</b> make a group of changes succeed or fail as one unit, and <b>views</b> give users a safe, simplified window onto the tables.</p>
+<h3>Transactions: all or nothing</h3>
+<p>Moving money between two accounts takes two updates. If the program stops after the first, money vanishes. A transaction groups the statements so that either <em>all</em> of them take effect (<code>COMMIT</code>) or <em>none</em> do (<code>ROLLBACK</code>). Here is a small bank in the practice database:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> account (
+  acct_id INT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>,
+  owner   VARCHAR(<span class="nu">30</span>) <span class="kw">NOT</span> <span class="kw">NULL</span>,
+  balance DECIMAL(<span class="nu">8</span>,<span class="nu">2</span>) <span class="kw">NOT</span> <span class="kw">NULL</span> <span class="kw">CHECK</span> (balance &gt;= <span class="nu">0</span>)
+) <span class="kw">ENGINE</span>=InnoDB;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> account <span class="kw">VALUES</span> (<span class="nu">1</span>, <span class="st">'Ada'</span>, <span class="nu">500.00</span>), (<span class="nu">2</span>, <span class="st">'Ben'</span>, <span class="nu">100.00</span>);
+<span class="kw">SELECT</span> @@<span class="kw">autocommit</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+--------------+
+| @@autocommit |
++--------------+
+|            1 |
++--------------+
+1 row in set</pre></div>
+<p>By default MySQL runs in <b>autocommit</b> mode (<code>@@autocommit = 1</code>): every statement is its own tiny transaction and is saved immediately. <code>START TRANSACTION</code> switches that off until you <code>COMMIT</code> or <code>ROLLBACK</code>. Tables must use the <b>InnoDB</b> storage engine for this; it is the default in MySQL 8.4.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">START</span> <span class="kw">TRANSACTION</span>;
+<span class="kw">UPDATE</span> account <span class="kw">SET</span> balance = balance - <span class="nu">200</span> <span class="kw">WHERE</span> acct_id = <span class="nu">1</span>;
+<span class="kw">UPDATE</span> account <span class="kw">SET</span> balance = balance + <span class="nu">200</span> <span class="kw">WHERE</span> acct_id = <span class="nu">2</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> account;      <span class="cm">-- we can see our own changes...</span>
+<span class="kw">COMMIT</span>;                     <span class="cm">-- ...and now everyone can</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------+-------+---------+
+| acct_id | owner | balance |
++---------+-------+---------+
+|       1 | Ada   |  300.00 |
+|       2 | Ben   |  300.00 |
++---------+-------+---------+
+2 rows in set</pre></div>
+<h3>When something goes wrong</h3>
+<p>Now a transfer that cannot work: Ada only has 300 left. We credit Ben first, and then the debit violates the <code>CHECK (balance &gt;= 0)</code> rule.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">START</span> <span class="kw">TRANSACTION</span>;
+<span class="kw">UPDATE</span> account <span class="kw">SET</span> balance = balance + <span class="nu">900</span> <span class="kw">WHERE</span> acct_id = <span class="nu">2</span>;
+<span class="kw">UPDATE</span> account <span class="kw">SET</span> balance = balance - <span class="nu">900</span> <span class="kw">WHERE</span> acct_id = <span class="nu">1</span>;     <span class="cm">-- fails</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> account;      <span class="cm">-- Ben already shows the extra 900!</span>
+<span class="kw">ROLLBACK</span>;
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> account;      <span class="cm">-- everything is back</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>mysql&gt; UPDATE account SET balance = balance - 900 WHERE acct_id = 1
+ERROR 3819 (HY000): Check constraint 'account_chk_1' is violated.
+
+mysql&gt; SELECT * FROM account
++---------+-------+---------+
+| acct_id | owner | balance |
++---------+-------+---------+
+|       1 | Ada   |  300.00 |
+|       2 | Ben   | 1200.00 |
++---------+-------+---------+
+2 rows in set
+
+mysql&gt; SELECT * FROM account
++---------+-------+---------+
+| acct_id | owner | balance |
++---------+-------+---------+
+|       1 | Ada   |  300.00 |
+|       2 | Ben   |  300.00 |
++---------+-------+---------+
+2 rows in set</pre></div>
+<p>Notice something subtle: the failed statement undid only <em>itself</em>. The first update was still pending inside the transaction, so Ben showed 1200 until we issued <code>ROLLBACK</code>. In real code, your program must catch the error and decide to roll back. Rolling back also rescues you from your own mistakes:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">START</span> <span class="kw">TRANSACTION</span>;
+<span class="kw">DELETE</span> <span class="kw">FROM</span> account;                       <span class="cm">-- oops, no WHERE</span>
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> rows_left <span class="kw">FROM</span> account;
+<span class="kw">ROLLBACK</span>;
+<span class="kw">SELECT</span> COUNT(*) <span class="kw">AS</span> rows_left <span class="kw">FROM</span> account;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----------+
+| rows_left |
++-----------+
+|         0 |
++-----------+
+1 row in set
+
++-----------+
+| rows_left |
++-----------+
+|         2 |
++-----------+
+1 row in set</pre></div>
+<h4>Savepoints</h4>
+<p>A <code>SAVEPOINT</code> marks a spot inside a transaction that you can roll back to without discarding everything before it.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">START</span> <span class="kw">TRANSACTION</span>;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> account <span class="kw">VALUES</span> (<span class="nu">3</span>, <span class="st">'Cy'</span>, <span class="nu">50</span>);
+<span class="kw">SAVEPOINT</span> after_cy;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> account <span class="kw">VALUES</span> (<span class="nu">4</span>, <span class="st">'Di'</span>, <span class="nu">75</span>);
+<span class="kw">ROLLBACK</span> <span class="kw">TO</span> <span class="kw">SAVEPOINT</span> after_cy;            <span class="cm">-- undo only Di</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> account <span class="kw">ORDER</span> <span class="kw">BY</span> acct_id;
+<span class="kw">ROLLBACK</span>;                                  <span class="cm">-- undo the rest</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------+-------+---------+
+| acct_id | owner | balance |
++---------+-------+---------+
+|       1 | Ada   |  300.00 |
+|       2 | Ben   |  300.00 |
+|       3 | Cy    |   50.00 |
++---------+-------+---------+
+3 rows in set</pre></div><div class="callout warn"><b class="tag">DDL commits</b><p>In MySQL, DDL statements such as <code>CREATE TABLE</code>, <code>ALTER TABLE</code> and <code>DROP TABLE</code> cause an <b>implicit commit</b>: they silently end your transaction and make everything so far permanent. Watch the insert survive the <code>ROLLBACK</code> below:</p><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">USE</span> dbm_demo;
+<span class="kw">START</span> <span class="kw">TRANSACTION</span>;
+<span class="kw">INSERT</span> <span class="kw">INTO</span> account <span class="kw">VALUES</span> (<span class="nu">5</span>, <span class="st">'Eve'</span>, <span class="nu">10</span>);
+<span class="kw">CREATE</span> <span class="kw">TABLE</span> scratch (x INT);              <span class="cm">-- implicit COMMIT happens here</span>
+<span class="kw">ROLLBACK</span>;                                  <span class="cm">-- too late: nothing left to roll back</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> account <span class="kw">ORDER</span> <span class="kw">BY</span> acct_id;
+<span class="kw">DROP</span> <span class="kw">TABLE</span> scratch;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------+-------+---------+
+| acct_id | owner | balance |
++---------+-------+---------+
+|       1 | Ada   |  300.00 |
+|       2 | Ben   |  300.00 |
+|       5 | Eve   |   10.00 |
++---------+-------+---------+
+3 rows in set</pre></div></div>
+<p>These guarantees have a name, <b>ACID</b> (atomicity, consistency, isolation, durability), and Module 10 studies them properly, including what happens when two users run transactions at the same time.</p>
+<h3>Views: a saved query with a name</h3>
+<p>A <b>view</b> stores a query, not data. Selecting from it runs the stored query against the base tables, so it is always current. Views simplify repeated joins and let you expose only some columns to certain users.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">VIEW</span> cs_students <span class="kw">AS</span>
+  <span class="kw">SELECT</span> sid, name, gpa <span class="kw">FROM</span> student <span class="kw">WHERE</span> major = <span class="st">'Computer Science'</span>;
+
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> cs_students <span class="kw">ORDER</span> <span class="kw">BY</span> sid;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+--------------+------+
+| sid | name         | gpa  |
++-----+--------------+------+
+|   1 | Ada Lovelace | 3.90 |
+|   3 | Carla Diaz   | 3.70 |
+|   5 | Emma Johnson | 3.55 |
+|   9 | Imani Brown  | NULL |
++-----+--------------+------+
+4 rows in set</pre></div>
+<p>Simple views like this one are <b>updatable</b>: changing a row through the view changes the base table. Try it inside a transaction so we can undo it:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">START</span> <span class="kw">TRANSACTION</span>;
+<span class="kw">UPDATE</span> cs_students <span class="kw">SET</span> gpa = <span class="nu">3.95</span> <span class="kw">WHERE</span> sid = <span class="nu">1</span>;
+<span class="kw">SELECT</span> sid, name, gpa <span class="kw">FROM</span> student <span class="kw">WHERE</span> sid = <span class="nu">1</span>;       <span class="cm">-- the base table changed</span>
+<span class="kw">ROLLBACK</span>;
+<span class="kw">SELECT</span> sid, name, gpa <span class="kw">FROM</span> student <span class="kw">WHERE</span> sid = <span class="nu">1</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+--------------+------+
+| sid | name         | gpa  |
++-----+--------------+------+
+|   1 | Ada Lovelace | 3.95 |
++-----+--------------+------+
+1 row in set
+
++-----+--------------+------+
+| sid | name         | gpa  |
++-----+--------------+------+
+|   1 | Ada Lovelace | 3.90 |
++-----+--------------+------+
+1 row in set</pre></div>
+<p>One danger: through a view you can insert a row that the view itself would not show. <code>WITH CHECK OPTION</code> forbids that:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">VIEW</span> cs_students_checked <span class="kw">AS</span>
+  <span class="kw">SELECT</span> sid, name, major, gpa <span class="kw">FROM</span> student <span class="kw">WHERE</span> major = <span class="st">'Computer Science'</span>
+  <span class="kw">WITH</span> <span class="kw">CHECK</span> OPTION;
+
+<span class="kw">INSERT</span> <span class="kw">INTO</span> cs_students_checked (sid, name, major, gpa) <span class="kw">VALUES</span> (<span class="nu">20</span>, <span class="st">'Pat Lee'</span>, <span class="st">'History'</span>, <span class="nu">3.0</span>);
+
+<span class="kw">DROP</span> <span class="kw">VIEW</span> cs_students, cs_students_checked;</pre></div><div class="out err"><div class="bar">Output (MySQL 8.4)</div><pre>ERROR 1369 (HY000): CHECK OPTION failed 'university.cs_students_checked'</pre></div>
+<p>Views that use <code>GROUP BY</code>, <code>DISTINCT</code>, aggregates or <code>UNION</code> are read-only. Views are also a basic security tool: you can <code>GRANT</code> a user access to a view without giving access to the underlying table (Module 10).</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="txview"></div><p><button type="button" class="btn" data-markdone="tx-views">Mark section as done</button></p></section>
+<section class="mod" id="debug"><h2><span class="num">09</span>Debugging and EXPLAIN</h2><p class="lead">Every programmer spends a lot of time reading error messages. Learning to read them calmly is a skill, and so is noticing the queries that run without any error but give the wrong answer. This section also introduces <code>EXPLAIN</code>, your window into how MySQL runs a query.</p>
+<h3>The errors you will meet most</h3>
+<div class="tablewrap"><table><thead><tr><th>Error</th><th>Typical text</th><th>Usual cause</th></tr></thead><tbody><tr><td>1064</td><td>You have an error in your SQL syntax ... near '...'</td><td>Typo, missing quote or comma, wrong keyword order. The text after <i>near</i> shows where MySQL got lost (the real mistake is usually just before it).</td></tr><tr><td>1054</td><td>Unknown column 'x' in 'field list'</td><td>Misspelled column, or the column belongs to a table that is not in FROM.</td></tr><tr><td>1146</td><td>Table 'db.t' doesn't exist</td><td>Wrong table name or wrong current database (<code>SELECT DATABASE();</code>).</td></tr><tr><td>1052</td><td>Column 'x' in field list is ambiguous</td><td>Two joined tables have that column; qualify it with the table alias.</td></tr><tr><td>1055</td><td>... not in GROUP BY clause ...</td><td>Selected column is neither grouped nor aggregated.</td></tr><tr><td>1111</td><td>Invalid use of group function</td><td>An aggregate in WHERE; use HAVING.</td></tr><tr><td>1062 / 1048 / 1452 / 1451</td><td>Duplicate entry / cannot be null / foreign key fails</td><td>A constraint did its job (section 2).</td></tr><tr><td>1175</td><td>You are using safe update mode ...</td><td>UPDATE or DELETE without a key in the WHERE (section 3).</td></tr></tbody></table></div>
+<h3>Practice: spot the bug</h3>
+<p>Eight broken queries. Each box shows the query together with what a real MySQL 8.4 server answered. Choose the fix. The last two are the sneaky kind: the server does not complain at all.</p>
+<div class="quiz" data-quiz="debug"></div>
+<h3>A debugging routine that works</h3>
+<ol>
+<li><b>Read the whole message</b>, then the number, then the words after <i>near</i>.</li>
+<li><b>Shrink the problem.</b> Comment out joins and conditions until it runs, then add them back one at a time.</li>
+<li><b>Look at intermediate results.</b> Run each subquery or CTE on its own. Replace <code>SELECT</code> columns with <code>COUNT(*)</code> to see if a join multiplies rows.</li>
+<li><b>Check your assumptions about the data</b> (<code>NULL</code>s, duplicates, spaces, upper and lower case).</li>
+<li><b>Sanity-check totals.</b> Does the row count make sense? Do the groups add up to the whole?</li>
+</ol>
+<h3>EXPLAIN: how MySQL will run your query</h3>
+<p>Writing a query that returns the right rows comes first. Making it fast comes second, and the main tool is <code>EXPLAIN</code>, which shows the plan without running the query. The most important column is <code>type</code>, how MySQL reaches the rows: <code>const</code> and <code>ref</code> use an index to jump straight to matching rows, <code>ALL</code> reads the entire table.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">EXPLAIN</span> <span class="kw">SELECT</span> * <span class="kw">FROM</span> student <span class="kw">WHERE</span> sid = <span class="nu">3</span>;
+<span class="kw">EXPLAIN</span> <span class="kw">SELECT</span> * <span class="kw">FROM</span> student <span class="kw">WHERE</span> name = <span class="st">'Ada Lovelace'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----+-------------+---------+------------+-------+---------------+---------+---------+-------+------+----------+-------+
+| id | select_type | table   | partitions | type  | possible_keys | key     | key_len | ref   | rows | filtered | Extra |
++----+-------------+---------+------------+-------+---------------+---------+---------+-------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | const | PRIMARY       | PRIMARY | 4       | const |    1 |   100.00 | NULL  |
++----+-------------+---------+------------+-------+---------------+---------+---------+-------+------+----------+-------+
+1 row in set, 1 warning
+
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+| id | select_type | table   | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+|  1 | SIMPLE      | student | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   12 |    10.00 | Using where |
++----+-------------+---------+------------+------+---------------+------+---------+------+------+----------+-------------+
+1 row in set, 1 warning</pre></div>
+<p>Searching by <code>sid</code> (the primary key) uses the index (<code>type = const</code>, <code>key = PRIMARY</code>). Searching by <code>name</code>, which has no index, reads all 12 rows (<code>type = ALL</code>). Create an index and ask again:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">INDEX</span> idx_student_name <span class="kw">ON</span> student (name);
+<span class="kw">EXPLAIN</span> <span class="kw">SELECT</span> * <span class="kw">FROM</span> student <span class="kw">WHERE</span> name = <span class="st">'Ada Lovelace'</span>;
+<span class="kw">DROP</span> <span class="kw">INDEX</span> idx_student_name <span class="kw">ON</span> student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----+-------------+---------+------------+------+------------------+------------------+---------+-------+------+----------+-------+
+| id | select_type | table   | partitions | type | possible_keys    | key              | key_len | ref   | rows | filtered | Extra |
++----+-------------+---------+------------+------+------------------+------------------+---------+-------+------+----------+-------+
+|  1 | SIMPLE      | student | NULL       | ref  | idx_student_name | idx_student_name | 242     | const |    1 |   100.00 | NULL  |
++----+-------------+---------+------------+------+------------------+------------------+---------+-------+------+----------+-------+
+1 row in set, 1 warning</pre></div>
+<p>Now <code>type = ref</code> and <code>key = idx_student_name</code>: MySQL looks the name up in the index and reads one row. With 12 rows you would never notice the difference; with 12 million you would. How indexes work, and when they help, is the subject of Module 9.</p>
+<p><code>EXPLAIN FORMAT=TREE</code> prints the same plan as a tree that is easier to read for joins. The <code>cost</code> numbers are internal estimates and differ between MySQL versions, so compare plans on <em>your</em> server rather than with the numbers printed here.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">EXPLAIN</span> <span class="kw">FORMAT</span>=TREE
+<span class="kw">SELECT</span> s.name, c.title
+<span class="kw">FROM</span> student s
+<span class="kw">JOIN</span> enrollment e <span class="kw">ON</span> e.sid = s.sid
+<span class="kw">JOIN</span> course c <span class="kw">ON</span> c.course_id = e.course_id
+<span class="kw">WHERE</span> s.sid = <span class="nu">3</span>\G</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>*************************** 1. row ***************************
+EXPLAIN: -&gt; Nested loop inner join  (cost=1.61 rows=3)
+    -&gt; Covering index lookup on e using PRIMARY (sid=3)  (cost=0.561 rows=3)
+    -&gt; Single-row index lookup on c using PRIMARY (course_id=e.course_id)  (cost=0.283 rows=1)
+
+1 row in set</pre></div>
+<h3>Habits that make queries faster and safer</h3>
+<ul>
+<li>Select only the columns you need, instead of <code>SELECT *</code>.</li>
+<li>Filter as early as possible with <code>WHERE</code>, and put row conditions in <code>WHERE</code> rather than <code>HAVING</code>.</li>
+<li>Join on indexed columns (primary and foreign keys). MySQL creates an index for every foreign key automatically.</li>
+<li>Avoid wrapping an indexed column in a function in <code>WHERE</code>, such as <code>WHERE YEAR(joined) = 2026</code>; the index cannot be used. Compare the bare column with a range instead. (Module 9 explains why.)</li>
+<li>Do not use <code>DISTINCT</code> to hide duplicates that a wrong join created. Fix the join.</li>
+<li>Use <code>LIMIT</code> while exploring big tables.</li>
+<li>Measure before and after with <code>EXPLAIN</code>. Do not rely on folklore such as "EXISTS is always faster than IN".</li>
+</ul>
+<p><button type="button" class="btn" data-markdone="debug">Mark section as done</button></p></section>
+<section class="mod" id="lab"><h2><span class="num">10</span>Practice lab</h2><p class="lead">Time to write queries yourself. This lab runs a real SQL engine (SQLite, compiled to WebAssembly) inside your browser, loaded with the same University data. Nothing is installed and nothing leaves your computer.</p>
+<div class="callout warn"><b class="tag">MySQL or SQLite?</b><p>The lab uses <b>SQLite</b>, not MySQL, so you can practise anywhere. For the queries in this tutorial the two behave identically, and every challenge below was checked to give the same answer on both. Differences you may notice:</p>
+<ul>
+<li>SQLite shows <code>3.9</code> where MySQL shows <code>3.90</code> (it does not keep trailing zeros in <code>DECIMAL</code> columns).</li>
+<li>There is no <code>SHOW TABLES</code> or <code>DESCRIBE</code>. Use <code>SELECT name FROM sqlite_master WHERE type='table';</code> and <code>PRAGMA table_info(student);</code>.</li>
+<li>Error messages are worded differently. The ideas (syntax error, unknown column, constraint failed) are the same.</li>
+<li>Use <code>||</code> to join text. Recent SQLite also accepts <code>CONCAT()</code>, but older versions do not.</li>
+<li>SQLite supports <code>FULL OUTER JOIN</code> (since 3.39); MySQL does not, so do not rely on it when you move back to MySQL.</li>
+</ul></div>
+<div id="sandbox" class="card"><p class="muted">Loading the SQL engine...</p></div>
+<h3>Challenges</h3>
+<p>Write a query for each task in its editor and press <b>Check my answer</b>. The checker compares the <em>rows</em> your query returns with the correct result, so column names and spacing do not matter. Where the task asks for an order, the order must match too. Your solved challenges are remembered in this browser.</p>
+<div id="challenges"></div>
+</section>
+<section class="mod" id="final"><h2><span class="num">11</span>Final check</h2><p class="lead">Twelve mixed questions covering everything in this module. If you get one wrong, read the explanation and jump back to the matching section.</p>
+<div class="quiz" data-quiz="final"></div>
+<h3>Where to go next</h3>
+<ul>
+<li><b>Module 5</b> runs the same SQL on SQLite and PostgreSQL and introduces NoSQL, so you can see how portable your new skills are.</li>
+<li><b>Module 8</b> calls these queries from Java and Python programs and shows how to protect them from SQL injection.</li>
+<li><b>Module 9</b> explains <em>why</em> an index turned <code>type = ALL</code> into <code>type = ref</code>.</li>
+<li>For more practice: <a href="https://www.w3schools.com/sql/" rel="noopener">W3Schools SQL tutorial</a> and <a href="https://sqlzoo.net/" rel="noopener">SQLZoo</a>, as listed on the Blackboard module page.</li>
+</ul>
+<h3>Files for this tutorial</h3>
+<ul>
+<li><a href="labs/university_mysql.sql">labs/university_mysql.sql</a>: the University database for MySQL 8.4 (drops and recreates <code>university</code>).</li>
+<li><a href="labs/university_sqlite.sql">labs/university_sqlite.sql</a>: the same data for SQLite.</li>
+</ul></section>
+
+<p class="nav-foot">Tutorial date: October 29, 2026. Progress, quiz answers and drafts stay in your own browser.</p>
+</main>
+</div>
+</div>
+<script>window.TK_QUIZ={"ddl": [{"q": "You declare a column <code>gpa DECIMAL(3,2)<\/code>. Which value can it store?", "o": ["100.00", "3.999", "3.90", "12.50"], "a": 2, "e": "<code>DECIMAL(3,2)<\/code> allows 3 digits in total with 2 after the point, so the largest value is 9.99. 3.90 fits; 12.50 and 100.00 have too many digits before the point, and 3.999 would be rounded to 4.00."}, {"q": "Which constraint guarantees that no two rows share the same <code>email<\/code>, while still allowing the column to be left empty (NULL)?", "o": ["NOT NULL", "CHECK", "UNIQUE", "PRIMARY KEY"], "a": 2, "e": "UNIQUE forbids duplicate values. A primary key also forbids NULL; NOT NULL alone allows duplicates."}, {"q": "You try to <code>INSERT<\/code> a member whose <code>club_id<\/code> does not exist in <code>club<\/code>. Which constraint stops it?", "o": ["DEFAULT", "UNIQUE", "CHECK", "FOREIGN KEY"], "a": 3, "e": "A foreign key requires the value to match an existing row in the parent table. That is referential integrity."}, {"q": "A foreign key is declared with <code>ON DELETE CASCADE<\/code>. What happens when a parent row is deleted?", "o": ["The child foreign key is set to NULL", "The child rows are deleted too", "The delete is refused", "Nothing happens to the children"], "a": 1, "e": "CASCADE propagates the delete to the children. SET NULL would null the key, and the default (RESTRICT) refuses the delete."}, {"q": "Why does <code>DROP TABLE club;<\/code> fail while the <code>member<\/code> table still exists?", "o": ["DROP TABLE needs administrator rights", "Another table has a foreign key that points at club", "club is empty", "club has no primary key"], "a": 1, "e": "MySQL protects referential integrity: you must drop (or alter) the child tables first."}], "dml": [{"q": "You run <code>UPDATE student SET gpa = 4.00;<\/code> with no WHERE clause. What happens?", "o": ["MySQL asks which rows you meant", "Every row in the table changes", "Nothing; WHERE is required", "Only the first row changes"], "a": 1, "e": "Without WHERE the statement applies to every row. Safe Updates mode exists to stop exactly this mistake."}, {"q": "Which statement can be rolled back inside a transaction?", "o": ["TRUNCATE TABLE student_copy", "DELETE FROM student_copy", "DROP TABLE student_copy", "None of them"], "a": 1, "e": "DELETE is DML and is transactional. TRUNCATE and DROP are DDL, which MySQL commits immediately."}, {"q": "<code>INSERT INTO student (sid, name) VALUES (1);<\/code> fails because:", "o": ["sid 1 already exists", "INSERT needs a WHERE", "The column list and the value list have different lengths", "name is missing quotes"], "a": 2, "e": "Two columns were named but one value was given (error 1136, \"Column count doesn't match value count\")."}, {"q": "After an UPDATE, the client prints <code>Rows matched: 3  Changed: 3<\/code>. You expected one row. What should you do?", "o": ["Check your WHERE clause; if it was inside a transaction, ROLLBACK", "Run the UPDATE again", "Nothing, it is fine", "TRUNCATE the table"], "a": 0, "e": "Always compare the affected-row count with what you expected. If it is wrong and you are inside a transaction, roll back and fix the condition."}], "select": [{"q": "Which query returns the students whose <code>gpa<\/code> is unknown?", "o": ["WHERE gpa = NULL", "WHERE gpa IS NULL", "WHERE gpa == NULL", "WHERE gpa = 0"], "a": 1, "e": "Comparing with = NULL gives UNKNOWN for every row, so nothing matches. IS NULL is the only correct test."}, {"q": "What does <code>WHERE major = 'Mathematics' OR major = 'Physics' AND gpa > 3.2<\/code> mean?", "o": ["Only Physics students with gpa > 3.2", "(Mathematics or Physics) and gpa > 3.2", "Mathematics, or (Physics and gpa > 3.2)", "It is a syntax error"], "a": 2, "e": "AND is evaluated before OR. Add parentheses to get the other reading."}, {"q": "A row has <code>gpa = NULL<\/code>. For that row, what does <code>NOT (gpa > 3.5)<\/code> evaluate to?", "o": ["FALSE", "UNKNOWN", "TRUE", "An error"], "a": 1, "e": "gpa > 3.5 is UNKNOWN, and NOT UNKNOWN is still UNKNOWN. The row is dropped by WHERE, which is why NOT does not simply give you \"the other rows\"."}, {"q": "Why does <code>SELECT name, gpa * 10 AS score FROM student WHERE score > 35;<\/code> fail?", "o": ["AS cannot be used with arithmetic", "gpa * 10 is not allowed", "score is a reserved word", "WHERE runs before SELECT, so the alias score does not exist yet"], "a": 3, "e": "Logical order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY. Repeat the expression in WHERE or wrap the query in a derived table."}, {"q": "<code>name LIKE '_a%'<\/code> matches which name?", "o": ["Ben Carter", "Ada Lovelace", "Carla Diaz", "Grace Kim"], "a": 2, "e": "_ is exactly one character, so the pattern needs an a as the second letter. Only \"Carla Diaz\" qualifies; the others have d, r and e in second place."}], "joins": [{"q": "You want every student listed, including those who have not enrolled in anything, with their courses where they exist. Which join do you use?", "o": ["UNION", "LEFT JOIN from student to enrollment", "INNER JOIN student to enrollment", "CROSS JOIN"], "a": 1, "e": "A LEFT JOIN keeps all rows of the left table (student). Unmatched students get NULLs in the enrollment columns."}, {"q": "<code>student<\/code> has 12 rows and <code>course<\/code> has 10. How many rows does <code>SELECT * FROM student, course;<\/code> return?", "o": ["10", "12", "120", "22"], "a": 2, "e": "No join condition means a cross join: every student paired with every course, 12 x 10 = 120 rows."}, {"q": "Which pattern finds the students who have no enrollments?", "o": ["INNER JOIN ... WHERE e.sid IS NULL", "RIGHT JOIN student ... WHERE s.sid IS NULL", "LEFT JOIN ... WHERE e.sid IS NULL", "CROSS JOIN ... WHERE e.sid = NULL"], "a": 2, "e": "Left join keeps every student; those without a match have NULL in the right-hand key. An inner join would have discarded them already."}, {"q": "MySQL has no <code>FULL OUTER JOIN<\/code>. How do you get the same result?", "o": ["Use INNER JOIN twice", "UNION a LEFT JOIN and a RIGHT JOIN", "Use CROSS JOIN with DISTINCT", "You cannot"], "a": 1, "e": "The left join supplies unmatched rows from the left side, the right join those from the right side, and UNION merges them without duplicating the matched rows."}, {"q": "In a self join of <code>student<\/code> to find pairs with the same major, why add <code>s1.sid &lt; s2.sid<\/code>?", "o": ["To make the join faster only", "It is required syntax", "To avoid pairing a student with themselves and listing each pair twice", "To sort the result"], "a": 2, "e": "Without it you would get (Ben, Ben) and both (Ben, Farid) and (Farid, Ben)."}], "agg": [{"q": "A table has 12 rows; 11 have a non-NULL gpa. What does <code>COUNT(gpa)<\/code> return?", "o": ["11", "12", "0", "1"], "a": 0, "e": "COUNT(column) skips NULLs. COUNT(*) would return 12."}, {"q": "You want average GPA per major, but only for majors with at least 3 students. Where does the \"at least 3\" condition go?", "o": ["ORDER BY COUNT(*) >= 3", "WHERE COUNT(*) >= 3", "GROUP BY COUNT(*) >= 3", "HAVING COUNT(*) >= 3"], "a": 3, "e": "The condition is about a group, so it belongs in HAVING, after GROUP BY. WHERE cannot use aggregates (error 1111)."}, {"q": "Why does <code>SELECT major, name, COUNT(*) FROM student GROUP BY major<\/code> fail in MySQL 8.4?", "o": ["COUNT(*) cannot be combined with columns", "GROUP BY needs HAVING", "major is NULL for one row", "name is neither grouped nor aggregated, so its value is ambiguous (ONLY_FULL_GROUP_BY)"], "a": 3, "e": "Each group contains several different names; SQL cannot know which to show. The default sql_mode rejects the query."}, {"q": "After <code>course LEFT JOIN enrollment<\/code> and <code>GROUP BY course<\/code>, a course with no enrollments shows 1 for <code>COUNT(*)<\/code>. What gives the right answer, 0?", "o": ["COUNT(e.sid)", "SUM(1)", "COUNT(c.course_id)", "COUNT(DISTINCT *)"], "a": 0, "e": "COUNT(e.sid) counts only non-NULL values from the optional side. COUNT(c.course_id) is never NULL, so it would also say 1."}, {"q": "Which aggregate does <em>not<\/em> ignore NULL values?", "o": ["COUNT(*)", "AVG", "MAX", "SUM"], "a": 0, "e": "COUNT(*) counts rows regardless of their contents. AVG, SUM, MAX and COUNT(column) skip NULLs."}], "sub": [{"q": "A subquery inside <code>NOT IN (...)<\/code> returns the values 1, 2 and NULL. For an outer value 5, <code>5 NOT IN (1, 2, NULL)<\/code> is:", "o": ["TRUE", "An error", "UNKNOWN", "FALSE"], "a": 2, "e": "5 &lt;&gt; NULL is UNKNOWN, so the AND chain can never be TRUE. WHERE drops the row. This is why NOT IN with NULLs \"returns nothing\"."}, {"q": "What makes a subquery <em>correlated<\/em>?", "o": ["It returns more than one row", "It is written in the FROM clause", "It uses a JOIN", "It refers to a column of the outer query"], "a": 3, "e": "A correlated subquery depends on the current outer row, as in WHERE s2.major = s.major."}, {"q": "Which clause lets you give a subquery a name at the top of a statement so you can reuse and read it more easily?", "o": ["USING", "HAVING", "VIEW", "WITH (a CTE)"], "a": 3, "e": "A CTE starts with WITH name AS (...). A view is a stored, named query kept in the database; a CTE exists only for one statement."}, {"q": "What is the difference between <code>UNION<\/code> and <code>UNION ALL<\/code>?", "o": ["There is none", "UNION works on two columns only", "UNION removes duplicate rows, UNION ALL keeps them", "UNION ALL sorts the result"], "a": 2, "e": "UNION needs an extra step to find and remove duplicates, so use UNION ALL when duplicates are impossible or acceptable."}, {"q": "<code>RANK() OVER (PARTITION BY major ORDER BY gpa DESC)<\/code> returns:", "o": ["A rank for every student within their own major, keeping all rows", "The average gpa per major", "One row per major", "The best student overall"], "a": 0, "e": "Window functions add a computed column to every row instead of collapsing groups."}], "txview": [{"q": "In autocommit mode, what happens when you run a single <code>UPDATE<\/code>?", "o": ["It can be undone with ROLLBACK later", "It is saved immediately as its own transaction", "It waits until you type COMMIT", "It is saved only when the connection closes"], "a": 1, "e": "With autocommit on (the MySQL default) every statement commits as soon as it finishes."}, {"q": "Inside a transaction, the second of two UPDATEs fails a CHECK constraint. What is true afterwards?", "o": ["The first update was committed", "The connection is closed", "The first update is still pending; your code must issue ROLLBACK (or COMMIT)", "MySQL has automatically rolled back both updates"], "a": 2, "e": "Only the failing statement is undone. The transaction stays open with the first update pending, so your program must handle the error and roll back."}, {"q": "Why did the inserted row survive the <code>ROLLBACK<\/code> in the DDL demo?", "o": ["The row was inserted into a view", "ROLLBACK only works on UPDATE", "InnoDB does not support rollback", "CREATE TABLE caused an implicit commit before the ROLLBACK"], "a": 3, "e": "Most DDL statements in MySQL end the current transaction with a commit."}, {"q": "What does a view store?", "o": ["A copy of the data", "A query definition", "A backup", "An index"], "a": 1, "e": "A view is a named query. The data stays in the base tables, so the view is always up to date."}, {"q": "What does <code>WITH CHECK OPTION<\/code> do on an updatable view?", "o": ["Encrypts the view", "Makes the view faster", "Allows UNION in the view", "Rejects inserts and updates that would produce rows the view cannot show"], "a": 3, "e": "It enforces the view's WHERE condition on changes made through the view."}], "debug": [{"q": "What is wrong with this query, and how do you fix it?", "code": "SELECT name FROM student WHERE major = Computer Science;\n\n-- MySQL says:\nERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'Science'", "o": ["Replace = with LIKE", "Put quotes around the text: major = 'Computer Science'", "Add a semicolon after major", "Use double equals =="], "a": 1, "e": "The text value is not in quotes, so MySQL reads Computer and Science as two separate words."}, {"q": "What is wrong with this query, and how do you fix it?", "code": "SELECT nmae FROM student;\n\n-- MySQL says:\nERROR 1054 (42S22): Unknown column 'nmae' in 'field list'", "o": ["The table needs to be recreated", "Fix the spelling: name", "Put single quotes around nmae", "Add DISTINCT"], "a": 1, "e": "A misspelled column name. Error 1054 always means the name does not exist in the table you queried."}, {"q": "What is wrong with this query, and how do you fix it?", "code": "SELECT * FROM students;\n\n-- MySQL says:\nERROR 1146 (42S02): Table 'university.students' doesn't exist", "o": ["Check the table name and run SHOW TABLES; the table is called student", "Add quotes around students", "Run DROP TABLE students first", "Grant yourself permission"], "a": 0, "e": "Error 1146 means the table does not exist in the current database. Either the name is wrong (the table is student, singular) or you are connected to the wrong database."}, {"q": "What is wrong with this query, and how do you fix it?", "code": "SELECT sid, name FROM student JOIN enrollment ON student.sid = enrollment.sid;\n\n-- MySQL says:\nERROR 1052 (23000): Column 'sid' in field list is ambiguous", "o": ["Change JOIN to LEFT JOIN", "Add DISTINCT", "Qualify the column: SELECT student.sid, name FROM ...", "Remove the ON clause"], "a": 2, "e": "Both tables have a column called sid, so MySQL cannot tell which one you want."}, {"q": "What is wrong with this query, and how do you fix it?", "code": "SELECT major, AVG(gpa) FROM student WHERE AVG(gpa) > 3.5 GROUP BY major;\n\n-- MySQL says:\nERROR 1111 (HY000): Invalid use of group function", "o": ["Move the condition to HAVING AVG(gpa) > 3.5 after GROUP BY", "Replace AVG with SUM", "Add LIMIT 1", "Remove GROUP BY"], "a": 0, "e": "WHERE is evaluated before groups exist, so it cannot use an aggregate."}, {"q": "What is wrong with this query, and how do you fix it?", "code": "SELECT major, name, COUNT(*) FROM student GROUP BY major;\n\n-- MySQL says:\nERROR 1055 (42000): Expression #2 of SELECT list is not in GROUP BY clause and contains nonaggregated column 'university.student.name' which is not functionally dependent on columns in GROUP BY clause; this is incompatible with sql_mode=only_full_group_by", "o": ["Remove name from SELECT, or aggregate it, for example MAX(name)", "Add ORDER BY name", "Turn off ONLY_FULL_GROUP_BY for good", "Use COUNT(name)"], "a": 0, "e": "name is neither grouped nor aggregated. Each major group holds several names, so the value is ambiguous."}, {"q": "What is wrong with this query, and how do you fix it?", "code": "SELECT name FROM student WHERE major = 'Mathematics' OR 'Physics';\n\n-- MySQL says:\n+--------------+\n| name         |\n+--------------+\n| Ben Carter   |\n| Farid Rahman |\n| Kayla Nguyen |\n+--------------+\n3 rows in set, 1 warning\n+---------+------+---------------------------------------------+\n| Level   | Code | Message                                     |\n+---------+------+---------------------------------------------+\n| Warning | 1292 | Truncated incorrect DOUBLE value: 'Physics' |\n+---------+------+---------------------------------------------+\n1 row in set", "o": ["Write major = 'Mathematics' OR major = 'Physics' (or major IN ('Mathematics', 'Physics'))", "Nothing; the query is correct", "Use AND instead of OR", "Add DISTINCT"], "a": 0, "e": "No error, but the answer is wrong: the Physics student is missing. 'Physics' on its own is not a comparison; MySQL turns it into the number 0 (false) and quietly warns. Each side of OR needs a full condition."}, {"q": "What is wrong with this query, and how do you fix it?", "code": "SELECT COUNT(*) FROM student, course;\n\n-- MySQL says:\n+----------+\n| COUNT(*) |\n+----------+\n|      120 |\n+----------+\n1 row in set", "o": ["Use COUNT(DISTINCT *)", "Add LIMIT 10", "Add GROUP BY", "Connect the tables with a join condition through enrollment (student.sid = enrollment.sid and enrollment.course_id = course.course_id)"], "a": 3, "e": "It runs, and returns 120, but that is every student paired with every course. The join condition is missing, so the result is a cross join."}], "final": [{"q": "Which statement group does <code>ALTER TABLE<\/code> belong to?", "o": ["TCL", "DQL", "DDL", "DML"], "a": 2, "e": "ALTER, CREATE, DROP and TRUNCATE define or change structure: DDL."}, {"q": "<code>SELECT name FROM student WHERE major = NULL;<\/code> returns:", "o": ["An error", "Students with no major", "All students", "No rows, because = NULL is never true"], "a": 3, "e": "Comparisons with NULL are UNKNOWN. Use IS NULL."}, {"q": "Which join returns every student, even those with no enrollment?", "o": ["student INNER JOIN enrollment", "student LEFT JOIN enrollment", "student CROSS JOIN enrollment", "enrollment LEFT JOIN student"], "a": 1, "e": "A LEFT JOIN keeps all rows of the left table."}, {"q": "Which clause filters <em>groups<\/em> after aggregation?", "o": ["WHERE", "ORDER BY", "LIMIT", "HAVING"], "a": 3, "e": "HAVING runs after GROUP BY and can use aggregates."}, {"q": "A table has rows with gpa 3.0, 4.0 and NULL. What is <code>AVG(gpa)<\/code>?", "o": ["3.5", "2.33", "NULL", "3.0"], "a": 0, "e": "AVG ignores NULL: (3.0 + 4.0) / 2 = 3.5."}, {"q": "What is the most reliable pattern for listing courses that have <em>no<\/em> enrollments?", "o": ["course INNER JOIN enrollment", "course LEFT JOIN enrollment ... WHERE enrollment.course_id IS NULL", "SELECT DISTINCT course_id FROM course", "WHERE course_id = NULL"], "a": 1, "e": "The LEFT JOIN anti-join (or NOT EXISTS) finds rows with no match and is safe with NULLs. Comparing with = NULL never matches, and an inner join would discard exactly the rows you want."}, {"q": "What does <code>COMMIT<\/code> do?", "o": ["Undoes the changes made in the current transaction", "Starts a new transaction", "Makes the changes in the current transaction permanent", "Locks the table"], "a": 2, "e": "COMMIT ends the transaction and keeps its changes. ROLLBACK undoes them."}, {"q": "<code>WHERE a = 1 OR b = 2 AND c = 3<\/code> is evaluated as:", "o": ["a = 1 OR b = 2 OR c = 3", "a = 1 OR (b = 2 AND c = 3)", "(a = 1 OR b = 2) AND c = 3", "It is a syntax error"], "a": 1, "e": "AND has higher precedence than OR."}, {"q": "Which MySQL feature stops you from running an <code>UPDATE<\/code> without a WHERE on a key column?", "o": ["InnoDB", "AUTOCOMMIT", "ONLY_FULL_GROUP_BY", "Safe Updates mode"], "a": 3, "e": "Safe Updates (--safe-updates, or the Workbench preference) rejects such statements with error 1175."}, {"q": "In <code>EXPLAIN<\/code> output, which <code>type<\/code> means MySQL is reading the whole table?", "o": ["ALL", "eq_ref", "const", "ref"], "a": 0, "e": "ALL is a full table scan. const, eq_ref and ref use an index."}, {"q": "You need to change a customer row and its three order rows so that either all four changes succeed or none do. You use:", "o": ["TRUNCATE", "An index", "A view", "A transaction"], "a": 3, "e": "Transactions give all-or-nothing behaviour."}, {"q": "Which MySQL statement creates the structure of a new table?", "o": ["INSERT INTO", "SELECT INTO", "CREATE TABLE", "UPDATE"], "a": 2, "e": "CREATE TABLE is DDL: it defines columns, types and constraints."}]};</script>
+<script>
+(function(){
+'use strict';
+var SLUG = document.documentElement.getAttribute('data-slug') || 'tutorial';
+var $ = function(s,r){return (r||document).querySelector(s)};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('tk:'+SLUG+':'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem('tk:'+SLUG+':'+k,JSON.stringify(v))}catch(e){}},
+  clear:function(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('tk:'+SLUG+':')===0)localStorage.removeItem(k)})}catch(e){}}
+};
+window.TK={$:$,$$:$$,el:el,store:store,slug:SLUG};
+
+/* copy buttons */
+$$('.code').forEach(function(c){
+  var b=$('button',c); if(!b) return;
+  b.addEventListener('click',function(){
+    var t=$('pre',c).textContent;
+    function done(){var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o},1200)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fallback(t,done)})}else fallback(t,done);
+  });
+});
+function fallback(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb()}catch(e){}document.body.removeChild(ta)}
+
+/* section nav */
+var secs=$$('section.mod'), links=$$('nav.side a[data-sec]');
+var done=store.get('done',{});
+function paintDone(){links.forEach(function(a){var t=$('.tick',a);if(t)t.textContent=done[a.getAttribute('data-sec')]?'✓':''})}
+paintDone();
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('active',a.getAttribute('data-sec')===e.target.id)})}
+  })},{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(function(s){io.observe(s)});
+}
+$$('button[data-markdone]').forEach(function(b){
+  var id=b.getAttribute('data-markdone');
+  function paint(){b.textContent=done[id]?'Marked as done ✓':'Mark section as done';b.setAttribute('aria-pressed',done[id]?'true':'false')}
+  paint();
+  b.addEventListener('click',function(){done[id]=!done[id];store.set('done',done);paint();paintDone()});
+});
+var reset=$('#tk-reset'); if(reset) reset.addEventListener('click',function(){if(confirm('Clear your saved progress and quiz answers in this browser?')){store.clear();location.reload()}});
+
+/* quizzes: data in window.TK_QUIZ = {id:[{q,o:[],a,e}]} */
+TK.quiz=function(box){
+  var id=box.getAttribute('data-quiz'), qs=(window.TK_QUIZ||{})[id]||[];
+  var saved=store.get('quiz:'+id,{});
+  box.innerHTML='';
+  var score=el('p','score'); score.setAttribute('aria-live','polite');
+  var retry=el('button','btn','Try again'); retry.type='button'; retry.hidden=true;
+  function refresh(){
+    var n=Object.keys(saved).length, r=0; qs.forEach(function(q,i){if(saved[i]===q.a)r++});
+    score.textContent=n<qs.length?'Answer each question. Feedback appears right away.':'Score: '+r+' of '+qs.length+'.';
+    retry.hidden=n<qs.length;
+  }
+  qs.forEach(function(q,i){
+    var fs=el('fieldset','q'); var lg=el('legend'); lg.innerHTML=(i+1)+'. '+q.q; fs.appendChild(lg);
+    if(q.code){var pre=el('pre','',q.code);pre.style.cssText='background:var(--code-bg);color:var(--code-ink);border-radius:8px;margin:8px 0';fs.appendChild(pre)}
+    var opts=el('div','opts'), fb=el('p','fb'); fb.setAttribute('aria-live','polite'); var bs=[];
+    function reveal(c){
+      bs.forEach(function(b,j){b.disabled=true;if(j===q.a)b.classList.add('right');else if(j===c)b.classList.add('wrong')});
+      fb.textContent=''; fb.appendChild(el('b',c===q.a?'ok':'no',c===q.a?'Correct. ':'Not quite. ')); var ex=el('span'); ex.innerHTML=q.e; fb.appendChild(ex);
+    }
+    q.o.forEach(function(t,j){var b=el('button','opt');b.innerHTML=t;b.type='button';b.addEventListener('click',function(){saved[i]=j;store.set('quiz:'+id,saved);reveal(j);refresh()});bs.push(b);opts.appendChild(b)});
+    fs.appendChild(opts); fs.appendChild(fb); box.appendChild(fs);
+    if(saved[i]!==undefined) reveal(saved[i]);
+  });
+  retry.addEventListener('click',function(){store.set('quiz:'+id,{});TK.quiz(box)});
+  box.appendChild(score); box.appendChild(retry); refresh();
+};
+$$('[data-quiz]').forEach(TK.quiz);
+
+/* result-set table builder: cols[], rows[][] */
+TK.table=function(cols,rows,opt){
+  opt=opt||{};
+  var w=el('div','rs'), t=el('table'), th=el('thead'), tr=el('tr');
+  cols.forEach(function(c,ci){var isnum=rows.length&&rows.some(function(r){return typeof r[ci]==='number'})&&rows.every(function(r){return r[ci]===null||typeof r[ci]==='number'});tr.appendChild(el('th',isnum?'num':null,c))}); th.appendChild(tr); t.appendChild(th);
+  var tb=el('tbody');
+  rows.forEach(function(r,ri){var tr=el('tr'); if(opt.rowClass){var c=opt.rowClass(r,ri);if(c)tr.className=c}
+    r.forEach(function(v){var td=el('td',v===null?'null':(typeof v==='number'?'num':''),v===null?'NULL':String(v));tr.appendChild(td)});tb.appendChild(tr)});
+  t.appendChild(tb); w.appendChild(t); return w;
+};
+})();
+
+</script>
+<script>window.M4={"schema": "-- University sample database for COSC 431, SQLite version (illustrative data, made up for teaching)\n-- Used by the in-browser practice lab. Run with:  sqlite3 university.db < university_sqlite.sql\nPRAGMA foreign_keys = ON;\n\nCREATE TABLE department (\n  dept_name VARCHAR(40) PRIMARY KEY,\n  building  VARCHAR(30) NOT NULL\n);\n\nCREATE TABLE student (\n  sid   INT PRIMARY KEY,\n  name  VARCHAR(60) NOT NULL,\n  major VARCHAR(40),\n  gpa   DECIMAL(3,2),\n  phone VARCHAR(20),\n  FOREIGN KEY (major) REFERENCES department(dept_name)\n);\n\nCREATE TABLE instructor (\n  iid        INT PRIMARY KEY,\n  name       VARCHAR(60) NOT NULL,\n  dept_name  VARCHAR(40) NOT NULL,\n  hired_year INT NOT NULL,\n  FOREIGN KEY (dept_name) REFERENCES department(dept_name)\n);\n\nCREATE TABLE course (\n  course_id VARCHAR(8) PRIMARY KEY,\n  title     VARCHAR(60) NOT NULL,\n  credits   INT NOT NULL CHECK (credits BETWEEN 1 AND 5),\n  dept_name VARCHAR(40) NOT NULL,\n  iid       INT,\n  FOREIGN KEY (dept_name) REFERENCES department(dept_name),\n  FOREIGN KEY (iid) REFERENCES instructor(iid)\n);\n\nCREATE TABLE enrollment (\n  sid       INT,\n  course_id VARCHAR(8),\n  term      VARCHAR(12),\n  grade     VARCHAR(2),\n  PRIMARY KEY (sid, course_id, term),\n  FOREIGN KEY (sid) REFERENCES student(sid),\n  FOREIGN KEY (course_id) REFERENCES course(course_id)\n);\n\nINSERT INTO department VALUES\n  ('Computer Science', 'Tech Hall'),\n  ('Mathematics',      'Gauss Hall'),\n  ('Data Science',     'Tech Hall'),\n  ('Physics',          'Curie Hall'),\n  ('History',          'Old Main');\n\nINSERT INTO student VALUES\n  (1,  'Ada Lovelace',   'Computer Science', 3.90, '555-0101'),\n  (2,  'Ben Carter',     'Mathematics',      3.40, NULL),\n  (3,  'Carla Diaz',     'Computer Science', 3.70, '555-0103'),\n  (4,  'Dev Patel',      'Data Science',     3.20, NULL),\n  (5,  'Emma Johnson',   'Computer Science', 3.55, '555-0105'),\n  (6,  'Farid Rahman',   'Mathematics',      2.90, '555-0106'),\n  (7,  'Grace Kim',      'Data Science',     3.85, '555-0107'),\n  (8,  'Hector Alvarez', 'Physics',          3.10, NULL),\n  (9,  'Imani Brown',    'Computer Science', NULL, '555-0109'),\n  (10, 'Jun Park',       'Data Science',     3.60, '555-0110'),\n  (11, 'Kayla Nguyen',   'Mathematics',      3.75, '555-0111'),\n  (12, 'Liam O''Connor', NULL,               3.00, NULL);\n\nINSERT INTO instructor VALUES\n  (1, 'Amara Okafor',  'Computer Science', 2015),\n  (2, 'Luis Romero',   'Computer Science', 2019),\n  (3, 'Mei Tanaka',    'Mathematics',      2012),\n  (4, 'Samuel Brooks', 'Data Science',     2020),\n  (5, 'Hana Petrov',   'Physics',          2010),\n  (6, 'Jonah Reyes',   'History',          2017);\n\nINSERT INTO course VALUES\n  ('CS101',   'Intro to Programming',    3, 'Computer Science', 1),\n  ('CS201',   'Data Structures',         4, 'Computer Science', 2),\n  ('CS301',   'Database Management',     3, 'Computer Science', 1),\n  ('CS450',   'Special Topics',          3, 'Computer Science', NULL),\n  ('MATH101', 'Calculus I',              4, 'Mathematics',      3),\n  ('MATH201', 'Linear Algebra',          3, 'Mathematics',      3),\n  ('DS110',   'Intro to Data Science',   3, 'Data Science',     4),\n  ('DS210',   'Machine Learning',        3, 'Data Science',     4),\n  ('PHYS101', 'Physics I',               4, 'Physics',          5),\n  ('HIST101', 'World History',           3, 'History',          6);\n\nINSERT INTO enrollment VALUES\n  (1,  'CS101',   'Fall 2025', 'A'),  (1,  'MATH101', 'Fall 2025', 'A-'), (1,  'CS201',   'Fall 2026', NULL),\n  (2,  'CS101',   'Fall 2025', 'B'),  (2,  'MATH101', 'Fall 2025', 'B+'), (2,  'MATH201', 'Fall 2026', NULL),\n  (3,  'CS101',   'Fall 2025', 'A-'), (3,  'CS201',   'Fall 2026', NULL), (3,  'CS301',   'Fall 2026', NULL),\n  (4,  'CS101',   'Fall 2025', 'C+'), (4,  'MATH101', 'Fall 2025', 'B'),  (4,  'DS110',   'Fall 2025', 'B+'),\n  (5,  'CS101',   'Fall 2025', 'B+'), (5,  'PHYS101', 'Fall 2025', 'B'),  (5,  'CS201',   'Fall 2026', NULL),\n  (6,  'MATH101', 'Fall 2025', 'C'),  (6,  'MATH201', 'Fall 2026', NULL),\n  (7,  'CS101',   'Fall 2025', 'A'),  (7,  'DS110',   'Fall 2025', 'A'),  (7,  'DS210',   'Fall 2026', NULL),\n  (8,  'MATH101', 'Fall 2025', 'B'),  (8,  'PHYS101', 'Fall 2025', 'B-'),\n  (10, 'CS101',   'Fall 2025', 'B'),  (10, 'DS110',   'Fall 2025', 'A-'), (10, 'DS210',   'Fall 2026', NULL),\n  (11, 'MATH101', 'Fall 2025', 'A'),  (11, 'HIST101', 'Fall 2025', 'A-'), (11, 'MATH201', 'Fall 2026', NULL);\n", "students": [{"sid": 1, "name": "Ada Lovelace", "major": "Computer Science", "gpa": 3.9, "phone": "555-0101"}, {"sid": 2, "name": "Ben Carter", "major": "Mathematics", "gpa": 3.4, "phone": null}, {"sid": 3, "name": "Carla Diaz", "major": "Computer Science", "gpa": 3.7, "phone": "555-0103"}, {"sid": 4, "name": "Dev Patel", "major": "Data Science", "gpa": 3.2, "phone": null}, {"sid": 5, "name": "Emma Johnson", "major": "Computer Science", "gpa": 3.55, "phone": "555-0105"}, {"sid": 6, "name": "Farid Rahman", "major": "Mathematics", "gpa": 2.9, "phone": "555-0106"}, {"sid": 7, "name": "Grace Kim", "major": "Data Science", "gpa": 3.85, "phone": "555-0107"}, {"sid": 8, "name": "Hector Alvarez", "major": "Physics", "gpa": 3.1, "phone": null}, {"sid": 9, "name": "Imani Brown", "major": "Computer Science", "gpa": null, "phone": "555-0109"}, {"sid": 10, "name": "Jun Park", "major": "Data Science", "gpa": 3.6, "phone": "555-0110"}, {"sid": 11, "name": "Kayla Nguyen", "major": "Mathematics", "gpa": 3.75, "phone": "555-0111"}, {"sid": 12, "name": "Liam O'Connor", "major": null, "gpa": 3.0, "phone": null}], "jl": [[1, "Ada"], [2, "Ben"], [3, "Carla"], [4, "Dev"]], "jr": [[2, "MATH101"], [3, "CS101"], [3, "CS201"], [5, "PHYS101"]], "challenges": [{"id": 1, "prompt": "List the name and major of every student.", "solution": "SELECT name, major FROM student;", "hint": "Two columns from one table.", "ordered": false, "expected": [["Ada Lovelace", "Computer Science"], ["Ben Carter", "Mathematics"], ["Carla Diaz", "Computer Science"], ["Dev Patel", "Data Science"], ["Emma Johnson", "Computer Science"], ["Farid Rahman", "Mathematics"], ["Grace Kim", "Data Science"], ["Hector Alvarez", "Physics"], ["Imani Brown", "Computer Science"], ["Jun Park", "Data Science"], ["Kayla Nguyen", "Mathematics"], ["Liam O'Connor", null]]}, {"id": 2, "prompt": "List the name and GPA of students with a GPA of 3.5 or higher, best GPA first.", "solution": "SELECT name, gpa FROM student WHERE gpa >= 3.5 ORDER BY gpa DESC;", "hint": "WHERE for the filter, ORDER BY ... DESC for the sort.", "ordered": true, "expected": [["Ada Lovelace", "3.90"], ["Grace Kim", "3.85"], ["Kayla Nguyen", "3.75"], ["Carla Diaz", "3.70"], ["Jun Park", "3.60"], ["Emma Johnson", "3.55"]]}, {"id": 3, "prompt": "List the names of students whose name starts with K or J.", "solution": "SELECT name FROM student WHERE name LIKE 'K%' OR name LIKE 'J%';", "hint": "Use LIKE with the % wildcard, and combine two conditions with OR.", "ordered": false, "expected": [["Jun Park"], ["Kayla Nguyen"]]}, {"id": 4, "prompt": "List the names of students who have no phone number on record.", "solution": "SELECT name FROM student WHERE phone IS NULL;", "hint": "Remember: = NULL never matches. Use IS NULL.", "ordered": false, "expected": [["Ben Carter"], ["Dev Patel"], ["Hector Alvarez"], ["Liam O'Connor"]]}, {"id": 5, "prompt": "For each major, show the major and how many students have it. Students with no major should appear as one group.", "solution": "SELECT major, COUNT(*) AS n FROM student GROUP BY major;", "hint": "GROUP BY major, and COUNT(*) counts the rows in each group.", "ordered": false, "expected": [[null, "1"], ["Computer Science", "4"], ["Data Science", "3"], ["Mathematics", "3"], ["Physics", "1"]]}, {"id": 6, "prompt": "List the titles of all courses worth 4 credits.", "solution": "SELECT title FROM course WHERE credits = 4;", "hint": "A simple WHERE on the course table.", "ordered": false, "expected": [["Data Structures"], ["Calculus I"], ["Physics I"]]}, {"id": 7, "prompt": "Show each course title with the name of its instructor. Leave out courses that have no instructor.", "solution": "SELECT c.title, i.name FROM course c JOIN instructor i ON i.iid = c.iid;", "hint": "INNER JOIN course to instructor on the iid columns.", "ordered": false, "expected": [["Intro to Programming", "Amara Okafor"], ["Database Management", "Amara Okafor"], ["Data Structures", "Luis Romero"], ["Calculus I", "Mei Tanaka"], ["Linear Algebra", "Mei Tanaka"], ["Intro to Data Science", "Samuel Brooks"], ["Machine Learning", "Samuel Brooks"], ["Physics I", "Hana Petrov"], ["World History", "Jonah Reyes"]]}, {"id": 8, "prompt": "Show every course title with its instructor's name, writing 'TBA' where there is no instructor.", "solution": "SELECT c.title, COALESCE(i.name, 'TBA') AS instructor FROM course c LEFT JOIN instructor i ON i.iid = c.iid;", "hint": "You need a LEFT JOIN to keep the course without an instructor, and COALESCE to replace the NULL.", "ordered": false, "expected": [["Intro to Programming", "Amara Okafor"], ["Data Structures", "Luis Romero"], ["Database Management", "Amara Okafor"], ["Special Topics", "TBA"], ["Intro to Data Science", "Samuel Brooks"], ["Machine Learning", "Samuel Brooks"], ["World History", "Jonah Reyes"], ["Calculus I", "Mei Tanaka"], ["Linear Algebra", "Mei Tanaka"], ["Physics I", "Hana Petrov"]]}, {"id": 9, "prompt": "List the names of students who are not enrolled in any course.", "solution": "SELECT s.name FROM student s LEFT JOIN enrollment e ON e.sid = s.sid WHERE e.sid IS NULL;", "hint": "The anti-join pattern: LEFT JOIN, then keep rows where the right-hand key IS NULL. NOT EXISTS also works.", "ordered": false, "expected": [["Imani Brown"], ["Liam O'Connor"]]}, {"id": 10, "prompt": "For every course show its course_id and the number of students enrolled, including courses with zero students. Sort by the count (highest first), then by course_id.", "solution": "SELECT c.course_id, COUNT(e.sid) AS enrolled FROM course c LEFT JOIN enrollment e ON e.course_id = c.course_id GROUP BY c.course_id ORDER BY enrolled DESC, c.course_id;", "hint": "LEFT JOIN from course, and count a column from enrollment (not COUNT(*)).", "ordered": true, "expected": [["CS101", "7"], ["MATH101", "6"], ["CS201", "3"], ["DS110", "3"], ["MATH201", "3"], ["DS210", "2"], ["PHYS101", "2"], ["CS301", "1"], ["HIST101", "1"], ["CS450", "0"]]}, {"id": 11, "prompt": "List the titles of courses that have more than 3 enrollments.", "solution": "SELECT c.title FROM course c JOIN enrollment e ON e.course_id = c.course_id GROUP BY c.course_id, c.title HAVING COUNT(*) > 3;", "hint": "Group by course, then HAVING COUNT(*) > 3.", "ordered": false, "expected": [["Intro to Programming"], ["Calculus I"]]}, {"id": 12, "prompt": "List the names of students whose GPA is above the average GPA of all students.", "solution": "SELECT name FROM student WHERE gpa > (SELECT AVG(gpa) FROM student);", "hint": "A scalar subquery in the WHERE clause.", "ordered": false, "expected": [["Ada Lovelace"], ["Carla Diaz"], ["Emma Johnson"], ["Grace Kim"], ["Jun Park"], ["Kayla Nguyen"]]}, {"id": 13, "prompt": "List the distinct names of students enrolled in a course taught by the instructor Mei Tanaka.", "solution": "SELECT DISTINCT s.name FROM student s JOIN enrollment e ON e.sid = s.sid JOIN course c ON c.course_id = e.course_id JOIN instructor i ON i.iid = c.iid WHERE i.name = 'Mei Tanaka';", "hint": "Chain four tables: student, enrollment, course, instructor. DISTINCT removes repeats for students who take two of her courses.", "ordered": false, "expected": [["Ada Lovelace"], ["Ben Carter"], ["Dev Patel"], ["Farid Rahman"], ["Hector Alvarez"], ["Kayla Nguyen"]]}, {"id": 14, "prompt": "For each major, show the student with the highest GPA: name, major and gpa. (Ignore students with no major.)", "solution": "SELECT s.name, s.major, s.gpa FROM student s WHERE s.major IS NOT NULL AND s.gpa = (SELECT MAX(s2.gpa) FROM student s2 WHERE s2.major = s.major);", "hint": "A correlated subquery comparing each student with the maximum GPA in their own major.", "ordered": false, "expected": [["Ada Lovelace", "Computer Science", "3.90"], ["Grace Kim", "Data Science", "3.85"], ["Hector Alvarez", "Physics", "3.10"], ["Kayla Nguyen", "Mathematics", "3.75"]]}, {"id": 15, "prompt": "List the departments that have no students majoring in them.", "solution": "SELECT d.dept_name FROM department d WHERE NOT EXISTS (SELECT 1 FROM student s WHERE s.major = d.dept_name);", "hint": "NOT EXISTS with a correlated subquery, or a LEFT JOIN with IS NULL.", "ordered": false, "expected": [["History"]]}]};</script>
+<script src="../assets/sqljs/sql-wasm.js"></script>
+<script>
+(function(){
+'use strict';
+var $=TK.$, $$=TK.$$, el=TK.el, store=TK.store, D=window.M4;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+
+/* ============ NULL explorer ============ */
+(function(){
+  var box=$('#w-null'); if(!box) return;
+  var T='TRUE',F='FALSE',U='UNKNOWN';
+  function cmp(a,op,b){ if(a===null||b===null) return U; var r; if(op==='>')r=a>b; else if(op==='<=')r=a<=b; else if(op==='=')r=a===b; return r?T:F; }
+  function and(a,b){ if(a===F||b===F) return F; if(a===U||b===U) return U; return T; }
+  function or(a,b){ if(a===T||b===T) return T; if(a===U||b===U) return U; return F; }
+  function not(a){ return a===T?F:a===F?T:U; }
+  function v(x){ return x===null?'NULL':(typeof x==='number'?x.toFixed(2):"'"+x+"'"); }
+  var CONDS=[
+    {sql:'gpa > 3.5', ev:function(s){var r=cmp(s.gpa,'>',3.5);return {v:r,steps:[v(s.gpa)+' > 3.5  →  '+r]};}},
+    {sql:'NOT (gpa > 3.5)', ev:function(s){var a=cmp(s.gpa,'>',3.5);var r=not(a);return {v:r,steps:[v(s.gpa)+' > 3.5  →  '+a,'NOT '+a+'  →  '+r]};}},
+    {sql:'gpa = NULL', ev:function(s){return {v:U,steps:[v(s.gpa)+' = NULL  →  UNKNOWN (comparing with NULL is always UNKNOWN, even NULL = NULL)']};}},
+    {sql:'gpa IS NULL', ev:function(s){var r=s.gpa===null?T:F;return {v:r,steps:[v(s.gpa)+' IS NULL  →  '+r+' (IS NULL never returns UNKNOWN)']};}},
+    {sql:'phone IS NOT NULL', ev:function(s){var r=s.phone!==null?T:F;return {v:r,steps:[v(s.phone)+' IS NOT NULL  →  '+r]};}},
+    {sql:"major = 'Computer Science' OR gpa > 3.5", ev:function(s){var a=cmp(s.major,'=','Computer Science'),b=cmp(s.gpa,'>',3.5),r=or(a,b);return {v:r,steps:[v(s.major)+" = 'Computer Science'  →  "+a,v(s.gpa)+' > 3.5  →  '+b,a+' OR '+b+'  →  '+r]};}},
+    {sql:"major = 'Computer Science' AND gpa > 3.5", ev:function(s){var a=cmp(s.major,'=','Computer Science'),b=cmp(s.gpa,'>',3.5),r=and(a,b);return {v:r,steps:[v(s.major)+" = 'Computer Science'  →  "+a,v(s.gpa)+' > 3.5  →  '+b,a+' AND '+b+'  →  '+r]};}},
+    {sql:'gpa > 3.5 OR gpa <= 3.5', ev:function(s){var a=cmp(s.gpa,'>',3.5),b=cmp(s.gpa,'<=',3.5),r=or(a,b);return {v:r,steps:[v(s.gpa)+' > 3.5  →  '+a,v(s.gpa)+' <= 3.5  →  '+b,a+' OR '+b+'  →  '+r+(r===U?'  (not a tautology when gpa is NULL!)':'')]};}},
+    {sql:'COALESCE(gpa, 0) > 3.5', ev:function(s){var g=s.gpa===null?0:s.gpa;var r=cmp(g,'>',3.5);return {v:r,steps:['COALESCE('+v(s.gpa)+', 0)  →  '+g.toFixed(2),g.toFixed(2)+' > 3.5  →  '+r]};}}
+  ];
+  D.nullConds=CONDS.map(function(c){return c.sql});
+  box.innerHTML='<h4>NULL explorer</h4><div class="row"><label>Student <select id="ne-s"></select></label><label>Condition <select id="ne-c"></select></label></div><div id="ne-out" aria-live="polite" style="margin-top:12px"></div>';
+  var ss=$('#ne-s',box), cs=$('#ne-c',box);
+  D.students.forEach(function(s,i){var o=el('option',null,s.sid+' · '+s.name);o.value=i;ss.appendChild(o)});
+  CONDS.forEach(function(c,i){var o=el('option',null,'WHERE '+c.sql);o.value=i;cs.appendChild(o)});
+  function render(){
+    var s=D.students[ss.value], c=CONDS[cs.value], r=c.ev(s);
+    var inc=r.v===T;
+    var h='<p class="mono" style="margin:0">gpa = '+v(s.gpa)+' &nbsp; major = '+esc(v(s.major))+' &nbsp; phone = '+esc(v(s.phone))+'</p><ol style="margin:8px 0 8px 18px;padding:0" class="mono">';
+    r.steps.forEach(function(t){h+='<li>'+esc(t)+'</li>'});
+    h+='</ol><p style="margin:0"><b>Result: '+r.v+'</b> → the row is <b class="'+(inc?'ok':'bad')+'" id="ne-incl">'+(inc?'included':'dropped')+'</b> by WHERE'+(r.v===U?' (UNKNOWN is not TRUE)':'')+'.</p>';
+    $('#ne-out',box).innerHTML=h;
+  }
+  ss.addEventListener('change',render); cs.addEventListener('change',render); render();
+  TK.nullEval=function(si,ci){var r=CONDS[ci].ev(D.students[si]);return r.v===T;};
+})();
+
+/* ============ JOIN explorer ============ */
+(function(){
+  var box=$('#w-join'); if(!box) return;
+  var L=D.jl, R=D.jr;
+  var TYPES=['INNER','LEFT','RIGHT','FULL','CROSS'];
+  var SQL={
+    INNER:'SELECT jl.id, jl.name, jr.id, jr.course\nFROM jl INNER JOIN jr ON jl.id = jr.id;',
+    LEFT:'SELECT jl.id, jl.name, jr.id, jr.course\nFROM jl LEFT JOIN jr ON jl.id = jr.id;',
+    RIGHT:'SELECT jl.id, jl.name, jr.id, jr.course\nFROM jl RIGHT JOIN jr ON jl.id = jr.id;',
+    FULL:'-- MySQL has no FULL JOIN, so:\nSELECT ... FROM jl LEFT JOIN jr ON jl.id = jr.id\nUNION\nSELECT ... FROM jl RIGHT JOIN jr ON jl.id = jr.id;',
+    CROSS:'SELECT jl.id, jl.name, jr.id, jr.course\nFROM jl CROSS JOIN jr;'
+  };
+  var NOTE={
+    INNER:'Only pairs whose ids match. Ada (1), Dev (4) and the PHYS101 row (id 5) have no partner and disappear. Carla (3) matches two rows, so she appears twice.',
+    LEFT:'Every row of jl is kept. Ada and Dev have no match, so the jr columns are NULL.',
+    RIGHT:'Every row of jr is kept. The PHYS101 row (id 5) has no match in jl, so the jl columns are NULL.',
+    FULL:'Everything from both sides: all matches, plus the unmatched rows from jl (Ada, Dev) and from jr (PHYS101).',
+    CROSS:'Every row of jl paired with every row of jr: 4 × 4 = 16 rows. No ON condition.'
+  };
+  function compute(t){
+    var rows=[],lm={},rm={};
+    if(t==='CROSS'){L.forEach(function(l){R.forEach(function(r){rows.push([l[0],l[1],r[0],r[1]])})});return rows;}
+    L.forEach(function(l,i){R.forEach(function(r,j){ if(l[0]===r[0]){rows.push([l[0],l[1],r[0],r[1]]);lm[i]=1;rm[j]=1;} })});
+    if(t==='LEFT'||t==='FULL') L.forEach(function(l,i){ if(!lm[i]) rows.push([l[0],l[1],null,null]) });
+    if(t==='RIGHT'||t==='FULL') R.forEach(function(r,j){ if(!rm[j]) rows.push([null,null,r[0],r[1]]) });
+    return rows;
+  }
+  TK.joinCompute=compute;
+  box.innerHTML='<h4>Join explorer</h4><div class="grid2"><div><b class="mono">jl</b><div id="je-l"></div></div><div><b class="mono">jr</b><div id="je-r"></div></div></div><div class="pills" id="je-p" style="margin:12px 0" role="group" aria-label="Join type"></div><div class="code" style="margin:8px 0"><div class="bar"><span>SQL</span></div><pre id="je-sql"></pre></div><div id="je-res"></div><p id="je-note" class="muted"></p>';
+  $('#je-l',box).appendChild(TK.table(['id','name'],L)); $('#je-r',box).appendChild(TK.table(['id','course'],R));
+  var cur='INNER';
+  TYPES.forEach(function(t){var b=el('button','pill',t+(t==='CROSS'?' JOIN':' JOIN'));b.type='button';b.setAttribute('aria-pressed',t===cur?'true':'false');b.addEventListener('click',function(){cur=t;$$('#je-p .pill',box).forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});render()});$('#je-p',box).appendChild(b)});
+  function render(){
+    $('#je-sql',box).textContent=SQL[cur];
+    var rows=compute(cur); var res=$('#je-res',box); res.innerHTML='';
+    res.appendChild(TK.table(['jl.id','jl.name','jr.id','jr.course'],rows));
+    $('#je-note',box).textContent=rows.length+' rows. '+NOTE[cur];
+  }
+  render();
+})();
+
+/* ============ GROUP BY explorer ============ */
+(function(){
+  var box=$('#w-group'); if(!box) return;
+  var S=D.students;
+  var AGG=[
+    {k:'COUNT(*)',f:function(rows){return rows.length}},
+    {k:'COUNT(gpa)',f:function(rows){return rows.filter(function(r){return r.gpa!==null}).length}},
+    {k:'ROUND(AVG(gpa), 2)',f:function(rows){var g=rows.filter(function(r){return r.gpa!==null}).map(function(r){return r.gpa});return g.length?(Math.round(g.reduce(function(a,b){return a+b},0)/g.length*100)/100).toFixed(2):null}},
+    {k:'MAX(gpa)',f:function(rows){var g=rows.filter(function(r){return r.gpa!==null}).map(function(r){return r.gpa});return g.length?Math.max.apply(null,g).toFixed(2):null}},
+    {k:'MIN(gpa)',f:function(rows){var g=rows.filter(function(r){return r.gpa!==null}).map(function(r){return r.gpa});return g.length?Math.min.apply(null,g).toFixed(2):null}}
+  ];
+  function groups(){var m={},order=[];S.forEach(function(s){var k=s.major===null?'\u0000NULL':s.major;if(!(k in m)){m[k]=[];order.push(k)}m[k].push(s)});order.sort();return order.map(function(k){return {key:k==='\u0000NULL'?null:k,rows:m[k]}});}
+  TK.groupCompute=function(ai){return groups().map(function(g){return [g.key,AGG[ai].f(g.rows)]})};
+  box.innerHTML='<h4>GROUP BY explorer</h4><div class="row"><label>Aggregate <select id="ge-a"></select></label><span class="pills" id="ge-step" role="group" aria-label="Step"></span></div><div class="code" style="margin:10px 0"><div class="bar"><span>SQL</span></div><pre id="ge-sql"></pre></div><div id="ge-out"></div>';
+  var as=$('#ge-a',box); AGG.forEach(function(a,i){var o=el('option',null,a.k);o.value=i;as.appendChild(o)});
+  var step=1;
+  [['1. Form the groups',1],['2. Aggregate each group',2]].forEach(function(p){var b=el('button','pill',p[0]);b.type='button';b.setAttribute('aria-pressed',p[1]===step?'true':'false');b.addEventListener('click',function(){step=p[1];$$('#ge-step .pill',box).forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false')});render()});$('#ge-step',box).appendChild(b)});
+  function render(){
+    var a=AGG[as.value];
+    $('#ge-sql',box).textContent='SELECT major, '+a.k+' AS result\nFROM student\nGROUP BY major;';
+    var out=$('#ge-out',box); out.innerHTML='';
+    if(step===1){
+      var wrap=el('div','grid2');
+      groups().forEach(function(g){var c=el('div','card');c.style.margin='0';c.innerHTML='<b>major = '+(g.key===null?'NULL':esc(g.key))+'</b> <span class="chip">'+g.rows.length+' row'+(g.rows.length>1?'s':'')+'</span>';
+        var ul=el('ul');ul.style.cssText='margin:6px 0 0;padding-left:18px;font-size:14px';g.rows.forEach(function(r){var li=el('li',null,r.name+' · gpa '+(r.gpa===null?'NULL':r.gpa.toFixed(2)));ul.appendChild(li)});c.appendChild(ul);wrap.appendChild(c)});
+      out.appendChild(wrap);
+      out.appendChild(el('p','muted','Rows with the same major are put into the same group. A NULL major forms its own group.'));
+    } else {
+      var rows=groups().map(function(g){return [g.key,a.f(g.rows)]});
+      out.appendChild(TK.table(['major','result'],rows));
+      out.appendChild(el('p','muted','One output row per group. '+(as.value>=1?'NULL gpa values are skipped by this aggregate.':'COUNT(*) counts every row, including ones with NULL values.')));
+    }
+  }
+  as.addEventListener('change',render); render();
+})();
+
+/* ============ SQL sandbox (sql.js = SQLite in WebAssembly) ============ */
+var SQLJS=null, SQLJS_ERR=null;
+function loadEngine(){
+  if(typeof initSqlJs!=='function'){SQLJS_ERR='The SQL engine script did not load. Check your connection, or open this page from the course website rather than as a local file.';return Promise.resolve(null)}
+  return initSqlJs({locateFile:function(f){return '../assets/sqljs/'+f}}).then(function(S){SQLJS=S;return S}).catch(function(e){SQLJS_ERR='Could not start the SQL engine ('+e+'). If you opened this page directly from your disk, use the course website instead; browsers block WebAssembly files loaded from file:// pages.';return null});
+}
+function freshDb(){var d=new SQLJS.Database();d.exec(D.schema);return d}
+function normV(v){ if(v===null||v===undefined) return null; var s=String(v); if(/^-?\d+(\.\d+)?$/.test(s)) return Number(s).toFixed(4); return s; }
+function normRows(rows,ordered){var r=rows.map(function(x){return x.map(normV)}); if(!ordered) r.sort(function(a,b){var A=JSON.stringify(a),B=JSON.stringify(b);return A<B?-1:A>B?1:0}); return r;}
+TK.checkAnswer=function(db,sql,ch){
+  var res; try{res=db.exec(sql)}catch(e){return {ok:false,msg:'Your query gave an error: '+e.message}}
+  if(!res.length) return {ok:false,msg:'Your query ran but returned no result set. Write a SELECT.'};
+  var r=res[res.length-1]; var exp=ch.expected;
+  if(r.columns.length!==exp[0].length) return {ok:false,msg:'Expected '+exp[0].length+' column'+(exp[0].length>1?'s':'')+' but your query returned '+r.columns.length+'.'};
+  if(r.values.length!==exp.length) return {ok:false,msg:'Your query returned '+r.values.length+' row'+(r.values.length!==1?'s':'')+'; the correct answer has '+exp.length+'.'};
+  var a=normRows(r.values,ch.ordered), b=normRows(exp,ch.ordered);
+  for(var i=0;i<a.length;i++){ if(JSON.stringify(a[i])!==JSON.stringify(b[i])) return {ok:false,msg:ch.ordered?'The right number of rows, but the values or the order differ. Check your ORDER BY and your conditions.':'The right number of rows, but at least one row has different values. Check your conditions and columns.'}; }
+  return {ok:true,msg:'Correct!'};
+};
+function showResult(target,res){
+  target.innerHTML='';
+  res.forEach(function(r){target.appendChild(TK.table(r.columns,r.values));target.appendChild(el('p','muted',r.values.length+' row'+(r.values.length!==1?'s':'')))});
+}
+function runInto(db,sql,target){
+  target.innerHTML='';
+  var res; try{res=db.exec(sql)}catch(e){var p=el('p','bad mono',e.message);target.appendChild(p);return null}
+  if(!res.length){target.appendChild(el('p','muted','Statement ran. It returned no rows.'));return res}
+  showResult(target,res); return res;
+}
+(function(){
+  var box=$('#sandbox'), chBox=$('#challenges'); if(!box) return;
+  loadEngine().then(function(){
+    if(!SQLJS){box.innerHTML='<p class="bad">'+esc(SQLJS_ERR)+'</p>';return}
+    var db=freshDb();
+    box.innerHTML='<h4 style="margin-top:0">Free practice</h4><p class="muted" style="margin-top:4px">Engine: SQLite <span id="sb-ver"></span> (in your browser). Tables: department, student, instructor, course, enrollment. Press Ctrl+Enter (or Cmd+Enter) to run.</p><textarea id="sb-q" spellcheck="false" aria-label="SQL editor">SELECT name, major, gpa\nFROM student\nORDER BY gpa DESC\nLIMIT 5;</textarea><div class="row" style="margin:8px 0"><button class="btn primary" id="sb-run" type="button">Run</button><button class="btn" id="sb-reset" type="button">Reset database</button><button class="btn" id="sb-tables" type="button">Show tables</button></div><div id="sb-out" aria-live="polite"></div>';
+    try{$('#sb-ver',box).textContent=db.exec('select sqlite_version()')[0].values[0][0]}catch(e){}
+    var q=$('#sb-q',box), out=$('#sb-out',box);
+    var saved=store.get('free',null); if(saved) q.value=saved;
+    function run(){store.set('free',q.value);runInto(db,q.value,out)}
+    $('#sb-run',box).addEventListener('click',run);
+    q.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();run()}});
+    $('#sb-reset',box).addEventListener('click',function(){db.close();db=freshDb();out.innerHTML='<p class="muted">Database reset to the original University data.</p>'});
+    $('#sb-tables',box).addEventListener('click',function(){q.value="SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name;";run()});
+    TK.sandboxRun=function(sql){return db.exec(sql)};
+
+    /* challenges */
+    var solved=store.get('solved',{});
+    var cnt=el('p','score'); chBox.appendChild(cnt);
+    function upd(){var n=Object.keys(solved).filter(function(k){return solved[k]}).length;cnt.textContent='Solved: '+n+' of '+D.challenges.length}
+    D.challenges.forEach(function(ch){
+      var c=el('div','card'); c.id='ch-'+ch.id;
+      var title=el('h4',null,'Challenge '+ch.id); title.style.marginTop='0';
+      var badge=el('span','chip',''); badge.style.marginLeft='8px'; title.appendChild(badge);
+      c.appendChild(title);
+      var p=el('p',null,ch.prompt); c.appendChild(p);
+      var ta=el('textarea'); ta.spellcheck=false; ta.setAttribute('aria-label','Your answer for challenge '+ch.id); ta.style.minHeight='90px';
+      ta.value=store.get('ans'+ch.id,''); ta.placeholder='Write your SELECT here...';
+      c.appendChild(ta);
+      var row=el('div','row'); row.style.margin='8px 0';
+      var bRun=el('button','btn','Run'); bRun.type='button'; var bChk=el('button','btn primary','Check my answer'); bChk.type='button';
+      row.appendChild(bRun); row.appendChild(bChk); c.appendChild(row);
+      var res=el('div'); res.setAttribute('aria-live','polite'); c.appendChild(res); var fb=el('p','fb'); c.appendChild(fb);
+      c.appendChild(Object.assign(el('div'),{innerHTML:'<details class="sol"><summary>Hint</summary><div><p>'+esc(ch.hint)+'</p></div></details><details class="sol"><summary>Show a solution</summary><div><div class="code"><div class="bar"><span>SQL</span></div><pre>'+esc(ch.solution)+'</pre></div></div></details>'}));
+      function paint(){badge.textContent=solved[ch.id]?'solved \u2713':'';badge.style.display=solved[ch.id]?'':'none';}
+      paint();
+      ta.addEventListener('input',function(){store.set('ans'+ch.id,ta.value)});
+      ta.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();bChk.click()}});
+      bRun.addEventListener('click',function(){var d2=freshDb();runInto(d2,ta.value,res);d2.close()});
+      bChk.addEventListener('click',function(){
+        var d2=freshDb(); var r=TK.checkAnswer(d2,ta.value,ch);
+        if(r.ok){var d3=freshDb();runInto(d3,ta.value,res);d3.close()} d2.close();
+        fb.innerHTML='<b class="'+(r.ok?'ok':'no')+'">'+(r.ok?'Correct! ':'Not yet. ')+'</b>'+esc(r.ok?'Your rows match the expected result.':r.msg);
+        if(r.ok){solved[ch.id]=true;store.set('solved',solved);paint();upd()}
+      });
+      chBox.appendChild(c);
+    });
+    upd();
+  });
+})();
+})();
+
+</script>
+<!--dbm-end-->
+<nav class="dbm-end" aria-label="Previous and next tutorial"><a href="../relational-algebra/" rel="prev"><small>&larr; Previous tutorial</small><b>Module 3: Relational algebra and calculus</b></a><a class="dbm-next" href="../alternative-databases/" rel="next"><small>Next tutorial &rarr;</small><b>Module 5: Alternative database systems</b></a><a class="dbm-hub" href="../"><small>Course home</small><b>All tutorials</b></a></nav>
+<!--/dbm-end-->
+</body>
+</html>

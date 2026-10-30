@@ -1,0 +1,495 @@
+<!doctype html>
+<html lang="en" data-slug="database-fundamentals">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Database Fundamentals and Architecture: Interactive Tutorial</title>
+<meta name="description" content="Interactive tutorial on database fundamentals: DBMS vs file systems, three-schema architecture, data independence, DBMS components and the design lifecycle, with real MySQL 8.4 outputs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2EF; --surface:#FFFFFF; --surface2:#F4F8F6; --ink:#0E2420; --soft:#46605A; --line:#C5D5CE;
+  --accent:#5B3FD0; --accent-tint:#E9E4FB; --accent-ink:#35208F;
+  --teal:#0F766E; --teal-tint:#DDF1ED; --warn:#9A4A0A; --warn-tint:#FBEBD0;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1;
+  --code-bg:#0D1F1C; --code-bar:#16322D; --code-ink:#DDEBE7;
+  --kw:#C9BEFF; --st:#8FE0C0; --nu:#F2C77B; --cm:#7C9A93; --out-bg:#E4ECE8;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1614; --surface:#12231F; --surface2:#0F1D1A; --ink:#E5F0EC; --soft:#9BB3AC; --line:#274039;
+    --accent:#A99BFF; --accent-tint:#2B2552; --accent-ink:#D4CCFF;
+    --teal:#4FD1C5; --teal-tint:#14332E; --warn:#F0B45A; --warn-tint:#3A2C12;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D;
+    --code-bg:#08130F; --code-bar:#12302A; --out-bg:#0E1C19;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,h4{font-family:"Familjen Grotesk","Public Sans",system-ui,sans-serif;line-height:1.15;letter-spacing:-.005em;margin:0}
+a{color:var(--accent-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre,kbd{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+code{font-size:.88em;background:var(--accent-tint);color:var(--accent-ink);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1320px;margin:0 auto}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:700 20px "Familjen Grotesk",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+header.hero{padding:44px 40px 30px;border-bottom:1px solid var(--line)}
+.eyebrow{font:600 13px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+header.hero h1{font-size:clamp(34px,5vw,56px);font-weight:700;max-width:18ch;margin-top:8px}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:62ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:10px;margin:22px 0 0;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Familjen Grotesk",sans-serif;font-size:17px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:52px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:700}
+section.mod>h2 .num{font:600 14px "IBM Plex Mono",monospace;color:var(--accent-ink);display:block;margin-bottom:6px;letter-spacing:.06em}
+section.mod h3{font-size:22px;margin:30px 0 6px}
+section.mod h4{font-size:17px;margin:20px 0 4px}
+.lead{font-size:18.5px;color:var(--soft);max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:18px 0;min-width:0}
+.card>h3:first-child,.card>h4:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.grid2>*{min-width:0}
+.callout{border-radius:var(--radius);padding:12px 16px;margin:16px 0;border:1px solid var(--line);background:var(--teal-tint)}
+.callout.warn{background:var(--warn-tint);border-color:var(--warn)}
+.callout.bad{background:var(--bad-tint);border-color:var(--bad)}
+.callout b.tag{display:block;font:700 12px "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;color:var(--teal)}
+.callout.warn b.tag{color:var(--warn)} .callout.bad b.tag{color:var(--bad)}
+.callout p:first-of-type{margin-top:0}.callout p:last-child{margin-bottom:0}
+.tested{border:1px dashed var(--line);border-radius:var(--radius);padding:12px 16px;margin:22px 0 0;font-size:15px;color:var(--soft);background:var(--surface2)}
+.tested b{color:var(--ink)}
+.tested table{margin:8px 0 0;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin:14px 0;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font:600 12px "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--soft);background:var(--surface2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.code{border-radius:var(--radius);overflow:hidden;background:var(--code-bg);margin:14px 0;min-width:0}
+.code .bar{display:flex;justify-content:space-between;align-items:center;background:var(--code-bar);color:#9fc2b8;padding:5px 8px 5px 14px;font:600 12px "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase}
+.code button{font:500 12px "Public Sans",sans-serif;background:transparent;color:var(--code-ink);border:1px solid #2c5148;border-radius:6px;padding:3px 10px;cursor:pointer}
+.code button:hover{background:#1d423a}
+pre{margin:0;padding:13px 16px;overflow-x:auto;font-size:14px;line-height:1.6;color:var(--code-ink);tab-size:2}
+.code pre .kw{color:var(--kw);font-weight:600}.code pre .st{color:var(--st)}.code pre .nu{color:var(--nu)}.code pre .cm{color:var(--cm);font-style:italic}
+.out{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);margin:-6px 0 14px;background:var(--out-bg);min-width:0}
+.out .bar{padding:4px 14px;font:600 11.5px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--line)}
+.out pre{color:var(--ink);font-size:13.5px}
+.out.err pre{color:var(--bad)}
+details.sol{border:1px solid var(--line);border-radius:var(--radius);margin:12px 0;background:var(--surface)}
+details.sol>summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:15px;background:var(--surface2);border-radius:var(--radius)}
+details.sol[open]>summary{border-bottom:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0}
+details.sol>div{padding:4px 14px 10px}
+.btn{font:600 14px "Public Sans",sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:600 13px "IBM Plex Mono",monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);cursor:pointer;color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+select,textarea,input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+textarea{width:100%;font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:1.55;min-height:120px;resize:vertical}
+.quiz{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.q{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 18px;margin:0;min-width:0}
+.q legend{font-weight:700;padding:0 6px;font-family:"Familjen Grotesk",sans-serif;font-size:18px}
+.q .opts{display:grid;gap:8px;margin-top:8px}
+.opt{text-align:left;font:inherit;font-size:16px;padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.45}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.fb{font-size:15.5px;color:var(--soft);margin:10px 0 0}
+.fb b.ok{color:var(--ok)}.fb b.no{color:var(--bad)}
+.score{font-weight:700}
+.rs{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rs table{font-size:14px}
+.rs td.null{color:var(--soft);font-style:italic}
+.mono{font-family:"IBM Plex Mono",monospace}
+.muted{color:var(--soft)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-block;font:600 12px "IBM Plex Mono",monospace;padding:2px 9px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.erd{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:14px 0}
+.erd>div{border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:170px;flex:1 1 170px}
+.erd h4{font:700 14px "IBM Plex Mono",monospace;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface2);margin:0}
+.erd ul{list-style:none;margin:0;padding:8px 12px;font:400 13px/1.7 "IBM Plex Mono",monospace}
+.erd b{color:var(--accent-ink)}
+.nav-foot{margin-top:60px;color:var(--soft);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px}
+  nav.side ol{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto}
+  header.hero{padding:30px 18px 24px}
+  main{padding:0 16px 60px}
+}
+.row label{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 220px;font-size:14px;color:var(--soft);font-weight:600}
+.row label select{width:100%;font-weight:400;color:var(--ink)}
+
+
+</style>
+
+</head>
+<body>
+<!--dbm-top-->
+<style>
+.dbm-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 20px;background:#0F1F33;color:#E6EEF8;font:600 14.5px/1.3 "Public Sans",system-ui,sans-serif}
+.dbm-bar a{color:#E6EEF8;text-decoration:none;padding:5px 10px;border-radius:8px;border:1px solid #33506f}
+.dbm-bar a:hover,.dbm-bar a:focus-visible{background:#1d3a5c;outline:none}
+.dbm-bar .dbm-where{color:#9DB2CC;font-weight:400;margin-right:auto}
+.dbm-bar .dbm-home{border-color:transparent;padding-left:0}
+.dbm-bar .dbm-home:hover{background:none;text-decoration:underline}
+.dbm-end{max-width:1320px;margin:0 auto;padding:30px 24px 56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-family:"Public Sans",system-ui,sans-serif}
+.dbm-end a{display:block;text-decoration:none;color:inherit;border:1px solid var(--line,#C7D3E1);background:var(--surface,#fff);border-radius:12px;padding:14px 18px;min-width:0}
+.dbm-end a:hover,.dbm-end a:focus-visible{border-color:var(--accent,#1F5FBF);outline:none}
+.dbm-end small{display:block;color:var(--soft,#475C75);font-size:13.5px}
+.dbm-end b{display:block;font-size:18px;overflow-wrap:anywhere}
+.dbm-end .dbm-next{text-align:right;grid-column:2}
+.dbm-end .dbm-hub{grid-column:1/-1;text-align:center}
+@media (max-width:560px){.dbm-end{grid-template-columns:minmax(0,1fr)}.dbm-end .dbm-next{grid-column:auto}.dbm-bar .dbm-where{display:none}.dbm-bar{padding:8px 14px}}
+</style>
+<nav class="dbm-bar" aria-label="Course navigation"><a class="dbm-home" href="../">&larr; All tutorials</a><span class="dbm-where">Module 1 of 10</span><a href="../environment-setup/" rel="prev">&larr; Module 0: Environment setup</a><a href="../data-modeling/" rel="next">Module 2: Data modeling and the relational model &rarr;</a></nav>
+<!--/dbm-top-->
+<div class="wrap">
+<nav class="side" aria-label="Sections"><div class="brand">Database Fundamentals and Architecture</div><div class="sub">COSC 431 · Module 1</div>
+<ol><li><a href="#start" data-sec="start"><span>What is a database?</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#files" data-sec="files"><span>Files versus a DBMS</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#services" data-sec="services"><span>What a DBMS provides</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#schemas" data-sec="schemas"><span>Data models and three schemas</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#inside" data-sec="inside"><span>Inside a DBMS</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#roles" data-sec="roles"><span>People and languages</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#env" data-sec="env"><span>System environments</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#life" data-sec="life"><span>The design lifecycle</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#need" data-sec="need"><span>Do you need a DBMS?</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#final" data-sec="final"><span>Final check</span><span class="tick" aria-hidden="true"></span></a></li></ol><button type="button" id="tk-reset">Reset my progress</button></nav>
+<div>
+<header class="hero"><div class="eyebrow">COSC 431 · Module 1</div><h1>Database Fundamentals and Architecture</h1><p class="lede">What a database and a DBMS are, why files are not enough, how a DBMS hides storage details behind three levels of schema, what is inside a server, and how to tell when you need one. Every output comes from a real MySQL server.</p>
+<ul class="outcomes"><li><b>Vocabulary</b>Database, DBMS, schema, instance</li><li><b>Why DBMS</b>Problems of file-based systems</li><li><b>Architecture</b>Three schemas, data independence</li><li><b>Inside</b>Parser, optimizer, engine, logs</li><li><b>Design</b>The lifecycle and when to use a DBMS</li></ul><div class="tested"><b>Tested with.</b> Every command, output and answer in this tutorial was run on real software on <b>October 29, 2026</b>. If you install a newer release, small differences in wording or formatting are normal.<div class="tablewrap"><table><thead><tr><th>Tool</th><th>Version</th><th>Used for</th></tr></thead><tbody><tr><td>MySQL Community Server</td><td><b>8.4.2 (8.4 LTS series), InnoDB</b></td><td>All SQL outputs, EXPLAIN plans, error messages and server settings shown</td></tr><tr><td>Python</td><td><b>3.13.16, csv module</b></td><td>The three-file experiment in section 2</td></tr><tr><td>Demo database</td><td><b>m1_demo (2 tables, 3 views)</b></td><td>Download it from the Files list in section 10</td></tr></tbody></table></div></div></header>
+<main>
+<section class="mod" id="start"><h2><span class="num">01</span>What is a database?</h2><p class="lead">A <b>database</b> is an organized collection of related data. A <b>database management system (DBMS)</b> is the software that stores, protects and serves that data to many users and programs at once. Together with the applications that use them, they form a <b>database system</b>.</p>
+<h3>Three words that are easy to mix up</h3>
+<div class="tablewrap"><table><thead><tr><th>Term</th><th>Meaning</th><th>Example</th></tr></thead><tbody><tr><td><b>Database</b></td><td>The data itself, organized so it can be found, shared and kept correct.</td><td>The <code>customer</code> and <code>purchase</code> tables of a shop</td></tr><tr><td><b>DBMS</b></td><td>General-purpose software that creates, stores, queries and protects databases.</td><td>MySQL, PostgreSQL, SQLite, MongoDB</td></tr><tr><td><b>Database system</b></td><td>The database + the DBMS + the application programs and people that use them.</td><td>The shop's website, its MySQL server and its data</td></tr><tr><td><b>Data model</b></td><td>A set of concepts for describing the structure of the data.</td><td>The relational model (tables, rows, keys)</td></tr><tr><td><b>Schema and instance</b></td><td>The schema is the description of the structure and rules. The instance is the data stored at one moment.</td><td><code>customer(customer_id, name, phone, city)</code> is a schema; its current rows are an instance</td></tr></tbody></table></div>
+<h3>A first look at a real one</h3>
+<p>The tutorial's demo database is a tiny shop with two tables. The statement below is run on a real MySQL server. You will meet the same data again in later sections.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> c.name, c.city, p.item, p.qty <span class="kw">FROM</span> customer c <span class="kw">JOIN</span> purchase p <span class="kw">ON</span> p.customer_id = c.customer_id <span class="kw">ORDER</span> <span class="kw">BY</span> p.purchase_id;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+------+--------------+----------+-----+
+| name | city         | item     | qty |
++------+--------------+----------+-----+
+| Ana  | Muncie       | Notebook |   3 |
+| Ana  | Muncie       | Pencil   |  10 |
+| Ben  | Indianapolis | Stapler  |   1 |
+| Cara | Muncie       | Notebook |   2 |
+| Cara | Muncie       | Marker   |   4 |
+| Dev  | Fort Wayne   | Pencil   |   6 |
++------+--------------+----------+-----+
+6 rows in set</pre></div>
+<p>Notice what you did <em>not</em> have to say: where the files are, how rows are stored, which row to read first, or how to avoid two users clashing. You described <em>what</em> you wanted; the DBMS worked out <em>how</em>. That division of labour is the theme of this whole module.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="start"></div><p><button type="button" class="btn" data-markdone="start">Mark section as done</button></p></section>
+<section class="mod" id="files"><h2><span class="num">02</span>Files versus a DBMS</h2><p class="lead">Before databases, each program kept its own files. That works until two programs need the same facts. This section shows exactly how it breaks, and how a DBMS avoids it.</p>
+<h3>The scenario</h3>
+<p>A shop has three programs: <b>Sales</b>, <b>Billing</b> and <b>Support</b>. Each needs the customers' phone numbers. In the file approach, each program keeps its own copy in its own file. In the database approach, there is one copy that all three read.</p>
+<h3>Simulator</h3>
+<p>Pick a way of storing the data, choose which program learns the new phone number, and press Save. Then look at what each program believes about Ana.</p>
+<div id="w-files" class="card"></div>
+<h3>What really happened (recorded)</h3>
+<p>The same experiment was run for real. First with three CSV files, where the Sales program updated only its own file:</p>
+<div class="out"><div class="bar">Result with three files (Python 3, csv module)</div><pre>sales.csv    Ana -&gt; 555-0999
+billing.csv  Ana -&gt; 555-0101
+support.csv  Ana -&gt; 555-0101</pre></div>
+<p>Then with a MySQL database, where the three programs read one table through three views. One <code>UPDATE</code> was enough:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">UPDATE</span> customer <span class="kw">SET</span> phone = <span class="st">'555-0999'</span> <span class="kw">WHERE</span> name = <span class="st">'Ana'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 1 row affected
+Rows matched: 1  Changed: 1  Warnings: 0</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> <span class="st">'sales'</span> <span class="kw">AS</span> app, name, phone <span class="kw">FROM</span> v_sales <span class="kw">WHERE</span> name = <span class="st">'Ana'</span>
+<span class="kw">UNION</span> <span class="kw">ALL</span> <span class="kw">SELECT</span> <span class="st">'billing'</span>, name, phone <span class="kw">FROM</span> v_billing <span class="kw">WHERE</span> name = <span class="st">'Ana'</span>
+<span class="kw">UNION</span> <span class="kw">ALL</span> <span class="kw">SELECT</span> <span class="st">'support'</span>, name, phone <span class="kw">FROM</span> v_support <span class="kw">WHERE</span> name = <span class="st">'Ana'</span>;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+---------+------+----------+
+| app     | name | phone    |
++---------+------+----------+
+| sales   | Ana  | 555-0999 |
+| billing | Ana  | 555-0999 |
+| support | Ana  | 555-0999 |
++---------+------+----------+
+3 rows in set</pre></div>
+<h3>Problems of the file-based approach</h3>
+<div class="tablewrap"><table><thead><tr><th>Problem</th><th>What it looks like</th><th>How a DBMS addresses it</th></tr></thead><tbody><tr><td><b>Redundancy</b></td><td>The same fact is stored in many files, wasting space and effort.</td><td>Store each fact once and share it; design with normalization (Module 7)</td></tr><tr><td><b>Inconsistency</b></td><td>The copies disagree, as Ana's phone number did above.</td><td>One copy, plus integrity constraints</td></tr><tr><td><b>Program-data dependence</b></td><td>The file layout is written into every program. Adding a column means rewriting them all.</td><td>The DBMS stores the description of the data; programs ask by name</td></tr><tr><td><b>Hard to ask new questions</b></td><td>Each new question needs a new program.</td><td>A query language (SQL) answers new questions without new programs</td></tr><tr><td><b>No concurrency control</b></td><td>Two programs writing the same file can overwrite each other.</td><td>Transactions and locking (Module 10)</td></tr><tr><td><b>Weak security</b></td><td>File permissions are all-or-nothing for a whole file.</td><td>Accounts and privileges down to tables and columns (Module 10)</td></tr><tr><td><b>No recovery</b></td><td>A crash in the middle of a write can leave a damaged file.</td><td>Logging and recovery restore a consistent state</td></tr></tbody></table></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="files"></div><p><button type="button" class="btn" data-markdone="files">Mark section as done</button></p></section>
+<section class="mod" id="services"><h2><span class="num">03</span>What a DBMS provides</h2><p class="lead">A DBMS is not just a place to put data. It provides a set of services that every serious application would otherwise have to build for itself.</p>
+<h3>What a DBMS provides</h3>
+<div class="tablewrap"><table><thead><tr><th>Service</th><th>In one sentence</th><th>Where this course covers it</th></tr></thead><tbody><tr><td><b>Self-describing data</b></td><td>The structure of the database is stored in the database, in the <b>catalog</b> (data dictionary).</td><td>Section 5, and Module 2</td></tr><tr><td><b>Program-data and operation independence</b></td><td>Programs do not depend on how data is stored.</td><td>Section 4</td></tr><tr><td><b>Multiple views</b></td><td>Different users see different parts and arrangements of the same data.</td><td>Section 4 and Module 4 (views)</td></tr><tr><td><b>Data sharing with concurrency control</b></td><td>Many users work at once without damaging each other's work.</td><td>Module 10</td></tr><tr><td><b>Integrity constraints</b></td><td>The database refuses data that breaks the rules.</td><td>Module 2</td></tr><tr><td><b>Security and authorization</b></td><td>Only permitted users do permitted things.</td><td>Module 10</td></tr><tr><td><b>Efficient query processing</b></td><td>Indexes and an optimizer find data fast.</td><td>Modules 3 and 9</td></tr><tr><td><b>Backup and recovery</b></td><td>After a failure the database returns to a consistent state.</td><td>Module 10</td></tr></tbody></table></div>
+<h3>The database describes itself</h3>
+<p>One property deserves a demonstration. In MySQL, the tables, columns and keys are themselves data you can query, through the schema <code>information_schema</code>. Here is the server describing one of our tables:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> column_name, data_type, is_nullable, column_key
+<span class="kw">FROM</span> information_schema.<span class="kw">columns</span>
+<span class="kw">WHERE</span> table_schema = <span class="st">'m1_demo'</span> <span class="kw">AND</span> table_name = <span class="st">'customer'</span>
+<span class="kw">ORDER</span> <span class="kw">BY</span> ordinal_position;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-------------+-----------+-------------+------------+
+| COLUMN_NAME | DATA_TYPE | IS_NULLABLE | COLUMN_KEY |
++-------------+-----------+-------------+------------+
+| customer_id | int       | NO          | PRI        |
+| name        | varchar   | NO          |            |
+| phone       | varchar   | NO          |            |
+| city        | varchar   | NO          |            |
++-------------+-----------+-------------+------------+
+4 rows in set</pre></div>
+<h3>When a DBMS is not the right tool</h3>
+<p>A DBMS has costs: it is more software to install and learn, it needs memory and administration, and its generality adds overhead. Plain files or a simple library can be better when:</p>
+<ul>
+<li>the data is small, simple and unlikely to change, and only one program uses it;</li>
+<li>the program has hard real-time requirements that the DBMS overhead cannot meet;</li>
+<li>there is no need for several users to access the data at once.</li>
+</ul>
+<p>The last section of this tutorial lets you practise making that call.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="services"></div><p><button type="button" class="btn" data-markdone="services">Mark section as done</button></p></section>
+<section class="mod" id="schemas"><h2><span class="num">04</span>Data models and three schemas</h2><p class="lead">A DBMS describes data at several levels, so that a change at one level does not break the levels above. This idea is called the <b>three-schema architecture</b> (from the ANSI/SPARC proposals of the 1970s).</p>
+<h3>The three levels</h3>
+<div class="tablewrap"><table><thead><tr><th>Level</th><th>Schema</th><th>Describes</th><th>Who cares</th><th>In MySQL</th></tr></thead><tbody><tr><td><b>External</b></td><td>External schemas (user views)</td><td>The part of the data one group of users needs, in the form they need it</td><td>Application developers, end users</td><td>Views, and the privileges on tables and columns</td></tr><tr><td><b>Conceptual</b></td><td>Conceptual schema</td><td>All entities, attributes, relationships and constraints of the whole database, with no storage detail</td><td>Database designers</td><td>The tables, keys and constraints</td></tr><tr><td><b>Internal</b></td><td>Internal schema</td><td>How data is physically stored: files, pages, indexes, access paths</td><td>DBAs, the DBMS itself</td><td>Storage engine (InnoDB), indexes, tablespaces</td></tr></tbody></table></div>
+<h3>Data independence</h3>
+<ul>
+<li><b>Logical data independence</b>: change the conceptual schema (add a column, split a table) without changing the external schemas or application programs.</li>
+<li><b>Physical data independence</b>: change the internal schema (add an index, move files, change the storage layout) without changing the conceptual schema or the programs.</li>
+</ul>
+<p>Physical independence is almost complete in practice. Logical independence is harder: it works as long as the DBMS can still present the old shape to the program, here by rewriting a view.</p>
+<h3>Watch independence happen</h3>
+<p>The stepper below replays a real MySQL session. An application runs one query through a view. Then we change the physical level and the logical level underneath it, and run the same query again.</p>
+<div id="w-ind" class="card"></div>
+<div class="callout warn"><b class="tag">Be honest about the limits</b><p>Views give logical independence only up to a point. A view over a join can usually be read, but writing through it is restricted in MySQL, so programs that <em>change</em> data may still need updating after a big redesign. Independence is a goal that the design supports, not a guarantee.</p></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="schema3"></div><p><button type="button" class="btn" data-markdone="schemas">Mark section as done</button></p></section>
+<section class="mod" id="inside"><h2><span class="num">05</span>Inside a DBMS</h2><p class="lead">What happens between typing a query and getting rows back? Click each box to follow a statement through a MySQL 8.4 server. The outputs under each box were produced by a real server.</p>
+<div id="w-arch" class="card"></div>
+<h3>Two layers worth remembering</h3>
+<ul>
+<li>The <b>SQL layer</b> (connection handling, parser, optimizer, executor) is the same whichever way the data is stored.</li>
+<li>The <b>storage engine layer</b> actually stores and fetches rows. MySQL lets different tables use different engines. <b>InnoDB</b> is the default and the one used in this course because it supports transactions and foreign keys.</li>
+</ul>
+<div class="callout "><b class="tag">Not only MySQL</b><p>Other systems are organized differently in the details, but they all have equivalents of the same jobs: parse, optimize, execute, cache pages, lock, log and keep a catalog.</p></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="arch"></div><p><button type="button" class="btn" data-markdone="inside">Mark section as done</button></p></section>
+<section class="mod" id="roles"><h2><span class="num">06</span>People and languages</h2><p class="lead">Different people touch a database in different ways, and SQL has different groups of statements for them.</p>
+<h3>People</h3>
+<div class="tablewrap"><table><thead><tr><th>Role</th><th>Job</th></tr></thead><tbody><tr><td><b>Database administrator (DBA)</b></td><td>Installs and tunes the DBMS, creates accounts, manages backups, security and performance.</td></tr><tr><td><b>Database designer</b></td><td>Decides what data to store and how to structure it (Modules 2, 6 and 7).</td></tr><tr><td><b>Application developer</b></td><td>Writes programs that send SQL to the database (Module 8).</td></tr><tr><td><b>End user</b></td><td>Uses applications or reports; casual users may run queries directly.</td></tr><tr><td><b>Data analyst / data scientist</b></td><td>Queries and summarizes data to answer questions.</td></tr></tbody></table></div>
+<h3>Groups of SQL statements</h3>
+<p>SQL statements are often grouped by purpose. Textbooks differ slightly on the groupings, but these are the common ones:</p>
+<div class="tablewrap"><table><thead><tr><th>Group</th><th>Purpose</th><th>Statements</th></tr></thead><tbody><tr><td><b>DDL</b> data definition</td><td>Define or change the structure</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code></td></tr><tr><td><b>DML</b> data manipulation</td><td>Change the data</td><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td></tr><tr><td><b>DQL</b> data query</td><td>Read the data (sometimes counted inside DML)</td><td><code>SELECT</code></td></tr><tr><td><b>DCL</b> data control</td><td>Control access</td><td><code>GRANT</code>, <code>REVOKE</code>, <code>CREATE USER</code></td></tr><tr><td><b>TCL</b> transaction control</td><td>Group statements into transactions</td><td><code>START TRANSACTION</code>, <code>COMMIT</code>, <code>ROLLBACK</code></td></tr></tbody></table></div>
+<p>Here is one statement from each group, run on a real server. The password in the example is for illustration only; never put real passwords in code you share.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">TABLE</span> note (id INT <span class="kw">PRIMARY</span> <span class="kw">KEY</span>, txt VARCHAR(<span class="nu">40</span>))</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 0 rows affected</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">INSERT</span> <span class="kw">INTO</span> note <span class="kw">VALUES</span> (<span class="nu">1</span>, <span class="st">'hello'</span>)</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 1 row affected</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> id, txt <span class="kw">FROM</span> note</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+----+-------+
+| id | txt   |
++----+-------+
+|  1 | hello |
++----+-------+
+1 row in set</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">CREATE</span> <span class="kw">USER</span> <span class="st">'reader'</span>@<span class="st">'localhost'</span> <span class="kw">IDENTIFIED</span> <span class="kw">BY</span> <span class="st">'Str0ng!Passw0rd'</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 0 rows affected</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">GRANT</span> <span class="kw">SELECT</span> <span class="kw">ON</span> m1_demo.note <span class="kw">TO</span> <span class="st">'reader'</span>@<span class="st">'localhost'</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 0 rows affected</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">START</span> <span class="kw">TRANSACTION</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 0 rows affected</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">UPDATE</span> note <span class="kw">SET</span> txt = <span class="st">'hello, world'</span> <span class="kw">WHERE</span> id = <span class="nu">1</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 1 row affected
+Rows matched: 1  Changed: 1  Warnings: 0</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">COMMIT</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 0 rows affected</pre></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">DROP</span> <span class="kw">USER</span> <span class="st">'reader'</span>@<span class="st">'localhost'</span></pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>Query OK, 0 rows affected</pre></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="roles"></div><p><button type="button" class="btn" data-markdone="roles">Mark section as done</button></p></section>
+<section class="mod" id="env"><h2><span class="num">07</span>System environments</h2><p class="lead">Where the DBMS runs relative to its users is another architectural choice.</p>
+<div class="tablewrap"><table><thead><tr><th>Architecture</th><th>How it works</th><th>Example</th></tr></thead><tbody><tr><td><b>Embedded (serverless)</b></td><td>The DBMS is a library inside the application and reads a file directly. No separate server process.</td><td>SQLite in a phone app. Its in-browser build powers the practice labs in this course.</td></tr><tr><td><b>Client/server, two-tier</b></td><td>Client programs connect directly to a database server over the network.</td><td>MySQL Workbench or the <code>mysql</code> client connected to a MySQL server</td></tr><tr><td><b>Three-tier</b></td><td>Client (browser) talks to an application server, which talks to the database server. Users never reach the database.</td><td>A typical web application (Module 8)</td></tr><tr><td><b>Distributed / replicated</b></td><td>Data is spread over or copied to several servers for capacity and availability.</td><td>MySQL replication; many NoSQL systems (Module 5)</td></tr><tr><td><b>Managed cloud service</b></td><td>The provider runs the servers, backups and updates. You connect as a client.</td><td>Hosted MySQL or PostgreSQL offerings</td></tr></tbody></table></div>
+<p>The three-tier layout matters for security: the database server is not exposed to the internet, only the application server is. You will see the code for the middle tier in the database connectivity tutorial.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="env"></div><p><button type="button" class="btn" data-markdone="env">Mark section as done</button></p></section>
+<section class="mod" id="life"><h2><span class="num">08</span>The design lifecycle</h2><p class="lead">Databases are designed, not just created. The usual path goes from what users need, through a design that has nothing to do with any product, down to tables, indexes and finally a running system. Real projects loop back as requirements change.</p>
+<div id="w-life" class="card"></div>
+<p class="muted">Textbooks name and group these phases slightly differently (some merge testing into implementation, some add a separate "data model mapping" step). The order and the ideas are what matter.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="life"></div><p><button type="button" class="btn" data-markdone="life">Mark section as done</button></p></section>
+<section class="mod" id="need"><h2><span class="num">09</span>Do you need a DBMS?</h2><p class="lead">Knowing what a DBMS does helps you decide when you need one. For each scenario choose the better fit, then read the reasoning. Some real cases are close calls, so the reasons matter more than the label.</p>
+<div id="w-need" class="card"></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="need"></div><p><button type="button" class="btn" data-markdone="need">Mark section as done</button></p></section>
+<section class="mod" id="final"><h2><span class="num">10</span>Final check</h2><p class="lead">Ten questions that mix everything in this module. Take your time; each answer is explained.</p>
+<div class="quiz" data-quiz="final"></div>
+<h3>Files</h3>
+<ul><li><a href="labs/m1_demo.sql">labs/m1_demo.sql</a>: the demo database for MySQL 8.4 (creates the database <code>m1_demo</code>). Running it again resets the data.</li></ul></section>
+
+<p class="nav-foot">Tutorial date: October 29, 2026. Progress, quiz answers and drafts stay in your own browser.</p>
+</main>
+</div>
+</div>
+<script>window.TK_QUIZ={"start": [{"q": "Which of these is a DBMS?", "o": ["The customer table", "A list of phone numbers", "A SQL query", "MySQL"], "a": 3, "e": "A DBMS is software. A table or a list is data, and a query is a request to the DBMS."}, {"q": "What is the <b>schema<\/b> of a database?", "o": ["The data stored right now", "The description of its structure and rules", "The server hardware", "The user's password"], "a": 1, "e": "The data stored at one moment is the <em>instance<\/em> (or state). The schema changes rarely; the instance changes constantly."}, {"q": "A \"database system\" means:", "o": ["Only the hardware", "Only the DBMS software", "The database, the DBMS and the applications and people that use them", "Only the data files"], "a": 2, "e": "The three together are the database system."}], "files": [{"q": "The Sales program updated Ana's phone but Billing still shows the old one. This is called:", "o": ["Data inconsistency caused by redundancy", "Normalization", "Concurrency", "Encryption"], "a": 0, "e": "The fact is stored in several places and the copies no longer agree."}, {"q": "Adding a column to a file requires changing every program that reads the file. This is:", "o": ["Program-data dependence", "Referential integrity", "Data independence", "Query optimization"], "a": 0, "e": "The structure of the data is built into the programs. A DBMS keeps the structure in its catalog instead."}, {"q": "Which problem is <em>not<\/em> solved just by storing everything in one place?", "o": ["Two users changing the same row at the same moment", "Redundancy", "Inconsistent copies", "Duplicate files"], "a": 0, "e": "Sharing one copy removes redundancy, but concurrent changes still need transactions and locking, which the DBMS provides."}], "services": [{"q": "Where does a DBMS keep the definitions of tables and columns?", "o": ["In each application program", "Nowhere; it guesses from the rows", "In the operating system", "In its own catalog (data dictionary), as data"], "a": 3, "e": "This is the \"self-describing\" property. In MySQL you can query it through <code>information_schema<\/code>."}, {"q": "Which service stops two clerks from overwriting each other's changes to the same record?", "o": ["Normalization", "Views", "Data typing", "Concurrency control"], "a": 3, "e": "Concurrency control, implemented with transactions and locks, is covered in Module 10."}, {"q": "Which of these is a good reason <em>not<\/em> to use a DBMS?", "o": ["The data must be protected from unauthorized users", "Many users need the data at once", "Queries are unpredictable", "A small, fixed data set is used by one program only"], "a": 3, "e": "For small, simple, single-program data, files can be simpler and cheaper. The other three are exactly what a DBMS is for."}], "schema3": [{"q": "Adding an index to speed up a query, without changing any application code, shows:", "o": ["Referential integrity", "Atomicity", "Logical data independence", "Physical data independence"], "a": 3, "e": "The internal schema changed and nothing above it needed to."}, {"q": "Which level contains <em>views<\/em>?", "o": ["Physical", "External", "Internal", "Conceptual"], "a": 1, "e": "A view is an external schema: the data as one group of users sees it."}, {"q": "A designer splits one wide table into two tables, and a redefined view keeps the old shape for the program. This shows:", "o": ["Recovery", "Logical data independence", "Physical data independence", "Concurrency control"], "a": 1, "e": "The conceptual schema changed, and the external schema (the view) hid the change."}, {"q": "Which schema describes files, pages and indexes?", "o": ["Conceptual", "None of them", "Internal", "External"], "a": 2, "e": "That is the internal (physical) schema."}], "arch": [{"q": "Which component decides <em>how<\/em> a query will be run (which index, which join order)?", "o": ["Parser", "Buffer pool", "Query optimizer", "Client"], "a": 2, "e": "The optimizer chooses the execution plan. <code>EXPLAIN<\/code> shows it."}, {"q": "What is the purpose of the buffer pool?", "o": ["To check syntax", "To store passwords", "To log changes", "To cache data and index pages in memory so fewer disk reads are needed"], "a": 3, "e": "Memory is far faster than disk, so recently used pages are kept in the pool."}, {"q": "The redo log exists mainly so that:", "o": ["Committed changes survive a crash", "Queries run faster by sorting", "Users can log in", "Tables can be renamed"], "a": 0, "e": "After a crash the server replays the log to restore committed work."}, {"q": "A statement with a misspelled keyword is rejected by the:", "o": ["Buffer pool", "Parser", "Storage engine", "Disk"], "a": 1, "e": "The parser checks that the text is valid SQL. Our example returned error 1064."}], "roles": [{"q": "<code>ALTER TABLE<\/code> belongs to which group?", "o": ["DDL", "DML", "DCL", "TCL"], "a": 0, "e": "It changes the structure of a table."}, {"q": "<code>GRANT SELECT ON ... TO ...<\/code> belongs to which group?", "o": ["DML", "DCL", "DDL", "TCL"], "a": 1, "e": "It controls who may do what."}, {"q": "Who is mainly responsible for backups and account management?", "o": ["The end user", "The application user", "The parser", "The DBA"], "a": 3, "e": "Administration is the DBA's job."}, {"q": "<code>COMMIT<\/code> belongs to which group?", "o": ["DQL", "DDL", "DCL", "TCL"], "a": 3, "e": "It ends a transaction and makes its changes permanent."}], "env": [{"q": "In a three-tier web application, which component talks directly to the database server?", "o": ["The user's keyboard", "The user's browser", "The internet router only", "The application server"], "a": 3, "e": "The browser talks to the application server, and only that server connects to the database."}, {"q": "SQLite is called \"embedded\" because:", "o": ["It runs inside the application as a library, with no separate server", "It cannot use SQL", "It needs a cluster", "It only stores images"], "a": 0, "e": "There is no server process; the application reads and writes a database file through the library."}], "life": [{"q": "An ER diagram is the main product of which phase?", "o": ["Conceptual design", "Maintenance", "Requirements", "Physical design"], "a": 0, "e": "Conceptual design is independent of any DBMS."}, {"q": "Choosing which columns to index happens in:", "o": ["Requirements", "Conceptual design", "Physical design", "Logical design"], "a": 2, "e": "Indexes are a physical design decision (and, as you saw, they do not change the application)."}, {"q": "Converting an EER diagram to relational tables is part of:", "o": ["Logical design", "Testing", "Operation", "Conceptual design"], "a": 0, "e": "Mapping to the chosen data model is logical design."}, {"q": "Why is design done in separate phases?", "o": ["Each phase hides details of the next, so errors are cheaper to fix early", "DBMSs require it", "It is a tradition only", "To make documents longer"], "a": 0, "e": "A mistake found in the requirements costs far less than one found after data and programs exist."}], "need": [{"q": "Which of these most strongly calls for a DBMS?", "o": ["A single CSV read once", "A to-do list for one person", "A file of 10 settings", "A shared inventory updated by many users at once"], "a": 3, "e": "Concurrent shared updates need transactions and integrity."}, {"q": "Which statement is correct?", "o": ["It depends on size, users, rules and how the data changes", "Files are always better than a DBMS", "Only large companies use a DBMS", "A DBMS is always better than files"], "a": 0, "e": "SQLite databases run inside phone apps; spreadsheets run entire small businesses. Match the tool to the need."}], "final": [{"q": "A <b>database<\/b> is:", "o": ["A server computer", "A query language", "An organized collection of related data", "The software that manages data"], "a": 2, "e": "The software is the DBMS."}, {"q": "Storing the same phone number in three files leads most directly to:", "o": ["Data independence", "Faster queries", "Possible inconsistency", "Better security"], "a": 2, "e": "Copies can diverge, as the simulator showed."}, {"q": "The <b>instance<\/b> of a database is:", "o": ["Its structure", "The data stored at one moment", "The DBMS version", "Its set of constraints"], "a": 1, "e": "The structure is the schema."}, {"q": "Which level of the three-schema architecture is closest to the user?", "o": ["Internal", "External", "Physical", "Conceptual"], "a": 1, "e": "External schemas are the users' views."}, {"q": "Creating an index changes which schema?", "o": ["Conceptual", "External", "All three", "Internal"], "a": 3, "e": "Indexes are part of the internal schema, which is why programs need no change."}, {"q": "Which component translates a query into an execution plan?", "o": ["Client", "Optimizer", "Catalog", "Parser"], "a": 1, "e": "The parser checks syntax; the optimizer plans."}, {"q": "<code>information_schema<\/code> in MySQL is an example of:", "o": ["A storage engine", "A backup", "A self-describing catalog", "A view of the OS"], "a": 2, "e": "The DBMS stores its own metadata and lets you query it."}, {"q": "<code>INSERT<\/code> belongs to:", "o": ["DCL", "DML", "DDL", "TCL"], "a": 1, "e": "It changes data."}, {"q": "In a three-tier web application, why is the database server not exposed to browsers?", "o": ["It is required by MySQL", "It makes pages load faster", "It reduces the attack surface: only the application server can reach it", "Browsers cannot read SQL"], "a": 2, "e": "Fewer exposed machines means fewer ways in."}, {"q": "Which phase produces an ER diagram?", "o": ["Maintenance", "Testing", "Physical design", "Conceptual design"], "a": 3, "e": "Conceptual design is independent of any DBMS."}]};</script>
+<script>
+(function(){
+'use strict';
+var SLUG = document.documentElement.getAttribute('data-slug') || 'tutorial';
+var $ = function(s,r){return (r||document).querySelector(s)};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('tk:'+SLUG+':'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem('tk:'+SLUG+':'+k,JSON.stringify(v))}catch(e){}},
+  clear:function(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('tk:'+SLUG+':')===0)localStorage.removeItem(k)})}catch(e){}}
+};
+window.TK={$:$,$$:$$,el:el,store:store,slug:SLUG};
+
+/* copy buttons */
+$$('.code').forEach(function(c){
+  var b=$('button',c); if(!b) return;
+  b.addEventListener('click',function(){
+    var t=$('pre',c).textContent;
+    function done(){var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o},1200)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fallback(t,done)})}else fallback(t,done);
+  });
+});
+function fallback(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb()}catch(e){}document.body.removeChild(ta)}
+
+/* section nav */
+var secs=$$('section.mod'), links=$$('nav.side a[data-sec]');
+var done=store.get('done',{});
+function paintDone(){links.forEach(function(a){var t=$('.tick',a);if(t)t.textContent=done[a.getAttribute('data-sec')]?'✓':''})}
+paintDone();
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('active',a.getAttribute('data-sec')===e.target.id)})}
+  })},{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(function(s){io.observe(s)});
+}
+$$('button[data-markdone]').forEach(function(b){
+  var id=b.getAttribute('data-markdone');
+  function paint(){b.textContent=done[id]?'Marked as done ✓':'Mark section as done';b.setAttribute('aria-pressed',done[id]?'true':'false')}
+  paint();
+  b.addEventListener('click',function(){done[id]=!done[id];store.set('done',done);paint();paintDone()});
+});
+var reset=$('#tk-reset'); if(reset) reset.addEventListener('click',function(){if(confirm('Clear your saved progress and quiz answers in this browser?')){store.clear();location.reload()}});
+
+/* quizzes: data in window.TK_QUIZ = {id:[{q,o:[],a,e}]} */
+TK.quiz=function(box){
+  var id=box.getAttribute('data-quiz'), qs=(window.TK_QUIZ||{})[id]||[];
+  var saved=store.get('quiz:'+id,{});
+  box.innerHTML='';
+  var score=el('p','score'); score.setAttribute('aria-live','polite');
+  var retry=el('button','btn','Try again'); retry.type='button'; retry.hidden=true;
+  function refresh(){
+    var n=Object.keys(saved).length, r=0; qs.forEach(function(q,i){if(saved[i]===q.a)r++});
+    score.textContent=n<qs.length?'Answer each question. Feedback appears right away.':'Score: '+r+' of '+qs.length+'.';
+    retry.hidden=n<qs.length;
+  }
+  qs.forEach(function(q,i){
+    var fs=el('fieldset','q'); var lg=el('legend'); lg.innerHTML=(i+1)+'. '+q.q; fs.appendChild(lg);
+    if(q.code){var pre=el('pre','',q.code);pre.style.cssText='background:var(--code-bg);color:var(--code-ink);border-radius:8px;margin:8px 0';fs.appendChild(pre)}
+    var opts=el('div','opts'), fb=el('p','fb'); fb.setAttribute('aria-live','polite'); var bs=[];
+    function reveal(c){
+      bs.forEach(function(b,j){b.disabled=true;if(j===q.a)b.classList.add('right');else if(j===c)b.classList.add('wrong')});
+      fb.textContent=''; fb.appendChild(el('b',c===q.a?'ok':'no',c===q.a?'Correct. ':'Not quite. ')); var ex=el('span'); ex.innerHTML=q.e; fb.appendChild(ex);
+    }
+    q.o.forEach(function(t,j){var b=el('button','opt');b.innerHTML=t;b.type='button';b.addEventListener('click',function(){saved[i]=j;store.set('quiz:'+id,saved);reveal(j);refresh()});bs.push(b);opts.appendChild(b)});
+    fs.appendChild(opts); fs.appendChild(fb); box.appendChild(fs);
+    if(saved[i]!==undefined) reveal(saved[i]);
+  });
+  retry.addEventListener('click',function(){store.set('quiz:'+id,{});TK.quiz(box)});
+  box.appendChild(score); box.appendChild(retry); refresh();
+};
+$$('[data-quiz]').forEach(TK.quiz);
+
+/* result-set table builder: cols[], rows[][] */
+TK.table=function(cols,rows,opt){
+  opt=opt||{};
+  var w=el('div','rs'), t=el('table'), th=el('thead'), tr=el('tr');
+  cols.forEach(function(c,ci){var isnum=rows.length&&rows.some(function(r){return typeof r[ci]==='number'})&&rows.every(function(r){return r[ci]===null||typeof r[ci]==='number'});tr.appendChild(el('th',isnum?'num':null,c))}); th.appendChild(tr); t.appendChild(th);
+  var tb=el('tbody');
+  rows.forEach(function(r,ri){var tr=el('tr'); if(opt.rowClass){var c=opt.rowClass(r,ri);if(c)tr.className=c}
+    r.forEach(function(v){var td=el('td',v===null?'null':(typeof v==='number'?'num':''),v===null?'NULL':String(v));tr.appendChild(td)});tb.appendChild(tr)});
+  t.appendChild(tb); w.appendChild(t); return w;
+};
+})();
+
+</script>
+<script>window.M1={"version": "8.4.2", "files": {"before": "555-0101", "after": "555-0999"}, "nodes": [{"id": "app", "label": "Applications and users", "short": "Clients", "text": "Programs, Workbench, the mysql command-line client and web apps. They send SQL and receive results. They never touch the data files directly: that is the point of a DBMS.", "tag": null}, {"id": "conn", "label": "Connection handling and security", "short": "Connections", "text": "Each client connects, is authenticated (who are you?) and gets a session. MySQL serves each connection with its own thread. Privileges are checked here and as statements run (Module 10).", "tag": "conn"}, {"id": "parser", "label": "Parser", "short": "Parser", "text": "Turns the SQL text into a structure the server understands and rejects text that is not valid SQL. The error below came from a real MySQL server given a misspelled keyword.", "tag": "parser"}, {"id": "opt", "label": "Query optimizer", "short": "Optimizer", "text": "Decides <em>how<\/em> to run the query: which index to use, which table to read first, how to join. SQL says what you want; the optimizer picks the plan. This is the relational algebra idea of Module 3 at work. The plan below was produced by <code>EXPLAIN FORMAT=TREE<\/code>.", "tag": "opt"}, {"id": "exec", "label": "Executor", "short": "Executor", "text": "Carries out the chosen plan step by step, asking the storage engine for rows and combining them. It returns rows to the client as the plan produces them.", "tag": null}, {"id": "engine", "label": "Storage engines", "short": "Storage engines", "text": "MySQL separates the SQL layer from the storage layer. The storage engine is the part that stores and retrieves rows, and different engines have different abilities. <b>InnoDB<\/b> (the default) supports transactions and foreign keys. The table below is read from the server's own catalog.", "tag": "engines"}, {"id": "buffer", "label": "Buffer pool (memory cache)", "short": "Buffer pool", "text": "Reading from disk is slow, so InnoDB keeps recently used data and index <em>pages<\/em> in memory, in the <b>buffer pool<\/b>. A page is the unit of storage and of disk reads. Tuning the pool size is one of the most important performance settings.", "tag": "buffer"}, {"id": "tx", "label": "Transaction and lock manager", "short": "Transactions, locks", "text": "Keeps concurrent users from interfering (isolation) and makes a transaction all-or-nothing (atomicity). It uses locks and old row versions. See Module 10.", "tag": null}, {"id": "log", "label": "Logging and recovery", "short": "Logs, recovery", "text": "Changes are written to a <b>redo log<\/b> so that committed work survives a crash, and an <b>undo log<\/b> lets a transaction roll back and lets other readers see older row versions. After a crash the server replays the log to recover. The settings below control this.", "tag": "log"}, {"id": "catalog", "label": "Data dictionary (catalog)", "short": "Catalog", "text": "A database describes itself. The names of tables, columns, types and keys are stored in the DBMS as data and can be queried like any other data, through <code>information_schema<\/code>. This is the \"self-describing\" property of a database system.", "tag": "catalog"}, {"id": "disk", "label": "Files on disk", "short": "Disk", "text": "Finally, data lives in files: tablespaces for table data and indexes, plus the log files. Applications should never read or edit these directly. Only the DBMS does.", "tag": null}], "arch": {"conn": "+----------------+------------+-----------------+\n| account        | current_db | max_connections |\n+----------------+------------+-----------------+\n| root@localhost | m1_demo    |             151 |\n+----------------+------------+-----------------+\n1 row in set", "parser": "ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELEC * FROM customer'", "opt": "*************************** 1. row ***************************\nEXPLAIN: -> Inner hash join (p.customer_id = c.customer_id)  (cost=1.5 rows=6)\n    -> Table scan on p  (cost=0.85 rows=6)\n    -> Hash\n        -> Filter: (c.city = 'Muncie')  (cost=0.65 rows=1)\n            -> Table scan on c  (cost=0.65 rows=4)\n\n1 row in set", "engines": "+--------+---------+--------------+------+------------+\n| engine | support | transactions | xa   | savepoints |\n+--------+---------+--------------+------+------------+\n| CSV    | YES     | NO           | NO   | NO         |\n| InnoDB | DEFAULT | YES          | YES  | YES        |\n| MEMORY | YES     | NO           | NO   | NO         |\n| MyISAM | YES     | NO           | NO   | NO         |\n+--------+---------+--------------+------+------------+\n4 rows in set", "buffer": "+-----------------+-----------------+\n| buffer_pool_mib | page_size_bytes |\n+-----------------+-----------------+\n|    128.00000000 |           16384 |\n+-----------------+-----------------+\n1 row in set", "log": "+-----------------+---------------------+\n| flush_at_commit | lock_wait_timeout_s |\n+-----------------+---------------------+\n|               1 |                  50 |\n+-----------------+---------------------+\n1 row in set", "catalog": "+------------+------------+--------+\n| TABLE_NAME | TABLE_TYPE | ENGINE |\n+------------+------------+--------+\n| customer   | BASE TABLE | InnoDB |\n| purchase   | BASE TABLE | InnoDB |\n| v_billing  | VIEW       | NULL   |\n| v_sales    | VIEW       | NULL   |\n| v_support  | VIEW       | NULL   |\n+------------+------------+--------+\n5 rows in set", "catalog2": "+-------------+-----------+-------------+------------+\n| COLUMN_NAME | DATA_TYPE | IS_NULLABLE | COLUMN_KEY |\n+-------------+-----------+-------------+------------+\n| customer_id | int       | NO          | PRI        |\n| name        | varchar   | NO          |            |\n| phone       | varchar   | NO          |            |\n| city        | varchar   | NO          |            |\n+-------------+-----------+-------------+------------+\n4 rows in set"}, "ind": [{"title": "1. The starting point", "note": "One stored table, and one external schema (a view) that the application uses.", "sql": "CREATE TABLE orders_flat (order_id INT PRIMARY KEY, customer_name VARCHAR(30), item VARCHAR(30), qty INT);\nINSERT INTO orders_flat VALUES (1,'Ana','Notebook',3),(2,'Ana','Pencil',10),(3,'Ben','Stapler',1),(4,'Cara','Notebook',2),(5,'Cara','Marker',4),(6,'Dev','Pencil',6);\nCREATE VIEW v_app_orders AS SELECT order_id, customer_name, item, qty FROM orders_flat;", "out": "Query OK, 0 rows affected\n\nQuery OK, 6 rows affected\nRecords: 6  Duplicates: 0  Warnings: 0\n\nQuery OK, 0 rows affected"}, {"title": "2. The application's query", "note": "This is the only thing the application knows about. It never mentions how the data is stored.", "sql": "SELECT customer_name, item, qty FROM v_app_orders WHERE customer_name = 'Cara' ORDER BY order_id;", "out": "+---------------+----------+------+\n| customer_name | item     | qty  |\n+---------------+----------+------+\n| Cara          | Notebook |    2 |\n| Cara          | Marker   |    4 |\n+---------------+----------+------+\n2 rows in set"}, {"title": "3. How MySQL runs it today", "note": "Internal level: type ALL means a scan of every row of the table.", "sql": "EXPLAIN SELECT order_id FROM orders_flat WHERE customer_name = 'Cara';", "out": "+----+-------------+-------------+------------+------+---------------+------+---------+------+------+----------+-------------+\n| id | select_type | table       | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra       |\n+----+-------------+-------------+------------+------+---------------+------+---------+------+------+----------+-------------+\n|  1 | SIMPLE      | orders_flat | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    6 |    16.67 | Using where |\n+----+-------------+-------------+------------+------+---------------+------+---------+------+------+----------+-------------+\n1 row in set, 1 warning"}, {"title": "4. Change the internal level: add an index", "note": "A physical design change. No application code is touched.", "sql": "CREATE INDEX idx_orders_cust ON orders_flat (customer_name);", "out": "Query OK, 0 rows affected\nRecords: 0  Duplicates: 0  Warnings: 0"}, {"title": "5. The plan changed", "note": "type ref with the new index: MySQL now looks the rows up directly instead of scanning. Same query, different physical path.", "sql": "EXPLAIN SELECT order_id FROM orders_flat WHERE customer_name = 'Cara';", "out": "+----+-------------+-------------+------------+------+-----------------+-----------------+---------+-------+------+----------+-------------+\n| id | select_type | table       | partitions | type | possible_keys   | key             | key_len | ref   | rows | filtered | Extra       |\n+----+-------------+-------------+------------+------+-----------------+-----------------+---------+-------+------+----------+-------------+\n|  1 | SIMPLE      | orders_flat | NULL       | ref  | idx_orders_cust | idx_orders_cust | 123     | const |    2 |   100.00 | Using index |\n+----+-------------+-------------+------------+------+-----------------+-----------------+---------+-------+------+----------+-------------+\n1 row in set, 1 warning"}, {"title": "6. The application runs the same query again", "note": "Same rows, same order. This is <b>physical data independence<\/b>.", "sql": "SELECT customer_name, item, qty FROM v_app_orders WHERE customer_name = 'Cara' ORDER BY order_id;", "out": "+---------------+----------+------+\n| customer_name | item     | qty  |\n+---------------+----------+------+\n| Cara          | Notebook |    2 |\n| Cara          | Marker   |    4 |\n+---------------+----------+------+\n2 rows in set"}, {"title": "7. Change the conceptual level: split one table into two", "note": "A logical design change (this is what normalization does, Module 7). The view is redefined to hide the change.", "sql": "CREATE TABLE cust2 (customer_id INT PRIMARY KEY, customer_name VARCHAR(30) NOT NULL UNIQUE);\nINSERT INTO cust2 VALUES (1,'Ana'),(2,'Ben'),(3,'Cara'),(4,'Dev');\nCREATE TABLE orders2 (order_id INT PRIMARY KEY, customer_id INT NOT NULL, item VARCHAR(30), qty INT, FOREIGN KEY (customer_id) REFERENCES cust2(customer_id));\nINSERT INTO orders2 SELECT o.order_id, c.customer_id, o.item, o.qty FROM orders_flat o JOIN cust2 c ON c.customer_name = o.customer_name;\nDROP VIEW v_app_orders;\nDROP TABLE orders_flat;\nCREATE VIEW v_app_orders AS SELECT o.order_id, c.customer_name, o.item, o.qty FROM orders2 o JOIN cust2 c ON c.customer_id = o.customer_id;", "out": "Query OK, 0 rows affected\n\nQuery OK, 4 rows affected\nRecords: 4  Duplicates: 0  Warnings: 0\n\nQuery OK, 0 rows affected\n\nQuery OK, 6 rows affected\nRecords: 6  Duplicates: 0  Warnings: 0\n\nQuery OK, 0 rows affected\n\nQuery OK, 0 rows affected\n\nQuery OK, 0 rows affected"}, {"title": "8. The application runs the same query a third time", "note": "Same rows again. The application never changed. This is <b>logical data independence<\/b>, here achieved with a view.", "sql": "SELECT customer_name, item, qty FROM v_app_orders WHERE customer_name = 'Cara' ORDER BY order_id;", "out": "+---------------+----------+------+\n| customer_name | item     | qty  |\n+---------------+----------+------+\n| Cara          | Notebook |    2 |\n| Cara          | Marker   |    4 |\n+---------------+----------+------+\n2 rows in set"}], "life": [{"id": "req", "name": "Requirements", "what": "Find out what the users need to store and what questions they will ask.", "makes": "Written requirements, a list of data and operations", "where": "Interviews, forms and reports", "tut": "Start of the ER/EER tutorial"}, {"id": "con", "name": "Conceptual design", "what": "Describe the data independently of any DBMS: entities, attributes, relationships and constraints.", "makes": "An ER or EER diagram", "where": "", "tut": "ER/EER tutorial"}, {"id": "log", "name": "Logical design", "what": "Convert the conceptual design to the data model of the chosen DBMS and improve it.", "makes": "Relational schema in normal form", "where": "", "tut": "Module 2 (mapping) and the normalization tutorial"}, {"id": "phy", "name": "Physical design", "what": "Choose storage structures, indexes and settings for performance.", "makes": "CREATE TABLE and CREATE INDEX statements, configuration", "where": "", "tut": "Physical design and indexing tutorial"}, {"id": "imp", "name": "Implementation and loading", "what": "Create the schema, load data, write the applications and set up accounts.", "makes": "A working database and programs", "where": "", "tut": "Modules 4, 8 and 10"}, {"id": "tst", "name": "Testing", "what": "Check that data is correct, queries are right and fast enough, and security works.", "makes": "Test results", "where": "", "tut": "Modules 4, 9 and 10"}, {"id": "mnt", "name": "Operation and maintenance", "what": "Back up, monitor, tune, fix and adapt as needs change. Changes may send you back to an earlier phase.", "makes": "A database that stays correct and fast", "where": "", "tut": "Modules 9 and 10"}], "need": [{"s": "A personal packing list you edit on your phone.", "a": "file", "why": "One user, small, simple, no sharing and no need for rules or recovery. A note or spreadsheet is enough."}, {"s": "A university registration system: 20,000 students, hundreds of staff, many changes every minute, strict rules about prerequisites and capacity.", "a": "dbms", "why": "Many concurrent users, many relationships, integrity rules, security and recovery are all required. This is the classic DBMS case."}, {"s": "One researcher analyzes a 5,000-row CSV once and writes up the result.", "a": "file", "why": "A single user doing a one-off analysis. A spreadsheet or a script is the simplest tool. (If the work grows to many users or repeated updates, revisit this.)"}, {"s": "An online shop must never sell more units than it has in stock, even when thousands of customers check out at once.", "a": "dbms", "why": "Concurrent updates to the same quantity need transactions and locking. Files cannot provide that safely."}, {"s": "A program reads ten configuration settings from a small file at start-up.", "a": "file", "why": "Tiny, fixed and read by one program. A DBMS would add far more machinery than the job needs."}, {"s": "A hospital stores patient records. Nurses, doctors and billing staff need different access, and every change must be traceable.", "a": "dbms", "why": "Security and authorization by role, integrity, concurrent access and recovery are central."}, {"s": "A web server writes one line per request to a log, appended and rarely read except in batch reports.", "a": "file", "why": "Append-only, simple records. Plain log files are the usual choice (specialised log tools exist, but this does not call for a general DBMS)."}, {"s": "A company wants to answer new, unpredictable questions about its sales every week.", "a": "dbms", "why": "Unpredictable questions are what a query language and an optimizer are for. With files you would write a new program for each question."}]};</script>
+<script>
+(function(){
+'use strict';
+var $=TK.$, $$=TK.$$, el=TK.el, D=window.M1;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function pre(label,text){var c=el('div','code');c.innerHTML='<div class="bar"><span>'+esc(label)+'</span></div>';c.appendChild(el('pre',null,text));return c}
+
+/* ===== files vs DBMS ===== */
+(function(){
+  var box=$('#w-files'); if(!box) return;
+  var apps=['Sales','Billing','Support'], start=D.files.before, mode='files', files, db;
+  box.innerHTML='<div class="row"><label>Storage <select id="fl-m"><option value="files">Three separate files (one per program)</option><option value="db">One shared database</option></select></label>'+
+    '<label>Program that learns the new number <select id="fl-w">'+apps.map(function(a){return '<option>'+a+'</option>'}).join('')+'</select></label>'+
+    '<label>New phone for Ana <input id="fl-p" value="'+D.files.after+'"></label></div>'+
+    '<p><button type="button" class="btn primary" id="fl-s">Save</button> <button type="button" class="btn" id="fl-r">Reset</button></p>'+
+    '<div class="grid2" id="fl-c"></div><p id="fl-msg" aria-live="polite" style="font-weight:600"></p>';
+  function reset(){files={Sales:start,Billing:start,Support:start};db=start;$('#fl-msg',box).textContent='';draw()}
+  function val(a){return mode==='db'?db:files[a]}
+  function draw(){var c=$('#fl-c',box);c.innerHTML='';apps.forEach(function(a){var d=el('div','card');d.style.margin='0';d.innerHTML='<b>'+a+' program</b><br>Ana\'s phone: <code id="fl-v-'+a+'">'+esc(val(a))+'</code>';c.appendChild(d)})}
+  $('#fl-m',box).addEventListener('change',function(e){mode=e.target.value;reset()});
+  $('#fl-r',box).addEventListener('click',reset);
+  $('#fl-s',box).addEventListener('click',function(){
+    var w=$('#fl-w',box).value, p=$('#fl-p',box).value.trim()||start;
+    if(mode==='db') db=p; else files[w]=p;
+    draw();
+    var vals=apps.map(val), same=vals.every(function(v){return v===vals[0]});
+    $('#fl-msg',box).innerHTML=same?'<span class="ok">All three programs agree.</span>':'<span class="no">Inconsistent: the programs disagree about Ana\'s phone number.</span>';
+  });
+  reset();
+})();
+
+/* ===== architecture ===== */
+(function(){
+  var box=$('#w-arch'); if(!box) return;
+  box.innerHTML='<div class="grid2"><div id="ar-l" role="list"></div><div id="ar-d" aria-live="polite"></div></div>';
+  var l=$('#ar-l',box), d=$('#ar-d',box), btns=[];
+  D.nodes.forEach(function(n,i){
+    var b=el('button','btn',(i+1)+'. '+n.label); b.type='button'; b.id='ar-b-'+n.id; b.style.cssText='display:block;width:100%;text-align:left;margin:0 0 6px';
+    b.addEventListener('click',function(){show(n,b)}); l.appendChild(b); btns.push(b);
+  });
+  function show(n,b){
+    btns.forEach(function(x){x.classList.toggle('primary',x===b);x.setAttribute('aria-pressed',x===b?'true':'false')});
+    d.innerHTML='<h4 id="ar-t" style="margin-top:0">'+esc(n.label)+'</h4><div id="ar-x">'+n.text+'</div>';
+    if(n.tag&&D.arch[n.tag]) d.appendChild(pre('Real output from MySQL '+D.version,D.arch[n.tag]));
+  }
+  show(D.nodes[0],btns[0]);
+})();
+
+/* ===== independence stepper ===== */
+(function(){
+  var box=$('#w-ind'); if(!box) return; var i=0, S=D.ind;
+  box.innerHTML='<p><button type="button" class="btn" id="in-p">Previous</button> <button type="button" class="btn primary" id="in-n">Next step</button> <span id="in-c" class="muted" style="margin-left:8px"></span></p><div id="in-b"></div>';
+  function draw(){
+    var s=S[i]; $('#in-c',box).textContent='Step '+(i+1)+' of '+S.length;
+    $('#in-p',box).disabled=i===0; $('#in-n',box).disabled=i===S.length-1;
+    var b=$('#in-b',box); b.innerHTML='<h4 id="in-t" style="margin:6px 0">'+esc(s.title)+'</h4><p>'+s.note+'</p>';
+    b.appendChild(pre('SQL',s.sql)); b.appendChild(pre('Output (MySQL '+D.version+')',s.out));
+  }
+  $('#in-p',box).addEventListener('click',function(){if(i>0){i--;draw()}});
+  $('#in-n',box).addEventListener('click',function(){if(i<S.length-1){i++;draw()}});
+  draw();
+})();
+
+/* ===== lifecycle ===== */
+(function(){
+  var box=$('#w-life'); if(!box) return; var L=D.life;
+  box.innerHTML='<div id="lf-t" role="tablist" style="display:flex;flex-wrap:wrap;gap:6px"></div><div id="lf-d" style="margin-top:12px" aria-live="polite"></div>';
+  var t=$('#lf-t',box), d=$('#lf-d',box), bs=[];
+  L.forEach(function(p,i){var b=el('button','btn',(i+1)+'. '+p.name);b.type='button';b.id='lf-b-'+p.id;b.addEventListener('click',function(){show(i)});t.appendChild(b);bs.push(b)});
+  function show(i){var p=L[i];bs.forEach(function(b,j){b.classList.toggle('primary',j===i)});
+    d.innerHTML='<h4 style="margin-top:0">'+esc(p.name)+'</h4><p>'+esc(p.what)+'</p><p><b>Produces:</b> '+esc(p.makes)+'</p><p><b>Covered in:</b> '+esc(p.tut)+'</p><p class="muted">'+(i<L.length-1?'Next: '+esc(L[i+1].name):'Changes in needs send the project back to an earlier phase.')+'</p>'}
+  show(0);
+})();
+
+/* ===== need a DBMS ===== */
+(function(){
+  var box=$('#w-need'); if(!box) return; var N=D.need, got={};
+  var h='<div id="nd-l"></div><p id="nd-s" class="score" aria-live="polite"></p>';
+  box.innerHTML=h; var l=$('#nd-l',box);
+  N.forEach(function(n,i){
+    var f=el('fieldset','q'); f.innerHTML='<legend>'+(i+1)+'. '+esc(n.s)+'</legend><div class="opts"><button type="button" class="opt" data-c="file">Plain file or spreadsheet is fine</button><button type="button" class="opt" data-c="dbms">Use a DBMS</button></div><p class="fb" aria-live="polite"></p>';
+    $$('.opt',f).forEach(function(b){b.addEventListener('click',function(){
+      var c=b.getAttribute('data-c'); got[i]=(c===n.a); $$('.opt',f).forEach(function(x){x.disabled=true;if(x.getAttribute('data-c')===n.a)x.classList.add('right');else if(x===b)x.classList.add('wrong')});
+      $('.fb',f).innerHTML='<b class="'+(c===n.a?'ok':'no')+'">'+(c===n.a?'Good call. ':'Not the best fit. ')+'</b>'+esc(n.why); score();
+    })});
+    l.appendChild(f);
+  });
+  function score(){var n=Object.keys(got).length,r=0;for(var k in got) if(got[k]) r++;$('#nd-s',box).textContent=n<N.length?n+' of '+N.length+' answered.':'Score: '+r+' of '+N.length+'.'}
+  score();
+})();
+})();
+
+</script>
+<!--dbm-end-->
+<nav class="dbm-end" aria-label="Previous and next tutorial"><a href="../environment-setup/" rel="prev"><small>&larr; Previous tutorial</small><b>Module 0: Environment setup</b></a><a class="dbm-next" href="../data-modeling/" rel="next"><small>Next tutorial &rarr;</small><b>Module 2: Data modeling and the relational model</b></a><a class="dbm-hub" href="../"><small>Course home</small><b>All tutorials</b></a></nav>
+<!--/dbm-end-->
+</body>
+</html>

@@ -1,0 +1,2208 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Module 5 Database Playbook</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout concept: a fixed lab-notebook rail on the left (progress, OS switch), long single-column lab pages on the right, each lab a stack of checkable steps. */
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --surface-2:#EAEEF1; --ink:#141E27; --muted:#4E5B68; --line:#D5DCE2;
+  --accent:#0B7A75; --accent-ink:#FFFFFF; --accent-soft:#DDF1EF;
+  --warn:#94570A; --warn-soft:#FBEBD0;
+  --ok:#1B7F3B; --bad:#B3261E;
+  --code-bg:#0F1A24; --code-ink:#E6EDF3; --code-line:#22303D; --code-mute:#8FA3B5; --code-key:#F2B255;
+  --out-bg:#E7ECEF;
+  --font-body:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-head:'DM Sans','IBM Plex Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0C141B; --surface:#121D27; --surface-2:#182631; --ink:#E6ECF1; --muted:#9AA9B7; --line:#24333F;
+  --accent:#45C7BD; --accent-ink:#06211F; --accent-soft:#123330;
+  --warn:#F0B45A; --warn-soft:#3A2C12; --ok:#5FD08A; --bad:#FF8A80;
+  --code-bg:#070D13; --code-line:#1E2B36; --out-bg:#0F1A23; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C141B; --surface:#121D27; --surface-2:#182631; --ink:#E6ECF1; --muted:#9AA9B7; --line:#24333F;
+  --accent:#45C7BD; --accent-ink:#06211F; --accent-soft:#123330;
+  --warn:#F0B45A; --warn-soft:#3A2C12; --ok:#5FD08A; --bad:#FF8A80;
+  --code-bg:#070D13; --code-line:#1E2B36; --out-bg:#0F1A23; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:24px}
+body{background:var(--bg);color:var(--ink);font:17px/1.65 var(--font-body);margin:0;padding-block:0}
+h1,h2,h3,h4{font-family:var(--font-head);line-height:1.15;margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--surface-2);padding:1px 6px;border-radius:4px;overflow-wrap:anywhere}
+.shell{display:grid;grid-template-columns:288px minmax(0,1fr);min-height:100vh}
+.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;max-height:100vh;overflow:auto;padding:28px 22px;border-right:1px solid var(--line);background:var(--surface);display:flex;flex-direction:column;gap:22px}
+.rail h1{font-size:22px}
+.rail .sub{color:var(--muted);font-size:14px;margin-top:6px}
+.label{font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-top:8px}
+.seg button{flex:1;font:500 14px var(--font-body);padding:8px 6px;background:transparent;color:var(--ink);border:0;cursor:pointer;min-width:0}
+.seg button+button{border-left:1px solid var(--line)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.nav ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px}
+.nav a{display:flex;flex-direction:column;gap:5px;padding:9px 10px;border-radius:8px;text-decoration:none;color:var(--ink);font-weight:500;font-size:15px}
+.nav a:hover{background:var(--surface-2)}
+.nav a[aria-current="true"]{background:var(--accent-soft)}
+.nav .row{display:flex;justify-content:space-between;gap:8px}
+.nav .pct{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.bar{height:5px;background:var(--surface-2);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:500 14px var(--font-body);padding:8px 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+main{padding:40px clamp(16px,4vw,56px) 96px;max-width:960px;min-width:0}
+.lab{display:flex;flex-direction:column;gap:20px;padding-bottom:64px}
+.lab>header{display:flex;flex-direction:column;gap:12px;padding-top:24px;padding-bottom:8px}
+.eyebrow{font-size:13px;letter-spacing:.09em;text-transform:uppercase;font-weight:600;color:var(--accent)}
+.lab h1{font-size:clamp(32px,5vw,48px)}
+.lab h2{font-size:clamp(28px,4vw,38px)}
+.lead{font-size:19px;color:var(--muted);max-width:66ch}
+.panel,.step{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel>h3{font-size:22px}
+.step>header{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.step>header h3{font-size:21px;flex:1 1 220px;min-width:0}
+.num{font:600 12px var(--font-mono);letter-spacing:.04em;text-transform:uppercase;padding:4px 10px;border-radius:99px;background:var(--surface-2);color:var(--muted);white-space:nowrap}
+.step.is-done .num{background:var(--accent);color:var(--accent-ink)}
+.done{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.done input{width:18px;height:18px;accent-color:var(--accent)}
+.step h4{font-size:16px;margin-top:6px}
+.step ul,.step ol,.panel ul,.panel ol{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.tile{display:flex;flex-direction:column;gap:6px;padding:18px;border:1px solid var(--line);border-radius:12px;background:var(--surface);text-decoration:none;color:var(--ink)}
+.tile:hover{border-color:var(--accent)}
+.tile b{font:700 19px var(--font-head)}
+.tile span{font-size:14px;color:var(--muted)}
+.tile .t{font:600 12px var(--font-mono);color:var(--accent);letter-spacing:.05em;text-transform:uppercase}
+.code{border-radius:10px;overflow:hidden;background:var(--code-bg);border:1px solid var(--code-line);min-width:0}
+.code-head{display:flex;justify-content:space-between;align-items:center;padding:6px 8px 6px 14px;border-bottom:1px solid var(--code-line);font:600 12px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--code-mute)}
+.copy{font:500 12px var(--font-body);background:transparent;color:var(--code-ink);border:1px solid var(--code-line);border-radius:6px;padding:4px 10px;cursor:pointer}
+.copy:hover{background:var(--code-line)}
+pre{margin:0;padding:14px 16px;overflow-x:auto;font:400 14px/1.6 var(--font-mono);color:var(--code-ink);tab-size:2}
+.expect{border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.expect>summary,.solution>summary,.more>summary{cursor:pointer;padding:10px 14px;font-weight:500;font-size:15px;background:var(--surface-2);list-style-position:inside}
+.expect pre{background:var(--out-bg);color:var(--ink);border-top:1px solid var(--line)}
+.solution{border:1px solid var(--line);border-radius:10px;overflow:hidden;min-width:0}
+.solution .code{border:0;border-radius:0}
+.more{border:1px solid var(--line);border-radius:10px;min-width:0}
+.more>div{padding:14px;display:flex;flex-direction:column;gap:12px}
+aside.note,aside.warn,aside.tip{border-radius:10px;padding:12px 16px;font-size:16px;border:1px solid var(--line);background:var(--accent-soft)}
+aside.warn{background:var(--warn-soft);border-color:var(--warn)}
+aside.note::before,aside.warn::before,aside.tip::before{display:block;font:700 12px var(--font-mono);letter-spacing:.09em;text-transform:uppercase;margin-bottom:4px;color:var(--accent)}
+aside.note::before{content:"Note"}
+aside.tip::before{content:"Try this"}
+aside.warn::before{content:"Watch out";color:var(--warn)}
+.table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:10px 14px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font:600 12px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--surface-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+.arch{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.arch>div{border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;background:var(--surface-2)}
+.arch h4{font-size:18px}
+.flow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px}
+.flow span{padding:6px 10px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.flow em{font-style:normal;color:var(--muted)}
+.erd{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.erd>div{border:1px solid var(--line);border-radius:10px;background:var(--surface-2);min-width:180px;flex:1 1 180px}
+.erd h4{font:700 14px var(--font-mono);padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.erd ul{list-style:none;margin:0;padding:8px 12px;font:400 13px/1.7 var(--font-mono)}
+.erd b{color:var(--accent)}
+.q{border:1px solid var(--line);border-radius:12px;padding:18px;margin:0;display:flex;flex-direction:column;gap:10px;min-width:0}
+.q legend{font-weight:600;padding:0 6px}
+.opt{display:block;width:100%;text-align:left;font:400 16px/1.45 var(--font-body);padding:10px 14px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--surface-2)}
+.opt.wrong{border-color:var(--bad)}
+.fb{font-size:15px;color:var(--muted)}
+.fb b.ok{color:var(--ok)} .fb b.no{color:var(--bad)}
+.score{font-weight:600}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:600 13px var(--font-mono);padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface-2)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button{font:500 14px var(--font-body);padding:7px 14px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+select,textarea{font:400 16px var(--font-body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;width:100%}
+textarea{min-height:200px;font-family:var(--font-mono);font-size:14px;line-height:1.6;resize:vertical}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+.cols>div{min-width:0;display:flex;flex-direction:column;gap:6px}
+.cols h4{font:600 12px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.wiz{display:flex;flex-direction:column;gap:14px}
+.wiz .ans{display:flex;gap:10px;flex-wrap:wrap}
+.result{background:var(--accent-soft);border:1px solid var(--accent);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:6px}
+.result b{font:700 22px var(--font-head)}
+.diagram{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.diagram>div{min-width:0}
+.hidden-slot[hidden]{display:none}
+@media (max-width:980px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .rail{position:static;max-height:none;border-right:0;border-bottom:1px solid var(--line);padding:20px 16px;gap:16px}
+  .nav ul{flex-direction:row;overflow-x:auto;gap:6px;padding-bottom:6px}
+  .nav a{min-width:132px;border:1px solid var(--line)}
+  main{padding-top:24px}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.bar i{transition:none}}
+</style>
+
+<div class="shell">
+<aside class="rail" aria-label="Playbook navigation">
+  <div>
+    <p class="label">COSC 431 · Module 5</p>
+    <h1>Database Playbook</h1>
+    <p class="sub">SQLite, PostgreSQL and MongoDB, hands on.</p>
+  </div>
+  <div>
+    <p class="label" id="os-label">Your computer</p>
+    <div class="seg" role="group" aria-labelledby="os-label" id="os-seg">
+      <button type="button" data-set-os="win" aria-pressed="false">Windows</button>
+      <button type="button" data-set-os="mac" aria-pressed="false">macOS</button>
+      <button type="button" data-set-os="linux" aria-pressed="false">Linux</button>
+    </div>
+  </div>
+  <nav class="nav" aria-label="Sections">
+    <p class="label">Sections</p>
+    <ul>
+      <li><a href="#start"><span class="row"><span>Start here</span></span></a></li>
+      <li><a href="#lab1"><span class="row"><span>Lab 1 · SQLite</span><span class="pct" data-pct="lab1">0%</span></span><span class="bar"><i data-bar="lab1"></i></span></a></li>
+      <li><a href="#lab2"><span class="row"><span>Lab 2 · PostgreSQL</span><span class="pct" data-pct="lab2">0%</span></span><span class="bar"><i data-bar="lab2"></i></span></a></li>
+      <li><a href="#lab3"><span class="row"><span>Lab 3 · MongoDB</span><span class="pct" data-pct="lab3">0%</span></span><span class="bar"><i data-bar="lab3"></i></span></a></li>
+      <li><a href="#lab4"><span class="row"><span>Lab 4 · Decide</span><span class="pct" data-pct="lab4">0%</span></span><span class="bar"><i data-bar="lab4"></i></span></a></li>
+      <li><a href="#cheat"><span class="row"><span>Cheat sheet</span></span></a></li>
+      <li><a href="#help"><span class="row"><span>Troubleshooting</span></span></a></li>
+    </ul>
+  </nav>
+  <div>
+    <p class="label">Overall progress</p>
+    <div class="bar" style="margin-top:8px"><i data-bar="all"></i></div>
+    <p class="sub"><span data-pct="all">0%</span> of steps done. Progress is saved in this browser only.</p>
+  </div>
+  <div class="tools">
+    <button type="button" class="btn" id="theme-btn">Theme: auto</button>
+    <button type="button" class="btn" id="reset-btn">Reset progress</button>
+  </div>
+</aside>
+
+<main>
+
+<!-- ============ START ============ -->
+<section class="lab" id="start">
+  <header>
+    <p class="eyebrow">Module 5 · about 2.5 hours</p>
+    <h1>Alternative Database Systems</h1>
+    <p class="lead">You already know MySQL. Here you install three more engines, load the same small music database into each, and learn how to choose between them. Every step says what to type and what you should see.</p>
+  </header>
+
+  <div class="tiles">
+    <a class="tile" href="#lab1"><span class="t">Lab 1 · 40 min</span><b>SQLite</b><span>A database in a single file. Install, load data, query, break things safely.</span></a>
+    <a class="tile" href="#lab2"><span class="t">Lab 2 · 50 min</span><b>PostgreSQL</b><span>A full server. Roles, strict types, JSON, two-session transactions, backups.</span></a>
+    <a class="tile" href="#lab3"><span class="t">Lab 3 · 40 min</span><b>MongoDB</b><span>Documents instead of rows. Insert, query, aggregate, index, validate.</span></a>
+    <a class="tile" href="#lab4"><span class="t">Lab 4 · 20 min</span><b>Decide</b><span>Scenario challenge, decision wizard and a short written recommendation.</span></a>
+  </div>
+
+  <div class="panel">
+    <h3>Before you start</h3>
+    <ul>
+      <li>A computer where you can install software (administrator rights) and about 3 GB of free disk space.</li>
+      <li>A terminal and a plain text editor. Docker Desktop is optional; it gives a second way to run PostgreSQL and MongoDB without installing them.</li>
+      <li>The SQL you learned in Module 4. Nothing in Lab 1 or Lab 2 asks for more.</li>
+    </ul>
+    <h4>How to open a terminal</h4>
+    <p data-os="win">Press the Windows key, type <code>PowerShell</code>, press Enter. All Windows commands here are written for PowerShell.</p>
+    <p data-os="mac">Press Command + Space, type <code>Terminal</code>, press Enter.</p>
+    <p data-os="linux">Press Ctrl + Alt + T, or open Terminal from your applications menu.</p>
+  </div>
+
+  <div class="panel">
+    <h3>How to use this playbook</h3>
+    <ul>
+      <li>Pick your operating system in the left rail. Install steps and commands adjust to it.</li>
+      <li>Use the <b>Copy</b> button on any code block, then paste into your terminal or database shell.</li>
+      <li>Open <b>Expected output</b> after you run a command to check your result. Small differences (timestamps, spacing, row order without ORDER BY) are normal.</li>
+      <li>Tick <b>Done</b> on each step. The bars in the rail fill up and your place is remembered in this browser.</li>
+      <li>Three kinds of input look alike but are not the same: SQL statements end with <code>;</code>, SQLite shell commands start with <code>.</code> (like <code>.tables</code>), and psql commands start with <code>\</code> (like <code>\dt</code>). The dot and backslash commands take no semicolon.</li>
+    </ul>
+    <aside class="tip">Type the commands instead of only pasting them at least once per lab. Your fingers learn the syntax faster than your eyes.</aside>
+  </div>
+
+  <div class="panel">
+    <h3>One dataset, three engines</h3>
+    <p>All labs use a tiny music library: 5 artists, 8 albums, 20 tracks. In SQLite and PostgreSQL it becomes three related tables. In MongoDB the same facts become one document per artist with albums and tracks nested inside. The track lengths and prices are illustrative data made up for this exercise.</p>
+    <div class="erd" role="img" aria-label="Entity diagram: artist has many albums, album has many tracks">
+      <div><h4>artist</h4><ul><li><b>artist_id</b> (key)</li><li>name</li><li>genre</li></ul></div>
+      <div><h4>album</h4><ul><li><b>album_id</b> (key)</li><li>title</li><li>release_year</li><li>artist_id (foreign key)</li></ul></div>
+      <div><h4>track</h4><ul><li><b>track_id</b> (key)</li><li>title</li><li>album_id (foreign key)</li><li>seconds</li><li>price</li></ul></div>
+    </div>
+    <p>One artist has many albums, and one album has many tracks. Keep this shape in mind: the labs show how each engine stores it.</p>
+  </div>
+
+  <div class="panel">
+    <h3>Where does each engine live?</h3>
+    <div class="arch">
+      <div>
+        <h4>SQLite</h4>
+        <div class="flow"><span>Your program</span><em>+</em><span>SQLite library</span><em>→</em><span>music.db file</span></div>
+        <p>The engine is a library inside your program. No server and no network. The database is a file you can copy.</p>
+      </div>
+      <div>
+        <h4>PostgreSQL</h4>
+        <div class="flow"><span>Client (psql, app)</span><em>→ port 5432 →</em><span>Server process</span><em>→</em><span>Data directory</span></div>
+        <p>A server runs all the time. Clients log in as roles and send SQL over the network.</p>
+      </div>
+      <div>
+        <h4>MongoDB</h4>
+        <div class="flow"><span>Client (mongosh, app)</span><em>→ port 27017 →</em><span>mongod server</span><em>→</em><span>Collections of documents</span></div>
+        <p>Also a server, but it stores flexible JSON-like documents instead of table rows.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h3>Reading map</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Lab</th><th>Read alongside</th><th>Status</th></tr>
+      <tr><td>Lab 1 · SQLite</td><td><a href="https://www.sqlitetutorial.net/" target="_blank" rel="noopener">SQLiteTutorial.net</a> (about 30 min). Optional: <a href="https://www.sqlite.org/docs.html" target="_blank" rel="noopener">SQLite documentation</a></td><td>Required</td></tr>
+      <tr><td>Lab 2 · PostgreSQL</td><td><a href="https://www.w3schools.com/postgresql/" target="_blank" rel="noopener">W3Schools PostgreSQL tutorial</a> (about 30 min, intro sections). Optional: <a href="https://www.postgresql.org/docs/current/tutorial.html" target="_blank" rel="noopener">Official PostgreSQL tutorial</a>, <a href="https://www.postgresqltutorial.com/" target="_blank" rel="noopener">PostgreSQLTutorial.com</a></td><td>Required</td></tr>
+      <tr><td>Lab 3 · MongoDB</td><td><a href="https://www.geeksforgeeks.org/dbms/introduction-to-nosql/" target="_blank" rel="noopener">GeeksforGeeks: Introduction to NoSQL</a> (about 15 min). Optional: <a href="https://www.w3schools.com/mongodb/" target="_blank" rel="noopener">W3Schools MongoDB</a>, <a href="https://www.mongodb.com/resources/basics/databases/nosql-explained" target="_blank" rel="noopener">MongoDB: NoSQL Explained</a></td><td>Required</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ LAB 1 · SQLITE ============ -->
+<section class="lab" id="lab1" data-lab>
+  <header>
+    <p class="eyebrow">Lab 1 · about 40 minutes</p>
+    <h2>SQLite: a database in one file</h2>
+    <p class="lead">SQLite is the most widely deployed database in the world because it needs no server. The whole database is one file that your program opens directly. You will install it, build the music database, and then poke at its unusual habits on purpose.</p>
+  </header>
+
+  <div class="panel">
+    <h3>By the end of this lab you can</h3>
+    <ul>
+      <li>Install SQLite and open, create and inspect a database from the <code>sqlite3</code> shell.</li>
+      <li>Run joins, aggregates and window functions you know from MySQL.</li>
+      <li>Explain SQLite's flexible typing, why foreign keys must be switched on, and what a query plan shows.</li>
+      <li>Import and export CSV, call SQLite from Python, and explain why concurrent writers are its weak spot.</li>
+    </ul>
+  </div>
+
+  <article class="step" data-title="Install SQLite">
+    <div data-os="win">
+      <ol>
+        <li>Open <a href="https://www.sqlite.org/download.html" target="_blank" rel="noopener">sqlite.org/download.html</a>. Under <b>Precompiled Binaries for Windows</b>, download the <code>sqlite-tools-win-x64</code> zip. It contains <code>sqlite3.exe</code>.</li>
+        <li>Create the folder <code>C:\sqlite</code> and extract the zip into it.</li>
+        <li>Tell PowerShell where it is, for this window only:</li>
+      </ol>
+      <pre data-lang="powershell">$env:Path += ";C:\sqlite"</pre>
+      <aside class="note">To make it permanent, open Start, search <b>Edit environment variables for your account</b>, select <b>Path</b>, choose <b>Edit</b>, then <b>New</b>, and add <code>C:\sqlite</code>. Open a new PowerShell window afterwards. If you already have Python 3.12 or newer, <code>python -m sqlite3</code> starts a basic SQLite shell as a fallback.</aside>
+    </div>
+    <div data-os="mac">
+      <p>macOS already includes SQLite. Check the version in the next step. If it is older than 3.37, install a newer one with Homebrew:</p>
+      <pre data-lang="bash">brew install sqlite
+$(brew --prefix sqlite)/bin/sqlite3 --version</pre>
+    </div>
+    <div data-os="linux">
+      <p>Debian and Ubuntu:</p>
+      <pre data-lang="bash">sudo apt update
+sudo apt install sqlite3</pre>
+      <p>Fedora:</p>
+      <pre data-lang="bash">sudo dnf install sqlite</pre>
+    </div>
+    <p>Optional: <a href="https://sqlitebrowser.org/" target="_blank" rel="noopener">DB Browser for SQLite</a> is a free graphical viewer you can use in step 15.</p>
+  </article>
+
+  <article class="step" data-title="Check the install">
+    <pre data-lang="bash">sqlite3 --version</pre>
+    <details class="expect"><summary>Expected output</summary><pre>3.45.1 2024-01-30 16:01:20 ... (your version and date will differ)</pre></details>
+    <aside class="note">You need version 3.37 or newer for the <code>STRICT</code> tables in step 7. Older versions work for everything else.</aside>
+  </article>
+
+  <article class="step" data-title="Open the shell and make a database">
+    <p>Make a working folder, go into it, and open a database called <code>music.db</code>. SQLite creates the file the first time you save something into it.</p>
+    <pre data-lang="bash">mkdir db-lab
+cd db-lab
+sqlite3 music.db</pre>
+    <p>The prompt changes to <code>sqlite&gt;</code>. Now try the shell's own commands. They start with a dot and need no semicolon.</p>
+    <pre data-lang="sqlite">.help
+.headers on
+.mode column
+.databases</pre>
+    <p><code>.headers on</code> and <code>.mode column</code> make results readable. <code>.databases</code> shows the file you are connected to. To leave the shell at any time, type <code>.quit</code>.</p>
+    <details class="expect"><summary>Expected output of <code>.databases</code></summary><pre>main: /home/you/db-lab/music.db r/w</pre></details>
+  </article>
+
+  <article class="step" data-title="Create the tables and load the data">
+    <p>Copy the whole script below and paste it at the <code>sqlite&gt;</code> prompt. It creates three tables and inserts the music library. Notice <code>AUTOINCREMENT</code>, the <code>REFERENCES</code> foreign keys and the <code>CHECK</code> constraint.</p>
+    <pre data-lang="sql">PRAGMA foreign_keys = ON;
+
+CREATE TABLE artist (
+  artist_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name      TEXT NOT NULL,
+  genre     TEXT
+);
+
+CREATE TABLE album (
+  album_id     INTEGER PRIMARY KEY AUTOINCREMENT,
+  title        TEXT NOT NULL,
+  release_year INTEGER,
+  artist_id    INTEGER NOT NULL REFERENCES artist(artist_id)
+);
+
+CREATE TABLE track (
+  track_id INTEGER PRIMARY KEY AUTOINCREMENT,
+  title    TEXT NOT NULL,
+  album_id INTEGER NOT NULL REFERENCES album(album_id),
+  seconds  INTEGER NOT NULL CHECK (seconds &gt; 0),
+  price    REAL NOT NULL DEFAULT 0.99
+);
+
+INSERT INTO artist (name, genre) VALUES
+  ('Miles Davis', 'jazz'),
+  ('John Coltrane', 'jazz'),
+  ('Nina Simone', 'soul'),
+  ('Radiohead', 'rock'),
+  ('Daft Punk', 'electronic');
+
+INSERT INTO album (title, release_year, artist_id) VALUES
+  ('Kind of Blue', 1959, 1),
+  ('Bitches Brew', 1970, 1),
+  ('A Love Supreme', 1965, 2),
+  ('Giant Steps', 1960, 2),
+  ('I Put a Spell on You', 1965, 3),
+  ('OK Computer', 1997, 4),
+  ('Kid A', 2000, 4),
+  ('Discovery', 2001, 5);
+
+INSERT INTO track (title, album_id, seconds, price) VALUES
+  ('So What', 1, 562, 0.99),
+  ('Freddie Freeloader', 1, 589, 0.99),
+  ('Blue in Green', 1, 337, 0.99),
+  ('All Blues', 1, 693, 1.29),
+  ('Spanish Key', 2, 1024, 1.29),
+  ('Miles Runs the Voodoo Down', 2, 844, 1.29),
+  ('Acknowledgement', 3, 462, 0.99),
+  ('Resolution', 3, 442, 0.99),
+  ('Psalm', 3, 428, 0.99),
+  ('Giant Steps', 4, 287, 0.99),
+  ('Naima', 4, 262, 0.99),
+  ('Feeling Good', 5, 177, 0.99),
+  ('Paranoid Android', 6, 386, 0.99),
+  ('Karma Police', 6, 263, 0.99),
+  ('No Surprises', 6, 229, 0.99),
+  ('Everything In Its Right Place', 7, 251, 0.99),
+  ('Idioteque', 7, 309, 0.99),
+  ('One More Time', 8, 320, 0.99),
+  ('Digital Love', 8, 301, 0.99),
+  ('Harder Better Faster Stronger', 8, 224, 0.99);</pre>
+    <aside class="tip">Prefer a file? Save the script as <code>music_sqlite.sql</code> in your <code>db-lab</code> folder, then run <code>.read music_sqlite.sql</code> at the prompt.</aside>
+    <p>The script prints nothing when it works. Confirm the tables exist:</p>
+    <pre data-lang="sqlite">.tables</pre>
+    <details class="expect"><summary>Expected output</summary><pre>album   artist  track</pre></details>
+  </article>
+
+  <article class="step" data-title="Inspect what you built">
+    <pre data-lang="sqlite">.schema track
+PRAGMA table_info(track);
+SELECT COUNT(*) FROM track;</pre>
+    <p><code>.schema</code> prints the <code>CREATE TABLE</code> text you wrote. <code>PRAGMA table_info</code> lists columns, types, whether they are <code>NOT NULL</code>, defaults and the primary key flag.</p>
+    <details class="expect"><summary>Expected output of the count</summary><pre>COUNT(*)
+--------
+20</pre></details>
+    <aside class="note">A <code>PRAGMA</code> is a SQLite-specific setting or introspection command. MySQL and PostgreSQL have no <code>PRAGMA</code>; they use <code>SHOW</code>, <code>SET</code> and system catalogs instead.</aside>
+  </article>
+
+  <article class="step" data-title="Query the data with familiar SQL">
+    <h4>A. Everything in one table</h4>
+    <pre data-lang="sql">SELECT * FROM artist;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>artist_id  name           genre
+---------  -------------  ----------
+1          Miles Davis    jazz
+2          John Coltrane  jazz
+3          Nina Simone    soul
+4          Radiohead      rock
+5          Daft Punk      electronic</pre></details>
+    <h4>B. A join, oldest album first</h4>
+    <pre data-lang="sql">SELECT ar.name, al.title, al.release_year
+FROM album al
+JOIN artist ar ON ar.artist_id = al.artist_id
+ORDER BY al.release_year, al.title;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>name           title                 release_year
+-------------  --------------------  ------------
+Miles Davis    Kind of Blue          1959
+John Coltrane  Giant Steps           1960
+John Coltrane  A Love Supreme        1965
+Nina Simone    I Put a Spell on You  1965
+Miles Davis    Bitches Brew          1970
+Radiohead      OK Computer           1997
+Radiohead      Kid A                 2000
+Daft Punk      Discovery             2001        </pre></details>
+    <h4>C. Aggregate: how much music per artist?</h4>
+    <pre data-lang="sql">SELECT ar.name,
+       COUNT(*) AS tracks,
+       ROUND(SUM(t.seconds) / 60.0, 1) AS minutes
+FROM track t
+JOIN album al  ON al.album_id  = t.album_id
+JOIN artist ar ON ar.artist_id = al.artist_id
+GROUP BY ar.name
+ORDER BY minutes DESC;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>name           tracks  minutes
+-------------  ------  -------
+Miles Davis    6       67.5
+John Coltrane  5       31.4
+Radiohead      5       24.0
+Daft Punk      3       14.1
+Nina Simone    1       3.0    </pre></details>
+    <h4>D. A window function</h4>
+    <p>SQLite supports window functions from version 3.25, so the same ranking syntax you meet in PostgreSQL works here.</p>
+    <pre data-lang="sql">SELECT title, seconds,
+       RANK() OVER (ORDER BY seconds DESC) AS rnk
+FROM track
+LIMIT 5;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>title                       seconds  rnk
+--------------------------  -------  ---
+Spanish Key                 1024     1
+Miles Runs the Voodoo Down  844      2
+All Blues                   693      3
+Freddie Freeloader          589      4
+So What                     562      5  </pre></details>
+    <h4>Your turn</h4>
+    <ol>
+      <li>List tracks longer than 500 seconds with their album title, longest first.</li>
+      <li>Count albums per genre, most albums first (break ties by genre name).</li>
+      <li>List albums that have at least 3 tracks, with the track count (hint: <code>HAVING</code>).</li>
+    </ol>
+    <details class="solution"><summary>Show solutions</summary>
+<pre data-lang="sql">-- 1
+SELECT t.title, al.title AS album, t.seconds
+FROM track t JOIN album al USING (album_id)
+WHERE t.seconds &gt; 500
+ORDER BY t.seconds DESC;
+-- Spanish Key 1024, Miles Runs the Voodoo Down 844, All Blues 693,
+-- Freddie Freeloader 589, So What 562
+
+-- 2
+SELECT ar.genre, COUNT(*) AS albums
+FROM album al JOIN artist ar USING (artist_id)
+GROUP BY ar.genre
+ORDER BY albums DESC, ar.genre;
+-- jazz 4, rock 2, electronic 1, soul 1
+
+-- 3
+SELECT al.title, COUNT(*) AS n
+FROM album al JOIN track t USING (album_id)
+GROUP BY al.album_id
+HAVING COUNT(*) &gt;= 3
+ORDER BY n DESC, al.title;
+-- Kind of Blue 4, A Love Supreme 3, Discovery 3, OK Computer 3</pre></details>
+  </article>
+
+  <article class="step" data-title="Meet SQLite's flexible typing">
+    <p>MySQL and PostgreSQL reject a word in an integer column. SQLite gives each column a <b>type affinity</b>, a preference, not a rule. Watch what happens:</p>
+    <pre data-lang="sql">SELECT typeof(1), typeof(1.5), typeof('a'), typeof(NULL);
+
+CREATE TABLE demo (x INTEGER);
+INSERT INTO demo VALUES ('abc');
+INSERT INTO demo VALUES ('42');
+SELECT x, typeof(x) FROM demo;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>typeof(1)  typeof(1.5)  typeof('a')  typeof(NULL)
+---------  -----------  -----------  ------------
+integer    real         text         null
+
+x    typeof(x)
+---  ---------
+abc  text
+42   integer  </pre></details>
+    <p>The text <code>'42'</code> was converted to the integer 42 because it looks like a number. The text <code>'abc'</code> was stored as text inside an INTEGER column. Now try a <code>STRICT</code> table, which enforces types the way PostgreSQL does:</p>
+    <pre data-lang="sql">CREATE TABLE demo_strict (x INTEGER) STRICT;
+INSERT INTO demo_strict VALUES ('abc');</pre>
+    <details class="expect"><summary>Expected output</summary><pre>Runtime error: cannot store TEXT value in INTEGER column demo_strict.x (19)</pre></details>
+    <p>Clean up:</p>
+    <pre data-lang="sql">DROP TABLE demo;
+DROP TABLE demo_strict;</pre>
+    <aside class="warn">Flexible typing is convenient for prototypes and a trap for production data. If you want the database to protect you, declare tables <code>STRICT</code>.</aside>
+  </article>
+
+  <article class="step" data-title="Foreign keys are off until you switch them on">
+    <p>Quit and reopen the shell so you start from a fresh connection, then look at the setting.</p>
+    <pre data-lang="sqlite">.quit</pre>
+    <pre data-lang="bash">sqlite3 music.db</pre>
+    <pre data-lang="sqlite">.headers on
+.mode column
+PRAGMA foreign_keys;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>foreign_keys
+------------
+0           </pre></details>
+    <p>Zero means off. SQLite will happily accept an album whose artist does not exist:</p>
+    <pre data-lang="sql">INSERT INTO album (title, release_year, artist_id) VALUES ('Ghost Album', 2020, 99);
+SELECT title, artist_id FROM album WHERE artist_id = 99;
+DELETE FROM album WHERE title = 'Ghost Album';</pre>
+    <details class="expect"><summary>Expected output of the SELECT</summary><pre>title        artist_id
+-----------  ---------
+Ghost Album  99       </pre></details>
+    <p>Switch enforcement on and repeat the insert:</p>
+    <pre data-lang="sql">PRAGMA foreign_keys = ON;
+INSERT INTO album (title, release_year, artist_id) VALUES ('Ghost Album', 2020, 99);</pre>
+    <details class="expect"><summary>Expected output</summary><pre>Runtime error: FOREIGN KEY constraint failed (19)</pre></details>
+    <p>The <code>CHECK</code> constraint from your schema is always active:</p>
+    <pre data-lang="sql">INSERT INTO track (title, album_id, seconds) VALUES ('Zero', 1, 0);</pre>
+    <details class="expect"><summary>Expected output</summary><pre>Runtime error: CHECK constraint failed: seconds &gt; 0 (19)</pre></details>
+    <aside class="warn"><code>PRAGMA foreign_keys = ON</code> applies to one connection only. Every program that opens the database must run it again, or foreign keys are silently ignored.</aside>
+  </article>
+
+  <article class="step" data-title="Transactions: try a change, then undo it">
+    <p>The shell runs each statement on its own unless you open a transaction. Change every price, look, then roll back:</p>
+    <pre data-lang="sql">BEGIN;
+UPDATE track SET price = 1.99;
+SELECT DISTINCT price FROM track ORDER BY price;
+ROLLBACK;
+SELECT DISTINCT price FROM track ORDER BY price;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>price
+-----
+1.99
+
+price
+-----
+0.99
+1.29 </pre></details>
+    <p>Inside the transaction every price was 1.99. After <code>ROLLBACK</code> the original prices are back. Replace <code>ROLLBACK</code> with <code>COMMIT</code> and the change would be permanent. Module 10 covers this in depth.</p>
+  </article>
+
+  <article class="step" data-title="Read a query plan and add an index">
+    <p>Ask SQLite how it would find the tracks of album 3:</p>
+    <pre data-lang="sql">EXPLAIN QUERY PLAN SELECT * FROM track WHERE album_id = 3;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>QUERY PLAN
+`--SCAN track</pre></details>
+    <p><code>SCAN</code> means it reads every row. Add an index and ask again:</p>
+    <pre data-lang="sql">CREATE INDEX idx_track_album ON track(album_id);
+EXPLAIN QUERY PLAN SELECT * FROM track WHERE album_id = 3;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>QUERY PLAN
+`--SEARCH track USING INDEX idx_track_album (album_id=?)</pre></details>
+    <p><code>SEARCH ... USING INDEX</code> jumps straight to the matching rows. With 20 rows you will not feel a difference, with 20 million you would. Module 9 returns to indexing.</p>
+  </article>
+
+  <article class="step" data-title="Export to CSV and import it back">
+    <p>Write the artist table to a CSV file, then import that file as a new table.</p>
+    <pre data-lang="sqlite">.headers on
+.mode csv
+.once artists.csv
+SELECT * FROM artist;
+.import artists.csv artist_copy
+.mode column
+SELECT * FROM artist_copy;
+.schema artist_copy</pre>
+    <details class="expect"><summary>Expected output</summary><pre>artist_id  name           genre
+---------  -------------  ----------
+1          Miles Davis    jazz
+2          John Coltrane  jazz
+3          Nina Simone    soul
+4          Radiohead      rock
+5          Daft Punk      electronic
+
+CREATE TABLE IF NOT EXISTS "artist_copy"(
+"artist_id" TEXT, "name" TEXT, "genre" TEXT);</pre></details>
+    <p>Open <code>artists.csv</code> in your text editor to see what was written. Notice in the schema that every imported column is <code>TEXT</code>: a CSV file carries no types, so <code>.import</code> creates text columns when it makes the table. Clean up with <code>DROP TABLE artist_copy;</code>.</p>
+  </article>
+
+  <article class="step" data-title="Use SQLite from Python">
+    <p>Python ships with the <code>sqlite3</code> module, so no install is needed. Save this as <code>use_sqlite.py</code> in the same folder as <code>music.db</code>.</p>
+    <pre data-lang="python">import sqlite3
+
+con = sqlite3.connect("music.db")
+con.execute("PRAGMA foreign_keys = ON")   # per connection, remember?
+con.row_factory = sqlite3.Row
+
+sql = """
+SELECT ar.name, COUNT(*) AS tracks
+FROM track t
+JOIN album al  ON al.album_id  = t.album_id
+JOIN artist ar ON ar.artist_id = al.artist_id
+GROUP BY ar.name
+ORDER BY tracks DESC, ar.name
+"""
+for row in con.execute(sql):
+    print(row["name"], row["tracks"])
+
+# Parameterized query: the ? is filled in safely. Never build SQL with f-strings.
+min_seconds = 400
+rows = con.execute(
+    "SELECT title FROM track WHERE seconds &gt; ? ORDER BY title", (min_seconds,)
+).fetchall()
+print([r["title"] for r in rows])
+
+con.close()</pre>
+    <div data-os="win"><pre data-lang="powershell">python use_sqlite.py</pre></div>
+    <div data-os="mac linux"><pre data-lang="bash">python3 use_sqlite.py</pre></div>
+    <details class="expect"><summary>Expected output</summary><pre>Miles Davis 6
+John Coltrane 5
+Radiohead 5
+Daft Punk 3
+Nina Simone 1
+['Acknowledgement', 'All Blues', 'Freddie Freeloader', 'Miles Runs the Voodoo Down', 'Psalm', 'Resolution', 'So What', 'Spanish Key']</pre></details>
+    <p>Module 8 covers database connectivity in Java and Python in full. For now notice that there is no host, port or password: the connection is just a file path.</p>
+  </article>
+
+  <article class="step" data-title="See why many writers are a problem">
+    <p>SQLite allows many readers but only one writer at a time. Prove it with two terminals in the same <code>db-lab</code> folder.</p>
+    <h4>Terminal A</h4>
+    <pre data-lang="bash">sqlite3 music.db</pre>
+    <pre data-lang="sql">BEGIN IMMEDIATE;
+UPDATE track SET price = 1.49 WHERE track_id = 1;</pre>
+    <p>Leave this terminal as it is: the transaction is still open.</p>
+    <h4>Terminal B</h4>
+    <pre data-lang="bash">sqlite3 music.db</pre>
+    <pre data-lang="sql">UPDATE track SET price = 1.59 WHERE track_id = 2;</pre>
+    <details class="expect"><summary>Expected output in Terminal B</summary><pre>Runtime error: database is locked (5)</pre></details>
+    <h4>Back in Terminal A</h4>
+    <pre data-lang="sql">ROLLBACK;</pre>
+    <p>Now repeat the update in Terminal B. It succeeds. Restore the price it changed:</p>
+    <pre data-lang="sql">UPDATE track SET price = 0.99 WHERE track_id = 2;</pre>
+    <h4>Write-ahead logging</h4>
+    <pre data-lang="sql">PRAGMA journal_mode;
+PRAGMA journal_mode = WAL;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>delete
+wal</pre></details>
+    <p>WAL mode lets readers keep reading while one writer writes. It is still one writer at a time. PostgreSQL, in Lab 2, lets many sessions write to different rows at once.</p>
+  </article>
+
+  <article class="step" data-title="Back up the database">
+    <p>Because the database is a file, a backup is a copy. The shell offers two safe ways:</p>
+    <pre data-lang="sqlite">.backup music_backup.db
+.output music_dump.sql
+.dump
+.output stdout</pre>
+    <p><code>.backup</code> makes a binary copy. <code>.dump</code> writes plain SQL text that recreates everything; open <code>music_dump.sql</code> to read it. That is SQLite's version of <code>mysqldump</code>. Type <code>.quit</code> when you are done.</p>
+    <details class="expect"><summary>Check the files exist</summary><pre>music.db  music_backup.db  music_dump.sql  artists.csv  use_sqlite.py</pre></details>
+  </article>
+
+  <article class="step" data-title="Optional: look at it in a graphical tool">
+    <p>Install <a href="https://sqlitebrowser.org/" target="_blank" rel="noopener">DB Browser for SQLite</a>, choose <b>Open Database</b>, and pick <code>music.db</code>. Browse the tables on the <b>Browse Data</b> tab and run a query on <b>Execute SQL</b>. Close the tool before running anything that writes from the shell, or you may hit a lock like the one in step 13.</p>
+  </article>
+
+  <div class="panel">
+    <h3>Takeaways</h3>
+    <ul>
+      <li>SQLite is a library plus a file. Zero setup makes it ideal for local apps, prototypes, tests and teaching.</li>
+      <li>Most of your SQL works unchanged. Watch for flexible typing, off-by-default foreign keys, and <code>PRAGMA</code>.</li>
+      <li>One writer at a time makes it a poor fit for busy multi-user servers.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h3>Check yourself</h3>
+    <div class="quiz" data-quiz="lab1"></div>
+  </div>
+</section>
+<!-- ============ LAB 2 · POSTGRESQL ============ -->
+<section class="lab" id="lab2" data-lab>
+  <header>
+    <p class="eyebrow">Lab 2 · about 50 minutes</p>
+    <h2>PostgreSQL: the open-source workhorse</h2>
+    <p class="lead">PostgreSQL is a real database server. It runs all the time, logs clients in as roles, enforces types strictly, and lets many sessions work at once. You will install it, load the same music database, and see what a server gives you that a file does not.</p>
+  </header>
+
+  <div class="panel">
+    <h3>By the end of this lab you can</h3>
+    <ul>
+      <li>Install PostgreSQL, connect with <code>psql</code>, and create roles and databases.</li>
+      <li>Port MySQL and SQLite SQL to PostgreSQL syntax.</li>
+      <li>Store and query JSON with <code>JSONB</code>, and use CTEs and window functions.</li>
+      <li>Demonstrate concurrent transactions from two sessions, read a query plan, restrict a role with <code>GRANT</code>, and back up with <code>pg_dump</code>.</li>
+    </ul>
+  </div>
+
+  <article class="step" data-title="Install PostgreSQL">
+    <div data-os="win">
+      <ol>
+        <li>Download the installer from <a href="https://www.postgresql.org/download/windows/" target="_blank" rel="noopener">postgresql.org/download/windows</a> and run it.</li>
+        <li>Keep the default components: PostgreSQL Server, pgAdmin 4 and Command Line Tools.</li>
+        <li>When asked, choose a password for the <code>postgres</code> superuser and write it down. Keep port <code>5432</code>.</li>
+        <li>Put <code>psql</code> on the PATH for this PowerShell window. Replace <code>18</code> with the version you installed (check with <code>dir "C:\Program Files\PostgreSQL"</code>).</li>
+      </ol>
+      <pre data-lang="powershell">$env:Path += ";C:\Program Files\PostgreSQL\18\bin"</pre>
+      <aside class="tip">The installer also adds <b>SQL Shell (psql)</b> to your Start menu. Press Enter at each prompt to accept the defaults, then type your password.</aside>
+    </div>
+    <div data-os="mac">
+      <p><b>Option A, easiest:</b> download <a href="https://postgresapp.com/" target="_blank" rel="noopener">Postgres.app</a>, move it to Applications, open it and click <b>Initialize</b>. Then add its tools to your PATH:</p>
+      <pre data-lang="bash">sudo mkdir -p /etc/paths.d
+echo /Applications/Postgres.app/Contents/Versions/latest/bin | sudo tee /etc/paths.d/postgresapp</pre>
+      <p><b>Option B, Homebrew:</b> list the available versions, then install and start the newest one (replace <code>18</code> with the newest number that <code>brew search</code> shows).</p>
+      <pre data-lang="bash">brew search postgresql@
+brew install postgresql@18
+brew services start postgresql@18
+echo 'export PATH="$(brew --prefix postgresql@18)/bin:$PATH"' &gt;&gt; ~/.zshrc</pre>
+      <p>Open a new Terminal window afterwards so the PATH change applies.</p>
+    </div>
+    <div data-os="linux">
+      <p>Debian and Ubuntu (the service starts automatically):</p>
+      <pre data-lang="bash">sudo apt update
+sudo apt install postgresql postgresql-client
+sudo systemctl status postgresql</pre>
+      <p>Fedora:</p>
+      <pre data-lang="bash">sudo dnf install postgresql-server postgresql
+sudo postgresql-setup --initdb
+sudo systemctl enable --now postgresql</pre>
+    </div>
+    <details class="more"><summary>No install? Run PostgreSQL in Docker instead (any operating system)</summary>
+      <div>
+        <p>With Docker Desktop running, this downloads and starts a server in one command. The password is only for this lab.</p>
+        <pre data-lang="bash">docker run --name pg-lab -e POSTGRES_PASSWORD=labpass -p 5432:5432 -d postgres:17</pre>
+        <p>Stop it with <code>docker stop pg-lab</code>, start it again with <code>docker start pg-lab</code>, delete it with <code>docker rm -f pg-lab</code>. In this lab, wherever a command starts with <code>psql</code>, run <code>docker exec -it pg-lab psql</code> with the same options but without <code>-h localhost</code>.</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="step" data-title="Check the install and connect as the administrator">
+    <pre data-lang="bash">psql --version</pre>
+    <details class="expect"><summary>Expected output</summary><pre>psql (PostgreSQL) 18.x (your version will differ)</pre></details>
+    <p>Now open a session as the administrator (the superuser). The command depends on how you installed:</p>
+    <div data-os="win"><pre data-lang="powershell">psql -U postgres -h localhost</pre><p>Type the password you chose in the installer. Nothing shows while you type.</p></div>
+    <div data-os="mac"><pre data-lang="bash">psql -d postgres</pre><p>Homebrew and Postgres.app make your own macOS user the superuser, so no password is needed.</p></div>
+    <div data-os="linux"><pre data-lang="bash">sudo -u postgres psql</pre></div>
+    <p>Docker users: <code>docker exec -it pg-lab psql -U postgres</code>.</p>
+    <p>The prompt should read <code>postgres=#</code>. The <code>#</code> means superuser.</p>
+  </article>
+
+  <article class="step" data-title="Tour psql">
+    <p>SQL ends with <code>;</code>. psql's own commands start with a backslash and take no semicolon.</p>
+    <pre data-lang="psql">SELECT version();
+\conninfo
+\l
+\du
+\?</pre>
+    <p><code>\l</code> lists databases, <code>\du</code> lists roles, <code>\?</code> shows every backslash command (press <code>q</code> to leave the help pager). Later you will use <code>\dt</code> (tables), <code>\d name</code> (describe a table), <code>\c name</code> (connect to a database) and <code>\q</code> (quit).</p>
+    <details class="expect"><summary>Expected output of <code>\du</code></summary><pre>                             List of roles
+ Role name |                         Attributes
+-----------+------------------------------------------------------------
+ postgres  | Superuser, Create role, Create DB, Replication, Bypass RLS</pre></details>
+  </article>
+
+  <article class="step" data-title="Create a role and a database, then log in as that role">
+    <p>Real applications never connect as the superuser. Create a normal role and give it its own database. Run these in your administrator session:</p>
+    <pre data-lang="sql">CREATE ROLE student LOGIN PASSWORD 'lab_pass' CREATEDB;
+CREATE DATABASE music OWNER student;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>CREATE ROLE
+CREATE DATABASE</pre></details>
+    <p>Leave with <code>\q</code>, then connect as the new role to the new database. Type <code>lab_pass</code> when asked.</p>
+    <pre data-lang="bash">psql -U student -h localhost -d music</pre>
+    <p>Docker users: <code>docker exec -it pg-lab psql -U student -d music</code>.</p>
+    <pre data-lang="sql">SELECT current_user, current_database();</pre>
+    <details class="expect"><summary>Expected output</summary><pre> current_user | current_database
+--------------+------------------
+ student      | music
+(1 row)</pre></details>
+    <aside class="note">The password <code>lab_pass</code> is for this exercise only. Never reuse a real password in a lab script.</aside>
+  </article>
+
+  <article class="step" data-title="Create the tables and load the data">
+    <p>Paste this script into your <code>student</code> session (prompt <code>music=&gt;</code>). Compare it with the SQLite version and spot the differences: an <code>IDENTITY</code> column instead of <code>AUTOINCREMENT</code>, <code>NUMERIC(4,2)</code> instead of <code>REAL</code>, and no <code>PRAGMA</code>, because PostgreSQL always enforces foreign keys.</p>
+    <pre data-lang="sql">CREATE TABLE artist (
+  artist_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  name      TEXT NOT NULL,
+  genre     TEXT
+);
+
+CREATE TABLE album (
+  album_id     INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  title        TEXT NOT NULL,
+  release_year INTEGER,
+  artist_id    INTEGER NOT NULL REFERENCES artist(artist_id)
+);
+
+CREATE TABLE track (
+  track_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  title    TEXT NOT NULL,
+  album_id INTEGER NOT NULL REFERENCES album(album_id),
+  seconds  INTEGER NOT NULL CHECK (seconds &gt; 0),
+  price    NUMERIC(4,2) NOT NULL DEFAULT 0.99
+);
+
+INSERT INTO artist (name, genre) VALUES
+  ('Miles Davis', 'jazz'),
+  ('John Coltrane', 'jazz'),
+  ('Nina Simone', 'soul'),
+  ('Radiohead', 'rock'),
+  ('Daft Punk', 'electronic');
+
+INSERT INTO album (title, release_year, artist_id) VALUES
+  ('Kind of Blue', 1959, 1),
+  ('Bitches Brew', 1970, 1),
+  ('A Love Supreme', 1965, 2),
+  ('Giant Steps', 1960, 2),
+  ('I Put a Spell on You', 1965, 3),
+  ('OK Computer', 1997, 4),
+  ('Kid A', 2000, 4),
+  ('Discovery', 2001, 5);
+
+INSERT INTO track (title, album_id, seconds, price) VALUES
+  ('So What', 1, 562, 0.99),
+  ('Freddie Freeloader', 1, 589, 0.99),
+  ('Blue in Green', 1, 337, 0.99),
+  ('All Blues', 1, 693, 1.29),
+  ('Spanish Key', 2, 1024, 1.29),
+  ('Miles Runs the Voodoo Down', 2, 844, 1.29),
+  ('Acknowledgement', 3, 462, 0.99),
+  ('Resolution', 3, 442, 0.99),
+  ('Psalm', 3, 428, 0.99),
+  ('Giant Steps', 4, 287, 0.99),
+  ('Naima', 4, 262, 0.99),
+  ('Feeling Good', 5, 177, 0.99),
+  ('Paranoid Android', 6, 386, 0.99),
+  ('Karma Police', 6, 263, 0.99),
+  ('No Surprises', 6, 229, 0.99),
+  ('Everything In Its Right Place', 7, 251, 0.99),
+  ('Idioteque', 7, 309, 0.99),
+  ('One More Time', 8, 320, 0.99),
+  ('Digital Love', 8, 301, 0.99),
+  ('Harder Better Faster Stronger', 8, 224, 0.99);</pre>
+    <details class="expect"><summary>Expected output</summary><pre>CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+INSERT 0 5
+INSERT 0 8
+INSERT 0 20</pre></details>
+  </article>
+
+  <article class="step" data-title="Inspect what you built">
+    <pre data-lang="psql">\dt
+\d track
+SELECT COUNT(*) FROM track;</pre>
+    <details class="expect"><summary>Expected output of <code>\d track</code> (spacing may differ)</summary><pre>                             Table "public.track"
+  Column  |     Type     | Collation | Nullable |           Default
+----------+--------------+-----------+----------+------------------------------
+ track_id | integer      |           | not null | generated always as identity
+ title    | text         |           | not null |
+ album_id | integer      |           | not null |
+ seconds  | integer      |           | not null |
+ price    | numeric(4,2) |           | not null | 0.99
+Indexes:
+    "track_pkey" PRIMARY KEY, btree (track_id)
+Check constraints:
+    "track_seconds_check" CHECK (seconds &gt; 0)
+Foreign-key constraints:
+    "track_album_id_fkey" FOREIGN KEY (album_id) REFERENCES album(album_id)</pre></details>
+    <p>PostgreSQL named the primary key, check and foreign key for you (<code>track_pkey</code>, <code>track_seconds_check</code>, <code>track_album_id_fkey</code>). You will see those names in error messages soon.</p>
+  </article>
+
+  <article class="step" data-title="Run the same queries, then port a MySQL query">
+    <p>The join, aggregate and window queries from Lab 1 run unchanged. Try the aggregate:</p>
+    <pre data-lang="sql">SELECT ar.name,
+       COUNT(*) AS tracks,
+       ROUND(SUM(t.seconds) / 60.0, 1) AS minutes
+FROM track t
+JOIN album al  ON al.album_id  = t.album_id
+JOIN artist ar ON ar.artist_id = al.artist_id
+GROUP BY ar.name
+ORDER BY minutes DESC;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>     name      | tracks | minutes
+---------------+--------+---------
+ Miles Davis   |      6 |    67.5
+ John Coltrane |      5 |    31.4
+ Radiohead     |      5 |    24.0
+ Daft Punk     |      3 |    14.1
+ Nina Simone   |      1 |     3.0
+(5 rows)</pre></details>
+    <p>Now the porting challenge. This query is written for MySQL. Rewrite it so it runs in PostgreSQL, then in SQLite.</p>
+    <pre data-lang="sql">SELECT CONCAT(name, ' (', genre, ')') AS label,
+       YEAR(NOW()) AS yr
+FROM artist
+LIMIT 3;</pre>
+    <details class="solution"><summary>Show solutions</summary>
+<pre data-lang="sql">-- PostgreSQL
+SELECT name || ' (' || genre || ')' AS label,
+       EXTRACT(YEAR FROM NOW()) AS yr
+FROM artist
+ORDER BY artist_id
+LIMIT 3;
+
+-- SQLite
+SELECT name || ' (' || genre || ')' AS label,
+       strftime('%Y', 'now') AS yr
+FROM artist
+ORDER BY artist_id
+LIMIT 3;</pre>
+      <p style="padding:12px 14px">Both return <code>Miles Davis (jazz)</code>, <code>John Coltrane (jazz)</code> and <code>Nina Simone (soul)</code> with the current year. The lesson: <code>||</code> joins strings in both, and date functions differ the most. (PostgreSQL also accepts <code>CONCAT</code>.) Always add <code>ORDER BY</code> when you use <code>LIMIT</code>.</p>
+    </details>
+  </article>
+
+  <article class="step" data-title="Types are strict here">
+    <p>Repeat the experiment that SQLite let through:</p>
+    <pre data-lang="sql">CREATE TABLE demo (x INTEGER);
+INSERT INTO demo VALUES ('abc');
+INSERT INTO demo VALUES ('42');
+SELECT * FROM demo;
+DROP TABLE demo;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>CREATE TABLE
+ERROR:  invalid input syntax for type integer: "abc"
+LINE 1: INSERT INTO demo VALUES ('abc');
+                                 ^
+INSERT 0 1
+ x
+----
+ 42
+(1 row)
+DROP TABLE</pre></details>
+    <p>PostgreSQL refuses <code>'abc'</code> outright and quietly converts <code>'42'</code>. That strictness catches bugs before they become bad data.</p>
+  </article>
+
+  <article class="step" data-title="Constraints, identity columns and error messages">
+    <p>Run each statement and read the message. Every one is meant to fail.</p>
+    <pre data-lang="sql">INSERT INTO album (title, release_year, artist_id) VALUES ('Ghost Album', 2020, 99);
+INSERT INTO track (title, album_id, seconds) VALUES ('Zero', 1, 0);
+INSERT INTO artist (artist_id, name) VALUES (100, 'Manual ID');</pre>
+    <details class="expect"><summary>Expected output</summary><pre>ERROR:  insert or update on table "album" violates foreign key constraint "album_artist_id_fkey"
+DETAIL:  Key (artist_id)=(99) is not present in table "artist".
+
+ERROR:  new row for relation "track" violates check constraint "track_seconds_check"
+DETAIL:  Failing row contains (21, Zero, 1, 0, 0.99).
+
+ERROR:  cannot insert a non-DEFAULT value into column "artist_id"
+DETAIL:  Column "artist_id" is an identity column defined as GENERATED ALWAYS.
+HINT:  Use OVERRIDING SYSTEM VALUE to override.</pre></details>
+    <p>Two things to notice. Foreign keys need no switch, they are always on. And the failed track insert used up ID 21: sequences never roll back, so your next successful track gets 22. Gaps in generated IDs are normal.</p>
+  </article>
+
+  <article class="step" data-title="Store and query JSON with JSONB">
+    <p>PostgreSQL can keep JSON inside a relational table and still query it. Add a table of flexible track details:</p>
+    <pre data-lang="sql">CREATE TABLE track_meta (
+  track_id INTEGER PRIMARY KEY REFERENCES track(track_id),
+  info     JSONB NOT NULL
+);
+
+INSERT INTO track_meta (track_id, info) VALUES
+  (1, '{"mood": "cool", "instruments": ["trumpet", "piano", "bass"]}'),
+  (3, '{"mood": "calm", "instruments": ["piano", "saxophone"]}'),
+  (5, '{"mood": "intense", "instruments": ["trumpet", "electric piano"], "live": false}');</pre>
+    <p>Pull a field out with <code>-&gt;&gt;</code>, test containment with <code>@&gt;</code>, and measure an array:</p>
+    <pre data-lang="sql">SELECT t.title, m.info-&gt;&gt;'mood' AS mood
+FROM track t JOIN track_meta m USING (track_id)
+ORDER BY t.track_id;
+
+SELECT t.title
+FROM track t JOIN track_meta m USING (track_id)
+WHERE m.info @&gt; '{"instruments": ["piano"]}'
+ORDER BY t.track_id;
+
+SELECT track_id, jsonb_array_length(info-&gt;'instruments') AS n
+FROM track_meta ORDER BY track_id;
+
+SELECT info FROM track_meta WHERE track_id = 5;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>     title     |  mood
+---------------+---------
+ So What       | cool
+ Blue in Green | calm
+ Spanish Key   | intense
+
+     title
+---------------
+ So What
+ Blue in Green
+
+ track_id | n
+----------+---
+        1 | 3
+        3 | 2
+        5 | 2
+
+                                      info
+--------------------------------------------------------------------------------
+ {"live": false, "mood": "intense", "instruments": ["trumpet", "electric piano"]}</pre></details>
+    <p>Spanish Key is not in the second result because <code>"electric piano"</code> is a different array element from <code>"piano"</code>. Also notice that the last query printed the keys in a different order than you typed them: <code>JSONB</code> is stored in a parsed binary form, not as your original text. For large tables you would add an index with <code>CREATE INDEX ... USING GIN (info)</code>.</p>
+  </article>
+
+  <article class="step" data-title="More SQL power: ILIKE, CTEs, window functions, generate_series">
+    <pre data-lang="sql">-- case-insensitive search (LIKE is case-sensitive in PostgreSQL)
+SELECT title FROM track WHERE title ILIKE '%blue%' ORDER BY track_id;
+
+-- a range of numbers made on the fly
+SELECT g AS n, g * g AS square FROM generate_series(1, 5) AS g;
+
+-- a common table expression (CTE)
+WITH album_len AS (
+  SELECT album_id, SUM(seconds) AS total
+  FROM track GROUP BY album_id
+)
+SELECT al.title, l.total
+FROM album al JOIN album_len l USING (album_id)
+ORDER BY l.total DESC
+LIMIT 3;
+
+-- ranking with a window function
+SELECT title, seconds,
+       RANK() OVER (ORDER BY seconds DESC) AS rnk
+FROM track
+ORDER BY rnk
+LIMIT 5;</pre>
+    <details class="expect"><summary>Expected output</summary><pre>     title
+---------------
+ Blue in Green
+ All Blues
+
+ n | square
+---+--------
+ 1 |      1
+ 2 |      4
+ 3 |      9
+ 4 |     16
+ 5 |     25
+
+     title      | total
+----------------+-------
+ Kind of Blue   |  2181
+ Bitches Brew   |  1868
+ A Love Supreme |  1332
+
+            title             | seconds | rnk
+------------------------------+---------+-----
+ Spanish Key                  |    1024 |   1
+ Miles Runs the Voodoo Down   |     844 |   2
+ All Blues                    |     693 |   3
+ Freddie Freeloader           |     589 |   4
+ So What                      |     562 |   5</pre></details>
+    <aside class="tip">Try to write, without looking anything up: the average track length per genre, rounded to whole seconds. You need two joins, <code>GROUP BY</code> and <code>ROUND(AVG(...))</code>.</aside>
+  </article>
+
+  <article class="step" data-title="Two sessions, one row: how PostgreSQL handles concurrency">
+    <p>Open a second terminal and connect as <code>student</code> to <code>music</code> again. Call the terminals A and B. Work through this script in order.</p>
+    <div class="table-wrap"><table>
+      <tr><th>#</th><th>Session</th><th>Type this</th><th>What you should see</th></tr>
+      <tr><td>1</td><td>A</td><td><code>BEGIN;</code> then <code>UPDATE track SET price = 1.99 WHERE track_id = 1;</code></td><td><code>UPDATE 1</code></td></tr>
+      <tr><td>2</td><td>A</td><td><code>SELECT price FROM track WHERE track_id = 1;</code></td><td><code>1.99</code> (A sees its own change)</td></tr>
+      <tr><td>3</td><td>B</td><td><code>SELECT price FROM track WHERE track_id = 1;</code></td><td><code>0.99</code> straight away. B reads the old committed value and is not blocked.</td></tr>
+      <tr><td>4</td><td>B</td><td><code>UPDATE track SET price = 2.49 WHERE track_id = 1;</code></td><td>The cursor hangs. B waits because A holds a lock on that row.</td></tr>
+      <tr><td>5</td><td>A</td><td><code>COMMIT;</code></td><td><code>COMMIT</code>. B's update finishes at once: <code>UPDATE 1</code>.</td></tr>
+      <tr><td>6</td><td>B</td><td><code>SELECT price FROM track WHERE track_id = 1;</code></td><td><code>2.49</code></td></tr>
+    </table></div>
+    <p>Reset the price from either session and close session B:</p>
+    <pre data-lang="sql">UPDATE track SET price = 0.99 WHERE track_id = 1;</pre>
+    <p>This is <b>MVCC</b> (multi-version concurrency control): readers never wait for writers, and writers only wait when they touch the same row. Compare that with the whole-database lock you triggered in SQLite. Repeat the script once with <code>ROLLBACK;</code> in step 5 and confirm that B's read shows the original value.</p>
+  </article>
+
+  <article class="step" data-title="Read a real query plan with EXPLAIN ANALYZE">
+    <p>Your 20-row tables are too small for the planner to bother with indexes. Build a bigger table, ask for a plan, add an index, ask again:</p>
+    <pre data-lang="sql">CREATE TABLE big AS
+  SELECT g AS id, (random() * 1000)::int AS k
+  FROM generate_series(1, 200000) AS g;
+
+EXPLAIN ANALYZE SELECT * FROM big WHERE k = 42;
+
+CREATE INDEX big_k ON big (k);
+ANALYZE big;
+
+EXPLAIN ANALYZE SELECT * FROM big WHERE k = 42;
+
+DROP TABLE big;</pre>
+    <p>The exact numbers are yours alone, but look for these signs:</p>
+    <ul>
+      <li>Before the index: a <code>Seq Scan</code> (or <code>Parallel Seq Scan</code>) on <code>big</code> with a large <code>Rows Removed by Filter</code>, and an execution time of a few to tens of milliseconds.</li>
+      <li>After the index: a <code>Bitmap Index Scan on big_k</code> or an <code>Index Scan</code>, and a much smaller execution time, typically under a millisecond.</li>
+    </ul>
+    <aside class="note"><code>EXPLAIN ANALYZE</code> actually runs the query. Be careful using it on statements that change data.</aside>
+  </article>
+
+  <article class="step" data-title="Roles and privileges: a read-only user">
+    <p>Switch to your administrator session (step 2), then create a role that can read but not change anything.</p>
+    <pre data-lang="sql">CREATE ROLE reader LOGIN PASSWORD 'read_only_pw';
+\c music
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO reader;
+\q</pre>
+    <p>Now log in as that role and try to read and to delete:</p>
+    <pre data-lang="bash">psql -U reader -h localhost -d music</pre>
+    <pre data-lang="sql">SELECT COUNT(*) FROM track;
+DELETE FROM track WHERE track_id = 1;</pre>
+    <details class="expect"><summary>Expected output</summary><pre> count
+-------
+    20
+(1 row)
+
+ERROR:  permission denied for table track</pre></details>
+    <p>Docker users: <code>docker exec -it pg-lab psql -U reader -d music</code>. This is the principle of least privilege that Module 10 builds on: an app that only reports should log in with a role that only reads.</p>
+  </article>
+
+  <article class="step" data-title="Back up and restore with pg_dump">
+    <p>Back up the <code>music</code> database to a plain SQL file. Run this in a normal terminal, not inside psql, and enter <code>lab_pass</code> when asked.</p>
+    <pre data-lang="bash">pg_dump -U student -h localhost -d music -f music_backup.sql</pre>
+    <p>Restore it into a brand-new database to prove the backup works:</p>
+    <pre data-lang="bash">psql -U student -h localhost -d music -c "CREATE DATABASE music_copy;"
+psql -U student -h localhost -d music_copy -f music_backup.sql
+psql -U student -h localhost -d music_copy -c "SELECT COUNT(*) FROM track;"</pre>
+    <details class="expect"><summary>Expected output of the last command</summary><pre> count
+-------
+    20
+(1 row)</pre></details>
+    <p>Open <code>music_backup.sql</code> and read it: it is ordinary SQL, just like the SQLite <code>.dump</code>. Remove the copy when you are finished:</p>
+    <pre data-lang="bash">psql -U student -h localhost -d music -c "DROP DATABASE music_copy;"</pre>
+    <details class="more"><summary>Using Docker?</summary>
+      <div>
+        <pre data-lang="bash">docker exec pg-lab pg_dump -U student -d music -f /tmp/music_backup.sql
+docker cp pg-lab:/tmp/music_backup.sql .
+docker exec pg-lab psql -U student -d music -c "CREATE DATABASE music_copy;"
+docker exec pg-lab psql -U student -d music_copy -f /tmp/music_backup.sql
+docker exec pg-lab psql -U student -d music_copy -c "SELECT COUNT(*) FROM track;"
+docker exec pg-lab psql -U student -d music -c "DROP DATABASE music_copy;"</pre>
+      </div>
+    </details>
+  </article>
+
+  <article class="step" data-title="Optional: explore with pgAdmin">
+    <p>pgAdmin comes with the Windows installer and is available for every platform at <a href="https://www.pgadmin.org/" target="_blank" rel="noopener">pgadmin.org</a>. Register a server with host <code>localhost</code>, port <code>5432</code>, database <code>music</code>, username <code>student</code> and password <code>lab_pass</code>. Open <b>Schemas, public, Tables</b> and right-click a table to view its data, or open the Query Tool and rerun a query from this lab.</p>
+  </article>
+
+  <div class="panel">
+    <h3>Takeaways</h3>
+    <ul>
+      <li>PostgreSQL is a server: roles, ports, permissions and backups matter in a way they do not for a file database.</li>
+      <li>Strict types and always-on foreign keys protect your data. <code>JSONB</code> gives flexibility without leaving SQL.</li>
+      <li>MVCC lets many sessions read and write at once, which is why it fits busy production systems.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h3>Check yourself</h3>
+    <div class="quiz" data-quiz="lab2"></div>
+  </div>
+</section>
+<!-- ============ LAB 3 · MONGODB ============ -->
+<section class="lab" id="lab3" data-lab>
+  <header>
+    <p class="eyebrow">Lab 3 · about 40 minutes</p>
+    <h2>MongoDB: documents instead of rows</h2>
+    <p class="lead">MongoDB is the best-known document database, one member of the NoSQL family. Instead of splitting an artist across three tables, you keep the artist, albums and tracks together in one JSON-like document. You will load the same music library that way and query it.</p>
+  </header>
+
+  <div class="panel">
+    <h3>By the end of this lab you can</h3>
+    <ul>
+      <li>Install MongoDB and connect with <code>mongosh</code>.</li>
+      <li>Insert, find, update and delete documents, and explain what the flexible schema does and does not give you.</li>
+      <li>Write aggregation pipelines that do the work of <code>JOIN</code>, <code>GROUP BY</code> and <code>HAVING</code>.</li>
+      <li>Add indexes and validation rules, and decide when to embed data and when to reference it.</li>
+    </ul>
+  </div>
+
+  <article class="step" data-title="See the same data in two shapes">
+    <p>Here is Miles Davis from the music library. Switch between the two views.</p>
+    <div class="tabs" data-tabs="shape">
+      <button type="button" data-tab="tables" aria-pressed="true">As tables (SQL)</button>
+      <button type="button" data-tab="doc" aria-pressed="false">As one document (MongoDB)</button>
+    </div>
+    <div data-tabpanel="shape" data-tab="tables">
+      <div class="cols">
+        <div><h4>artist</h4><div class="table-wrap"><table><tr><th>artist_id</th><th>name</th><th>genre</th></tr><tr><td>1</td><td>Miles Davis</td><td>jazz</td></tr></table></div></div>
+        <div><h4>album</h4><div class="table-wrap"><table><tr><th>album_id</th><th>title</th><th>year</th><th>artist_id</th></tr><tr><td>1</td><td>Kind of Blue</td><td>1959</td><td>1</td></tr><tr><td>2</td><td>Bitches Brew</td><td>1970</td><td>1</td></tr></table></div></div>
+        <div><h4>track (some rows)</h4><div class="table-wrap"><table><tr><th>track_id</th><th>title</th><th>album_id</th><th>seconds</th></tr><tr><td>1</td><td>So What</td><td>1</td><td>562</td></tr><tr><td>4</td><td>All Blues</td><td>1</td><td>693</td></tr><tr><td>5</td><td>Spanish Key</td><td>2</td><td>1024</td></tr></table></div></div>
+      </div>
+      <p>To display one artist with everything under it, the database joins three tables. Nothing is repeated, and each fact lives in exactly one place.</p>
+    </div>
+    <div data-tabpanel="shape" data-tab="doc" hidden>
+      <pre data-lang="json">{
+  "name": "Miles Davis",
+  "genre": "jazz",
+  "albums": [
+    {
+      "title": "Kind of Blue",
+      "year": 1959,
+      "tracks": [
+        { "title": "So What", "seconds": 562 },
+        { "title": "All Blues", "seconds": 693 }
+      ]
+    },
+    {
+      "title": "Bitches Brew",
+      "year": 1970,
+      "tracks": [ { "title": "Spanish Key", "seconds": 1024 } ]
+    }
+  ]
+}</pre>
+      <p>One read returns the artist with all albums and tracks, no join needed. The price is that facts about one album live inside one artist, and shared facts get copied.</p>
+    </div>
+  </article>
+
+  <article class="step" data-title="Install MongoDB">
+    <div data-os="win">
+      <ol>
+        <li>Download <b>MongoDB Community Server</b> (the MSI installer) from <a href="https://www.mongodb.com/try/download/community" target="_blank" rel="noopener">mongodb.com/try/download/community</a>. Run it, choose <b>Complete</b>, and keep <b>Install MongoDB as a Service</b> ticked.</li>
+        <li>Download and install <b>MongoDB Shell (mongosh)</b> from <a href="https://www.mongodb.com/try/download/shell" target="_blank" rel="noopener">mongodb.com/try/download/shell</a>. It is a separate download.</li>
+        <li>Open a new PowerShell window so the PATH refreshes.</li>
+      </ol>
+    </div>
+    <div data-os="mac">
+      <pre data-lang="bash">brew tap mongodb/brew
+brew install mongodb-community
+brew services start mongodb-community
+brew install mongosh</pre>
+      <p>The formula may carry a version suffix (for example <code>mongodb-community@8.0</code>). Check the <a href="https://www.mongodb.com/docs/manual/tutorial/install-mongodb-on-os-x/" target="_blank" rel="noopener">official macOS install page</a> for the current name.</p>
+    </div>
+    <div data-os="linux">
+      <p>Follow the <a href="https://www.mongodb.com/docs/manual/administration/install-on-linux/" target="_blank" rel="noopener">official guide for your distribution</a> (Ubuntu, Debian, RHEL and others). It adds MongoDB's package repository and installs <code>mongodb-org</code>, which includes <code>mongosh</code>. Then start the service:</p>
+      <pre data-lang="bash">sudo systemctl start mongod
+sudo systemctl status mongod</pre>
+    </div>
+    <details class="more"><summary>No install? Two other ways to get a MongoDB server</summary>
+      <div>
+        <p><b>Docker</b> (any operating system):</p>
+        <pre data-lang="bash">docker run --name mongo-lab -p 27017:27017 -d mongo:8
+docker exec -it mongo-lab mongosh</pre>
+        <p><b>MongoDB Atlas</b>, a free hosted cluster: create an account at <a href="https://www.mongodb.com/cloud/atlas/register" target="_blank" rel="noopener">mongodb.com/cloud/atlas</a>, create a free (M0) cluster, add a database user, allow your IP address, then choose <b>Connect</b> and copy the <code>mongosh</code> connection command. Keep your password private.</p>
+      </div>
+    </details>
+  </article>
+
+  <article class="step" data-title="Check the install and connect">
+    <pre data-lang="bash">mongosh --version
+mongosh</pre>
+    <p>The second command connects to <code>mongodb://127.0.0.1:27017</code>. Docker users: <code>docker exec -it mongo-lab mongosh</code>. The prompt reads <code>test&gt;</code>, which is the default database name. Now switch database. Unlike CREATE DATABASE in SQL, this creates nothing yet: the database appears the moment you store data in it.</p>
+    <pre data-lang="mongosh">db
+use music
+db</pre>
+    <details class="expect"><summary>Expected output</summary><pre>test
+switched to db music
+music</pre></details>
+    <p>In mongosh, <code>db</code> always means the database you are using, and <code>db.artists</code> means the collection named <code>artists</code>. A collection is roughly a table; a document is roughly a row. Collections are created automatically on first insert.</p>
+  </article>
+
+  <article class="step" data-title="Insert the music library as documents">
+    <p>Paste this into mongosh. The first line clears any earlier attempt so you can safely run it again.</p>
+    <pre data-lang="mongosh">db.artists.drop()
+db.artists.insertMany([
+  {
+    name: "Miles Davis", genre: "jazz",
+    albums: [
+      { title: "Kind of Blue", year: 1959, tracks: [
+        { title: "So What", seconds: 562 },
+        { title: "Freddie Freeloader", seconds: 589 },
+        { title: "Blue in Green", seconds: 337 },
+        { title: "All Blues", seconds: 693 } ] },
+      { title: "Bitches Brew", year: 1970, tracks: [
+        { title: "Spanish Key", seconds: 1024 },
+        { title: "Miles Runs the Voodoo Down", seconds: 844 } ] }
+    ]
+  },
+  {
+    name: "John Coltrane", genre: "jazz",
+    albums: [
+      { title: "A Love Supreme", year: 1965, tracks: [
+        { title: "Acknowledgement", seconds: 462 },
+        { title: "Resolution", seconds: 442 },
+        { title: "Psalm", seconds: 428 } ] },
+      { title: "Giant Steps", year: 1960, tracks: [
+        { title: "Giant Steps", seconds: 287 },
+        { title: "Naima", seconds: 262 } ] }
+    ]
+  },
+  {
+    name: "Nina Simone", genre: "soul",
+    albums: [
+      { title: "I Put a Spell on You", year: 1965, tracks: [
+        { title: "Feeling Good", seconds: 177 } ] }
+    ]
+  },
+  {
+    name: "Radiohead", genre: "rock",
+    albums: [
+      { title: "OK Computer", year: 1997, tracks: [
+        { title: "Paranoid Android", seconds: 386 },
+        { title: "Karma Police", seconds: 263 },
+        { title: "No Surprises", seconds: 229 } ] },
+      { title: "Kid A", year: 2000, tracks: [
+        { title: "Everything In Its Right Place", seconds: 251 },
+        { title: "Idioteque", seconds: 309 } ] }
+    ]
+  },
+  {
+    name: "Daft Punk", genre: "electronic",
+    albums: [
+      { title: "Discovery", year: 2001, tracks: [
+        { title: "One More Time", seconds: 320 },
+        { title: "Digital Love", seconds: 301 },
+        { title: "Harder Better Faster Stronger", seconds: 224 } ] }
+    ]
+  }
+])</pre>
+    <details class="expect"><summary>Expected output</summary><pre>{
+  acknowledged: true,
+  insertedIds: {
+    '0': ObjectId('...'),
+    '1': ObjectId('...'),
+    '2': ObjectId('...'),
+    '3': ObjectId('...'),
+    '4': ObjectId('...')
+  }
+}</pre></details>
+    <p>Check the count, and look at one document:</p>
+    <pre data-lang="mongosh">db.artists.countDocuments()
+db.artists.findOne({ name: "Daft Punk" })</pre>
+    <p>The count is <code>5</code>. You never created an <code>_id</code>, so MongoDB added one: a unique <code>ObjectId</code>, the automatic primary key of every document. Nowhere did you declare a schema or column types.</p>
+  </article>
+
+  <article class="step" data-title="Find documents: filters, projection, sort and limit">
+    <p><code>find(filter, projection)</code> is the counterpart of <code>SELECT ... WHERE</code>. The second argument chooses which fields to return (<code>1</code> to include, <code>0</code> to hide). Run these one at a time.</p>
+    <pre data-lang="mongosh">db.artists.find({ genre: "jazz" }, { name: 1, _id: 0 })
+
+db.artists.find({ "albums.year": { $gt: 1999 } }, { name: 1, _id: 0 })
+
+db.artists.find({ genre: { $in: ["rock", "electronic"] } }, { name: 1, _id: 0 })
+
+db.artists.find({}, { name: 1, _id: 0 }).sort({ name: 1 }).limit(3)
+
+db.artists.find({ albums: { $elemMatch: { year: { $lt: 1960 } } } }, { name: 1, _id: 0 })</pre>
+    <details class="expect"><summary>Expected output</summary><pre>[ { name: 'Miles Davis' }, { name: 'John Coltrane' } ]
+
+[ { name: 'Radiohead' }, { name: 'Daft Punk' } ]
+
+[ { name: 'Radiohead' }, { name: 'Daft Punk' } ]
+
+[ { name: 'Daft Punk' }, { name: 'John Coltrane' }, { name: 'Miles Davis' } ]
+
+[ { name: 'Miles Davis' } ]</pre></details>
+    <ul>
+      <li><code>$gt</code>, <code>$lt</code>, <code>$in</code> are operators, the equivalents of <code>&gt;</code>, <code>&lt;</code>, <code>IN</code>.</li>
+      <li><code>"albums.year"</code> is <b>dot notation</b>: it reaches inside the nested array and matches if any album fits.</li>
+      <li><code>$elemMatch</code> demands that all its conditions hold on the same array element.</li>
+    </ul>
+  </article>
+
+  <article class="step" data-title="Aggregation pipelines: joins and grouping without JOIN">
+    <p>An aggregation pipeline passes documents through stages, like a factory line. <code>$unwind</code> turns an array into one document per element, <code>$match</code> filters, <code>$group</code> summarizes, <code>$project</code> reshapes, <code>$sort</code> orders.</p>
+    <h4>A. Tracks and seconds per artist (the Lab 1 aggregate)</h4>
+    <pre data-lang="mongosh">db.artists.aggregate([
+  { $unwind: "$albums" },
+  { $unwind: "$albums.tracks" },
+  { $group: { _id: "$name",
+              tracks: { $sum: 1 },
+              seconds: { $sum: "$albums.tracks.seconds" } } },
+  { $sort: { seconds: -1 } }
+])</pre>
+    <details class="expect"><summary>Expected output</summary><pre>[
+  { _id: 'Miles Davis', tracks: 6, seconds: 4049 },
+  { _id: 'John Coltrane', tracks: 5, seconds: 1881 },
+  { _id: 'Radiohead', tracks: 5, seconds: 1438 },
+  { _id: 'Daft Punk', tracks: 3, seconds: 845 },
+  { _id: 'Nina Simone', tracks: 1, seconds: 177 }
+]</pre></details>
+    <p>Check against Lab 1: 4049 seconds is 67.5 minutes, the same answer SQLite gave.</p>
+    <h4>B. Tracks longer than 10 minutes</h4>
+    <pre data-lang="mongosh">db.artists.aggregate([
+  { $unwind: "$albums" },
+  { $unwind: "$albums.tracks" },
+  { $match: { "albums.tracks.seconds": { $gt: 600 } } },
+  { $project: { _id: 0, artist: "$name",
+                track: "$albums.tracks.title",
+                seconds: "$albums.tracks.seconds" } }
+])</pre>
+    <details class="expect"><summary>Expected output</summary><pre>[
+  { artist: 'Miles Davis', track: 'All Blues', seconds: 693 },
+  { artist: 'Miles Davis', track: 'Spanish Key', seconds: 1024 },
+  { artist: 'Miles Davis', track: 'Miles Runs the Voodoo Down', seconds: 844 }
+]</pre></details>
+    <h4>C. Albums per genre</h4>
+    <pre data-lang="mongosh">db.artists.aggregate([
+  { $unwind: "$albums" },
+  { $group: { _id: "$genre", albums: { $sum: 1 } } },
+  { $sort: { albums: -1, _id: 1 } }
+])</pre>
+    <details class="expect"><summary>Expected output</summary><pre>[
+  { _id: 'jazz', albums: 4 },
+  { _id: 'rock', albums: 2 },
+  { _id: 'electronic', albums: 1 },
+  { _id: 'soul', albums: 1 }
+]</pre></details>
+    <h4>Your turn</h4>
+    <p>List the albums that have at least 3 tracks, with the track count, most tracks first and ties by title (the Lab 1 <code>HAVING</code> exercise). Hint: <code>{ $size: "$albums.tracks" }</code> counts an array.</p>
+    <details class="solution"><summary>Show solution</summary>
+<pre data-lang="mongosh">db.artists.aggregate([
+  { $unwind: "$albums" },
+  { $project: { _id: 0, album: "$albums.title",
+                n: { $size: "$albums.tracks" } } },
+  { $match: { n: { $gte: 3 } } },
+  { $sort: { n: -1, album: 1 } }
+])
+// Kind of Blue 4, A Love Supreme 3, Discovery 3, OK Computer 3</pre></details>
+    <div class="table-wrap"><table>
+      <tr><th>Pipeline stage</th><th>SQL idea</th></tr>
+      <tr><td><code>$unwind</code></td><td>flattening a one-to-many relationship, like a JOIN</td></tr>
+      <tr><td><code>$match</code></td><td><code>WHERE</code> (or <code>HAVING</code> after a group)</td></tr>
+      <tr><td><code>$group</code></td><td><code>GROUP BY</code> with aggregates</td></tr>
+      <tr><td><code>$project</code></td><td>the <code>SELECT</code> list</td></tr>
+      <tr><td><code>$sort</code>, <code>$limit</code></td><td><code>ORDER BY</code>, <code>LIMIT</code></td></tr>
+    </table></div>
+  </article>
+
+  <article class="step" data-title="Update documents and see the flexible schema">
+    <pre data-lang="mongosh">db.artists.updateOne({ name: "Nina Simone" }, { $set: { country: "US" } })
+
+db.artists.updateOne({ name: "Radiohead" }, { $inc: { fans: 1 } })
+
+db.artists.updateOne(
+  { name: "Nina Simone" },
+  { $push: { albums: { title: "Pastel Blues", year: 1965, tracks: [] } } }
+)
+
+db.artists.updateMany({}, { $set: { verified: false } })
+db.artists.updateMany({}, { $unset: { verified: "" } })</pre>
+    <details class="expect"><summary>Expected output of each command</summary><pre>{ acknowledged: true, insertedId: null, matchedCount: 1, modifiedCount: 1, upsertedCount: 0 }
+{ acknowledged: true, insertedId: null, matchedCount: 1, modifiedCount: 1, upsertedCount: 0 }
+{ acknowledged: true, insertedId: null, matchedCount: 1, modifiedCount: 1, upsertedCount: 0 }
+{ acknowledged: true, insertedId: null, matchedCount: 5, modifiedCount: 5, upsertedCount: 0 }
+{ acknowledged: true, insertedId: null, matchedCount: 5, modifiedCount: 5, upsertedCount: 0 }</pre></details>
+    <p>Now look at what you did to the shape of the data:</p>
+    <pre data-lang="mongosh">db.artists.find({}, { _id: 0, name: 1, country: 1 })
+db.artists.find({ fans: { $exists: true } }, { _id: 0, name: 1, fans: 1 })</pre>
+    <details class="expect"><summary>Expected output</summary><pre>[
+  { name: 'Miles Davis' },
+  { name: 'John Coltrane' },
+  { name: 'Nina Simone', country: 'US' },
+  { name: 'Radiohead' },
+  { name: 'Daft Punk' }
+]
+
+[ { name: 'Radiohead', fans: 1 } ]</pre></details>
+    <p>Only Nina Simone has a <code>country</code>, and only Radiohead has <code>fans</code>. In SQL you would need <code>ALTER TABLE</code> and a NULL for everyone else. Here the documents in one collection simply differ. That freedom is handy for evolving data and dangerous when a typo silently creates a new field. Step 10 shows how to add rules back.</p>
+  </article>
+
+  <article class="step" data-title="Delete documents (on a scratch collection)">
+    <pre data-lang="mongosh">db.scratch.insertMany([{ n: 1 }, { n: 2 }, { n: 3 }])
+db.scratch.deleteMany({ n: { $gte: 2 } })
+db.scratch.find({}, { _id: 0 })
+db.scratch.drop()</pre>
+    <details class="expect"><summary>Expected output</summary><pre>{ acknowledged: true, deletedCount: 2 }
+[ { n: 1 } ]
+true</pre></details>
+    <p><code>deleteOne</code> removes the first match, <code>deleteMany</code> removes every match, and <code>{}</code> as the filter matches everything. Double-check filters before you delete, exactly as you would a SQL <code>WHERE</code>.</p>
+  </article>
+
+  <article class="step" data-title="Indexes and a unique constraint">
+    <p>Count how many documents MongoDB examines to answer a query, before and after an index:</p>
+    <pre data-lang="mongosh">db.artists.find({ genre: "jazz" }).explain("executionStats").executionStats.totalDocsExamined
+
+db.artists.createIndex({ genre: 1 })
+
+db.artists.find({ genre: "jazz" }).explain("executionStats").executionStats.totalDocsExamined</pre>
+    <details class="expect"><summary>Expected output</summary><pre>5
+genre_1
+2</pre></details>
+    <p>Without the index it read all 5 documents. With it, only the 2 jazz artists. Now make artist names unique and try to break the rule:</p>
+    <pre data-lang="mongosh">db.artists.createIndex({ name: 1 }, { unique: true })
+db.artists.insertOne({ name: "Miles Davis", genre: "jazz" })
+db.artists.getIndexes()</pre>
+    <details class="expect"><summary>Expected output (wording may vary slightly)</summary><pre>name_1
+MongoServerError: E11000 duplicate key error collection: music.artists index: name_1 dup key: { name: 'Miles Davis' }
+[ ...three indexes: _id_, genre_1 and name_1... ]</pre></details>
+  </article>
+
+  <article class="step" data-title="Add validation rules to a collection">
+    <p>You can require structure when you want it, while keeping flexibility elsewhere. Create a collection that insists on a name and a founding year:</p>
+    <pre data-lang="mongosh">db.createCollection("labels", {
+  validator: { $jsonSchema: {
+    bsonType: "object",
+    required: ["name", "founded"],
+    properties: {
+      name: { bsonType: "string" },
+      founded: { bsonType: "number", minimum: 1800 }
+    }
+  } }
+})
+
+db.labels.insertOne({ name: "Blue Note" })
+db.labels.insertOne({ name: "Blue Note", founded: 1939 })</pre>
+    <details class="expect"><summary>Expected output</summary><pre>{ ok: 1 }
+MongoServerError: Document failed validation
+{ acknowledged: true, insertedId: ObjectId('...') }</pre></details>
+    <aside class="note">MongoDB is only as schema-free as you choose to be. Many production systems add validation like this once the data model settles.</aside>
+  </article>
+
+  <article class="step" data-title="Design question: embed or reference?">
+    <p>You embedded albums and tracks inside each artist. Another design keeps tracks in their own collection and links to them by ID or name. Neither is always right. Use these questions:</p>
+    <div class="table-wrap"><table>
+      <tr><th>Question</th><th>Lean toward embedding</th><th>Lean toward referencing</th></tr>
+      <tr><td>How is it read?</td><td>Almost always together with the parent</td><td>Often on its own</td></tr>
+      <tr><td>How many children?</td><td>A small, bounded number</td><td>Unbounded or very large (a document is limited to 16 MB)</td></tr>
+      <tr><td>How often does a child change?</td><td>Rarely</td><td>Constantly, from many writers</td></tr>
+      <tr><td>Is the child shared?</td><td>No, it belongs to one parent</td><td>Yes, many parents point to it</td></tr>
+    </table></div>
+    <p><b>Try it:</b> listeners press play thousands of times a day. Would you store each play event inside the track, or in a separate collection?</p>
+    <details class="solution"><summary>Show the reasoning</summary>
+      <p style="padding:12px 14px">A separate collection. Play events are unbounded, arrive constantly from many writers, and are usually analysed on their own. Embedding them would grow every track document without limit and make each play rewrite a large document. Album and track details, by contrast, are small, stable and almost always read with their artist, so embedding them is reasonable.</p>
+    </details>
+  </article>
+
+  <article class="step" data-title="Optional: use MongoDB from Python">
+    <p>Install the driver, then save the script as <code>use_mongo.py</code> and run it while your MongoDB server is running.</p>
+    <div data-os="win"><pre data-lang="powershell">python -m pip install pymongo</pre></div>
+    <div data-os="mac linux"><pre data-lang="bash">python3 -m pip install pymongo</pre></div>
+    <pre data-lang="python">from pymongo import MongoClient
+
+client = MongoClient("mongodb://127.0.0.1:27017")
+db = client["music"]
+
+for doc in db.artists.find({"genre": "jazz"}, {"name": 1, "_id": 0}):
+    print(doc["name"])
+
+client.close()</pre>
+    <details class="expect"><summary>Expected output</summary><pre>Miles Davis
+John Coltrane</pre></details>
+    <p>If you use Atlas, replace the connection string with the one from the Atlas <b>Connect</b> dialog.</p>
+  </article>
+
+  <article class="step" data-title="Clean up">
+    <p>When you have finished exploring, remove the lab database. You can rebuild it any time by repeating step 4.</p>
+    <pre data-lang="mongosh">db.dropDatabase()</pre>
+    <details class="expect"><summary>Expected output</summary><pre>{ ok: 1, dropped: 'music' }</pre></details>
+    <p>Type <code>exit</code> to leave mongosh.</p>
+  </article>
+
+  <div class="panel">
+    <h3>Takeaways</h3>
+    <ul>
+      <li>A document database stores nested, varied records together. Reading one whole object is fast and simple.</li>
+      <li>You give up automatic JOINs and, unless you add validation, the database's protection against messy data.</li>
+      <li>Model around how the data is read. Embed what is read together, reference what grows without bound.</li>
+    </ul>
+  </div>
+
+  <div class="panel">
+    <h3>Check yourself</h3>
+    <div class="quiz" data-quiz="lab3"></div>
+  </div>
+</section>
+<!-- ============ LAB 4 · DECIDE ============ -->
+<section class="lab" id="lab4" data-lab>
+  <header>
+    <p class="eyebrow">Lab 4 · about 20 minutes</p>
+    <h2>Decide: match the engine to the problem</h2>
+    <p class="lead">You have now run the same data through three engines. This lab turns that experience into a skill: given a real situation, pick a database and defend the choice.</p>
+  </header>
+
+  <article class="step" data-title="Review the trade-offs">
+    <div class="table-wrap"><table>
+      <tr><th>Factor</th><th>SQLite</th><th>PostgreSQL</th><th>MongoDB</th></tr>
+      <tr><td>Setup effort</td><td>None. One file.</td><td>Install, start a service, create roles.</td><td>Install, start a service.</td></tr>
+      <tr><td>Many writers at once</td><td>Poor: one writer at a time</td><td>Strong: MVCC, row-level locks</td><td>Strong on documents; multi-document transactions are possible but heavier</td></tr>
+      <tr><td>Data shape</td><td>Tables, flexible types</td><td>Tables, strict types, plus JSONB</td><td>Nested, varied documents</td></tr>
+      <tr><td>Relationships and JOINs</td><td>Full SQL joins</td><td>Full SQL joins, rich SQL features</td><td>Embed, or use <code>$lookup</code></td></tr>
+      <tr><td>Consistency guarantees</td><td>ACID</td><td>ACID</td><td>Single-document atomicity; stronger options on request</td></tr>
+      <tr><td>Growing beyond one machine</td><td>Not designed for it</td><td>Vertical first; replicas and extensions add more</td><td>Built for sharding across servers</td></tr>
+      <tr><td>Typical home</td><td>Apps, devices, tests, prototypes</td><td>Business systems of record</td><td>Catalogs, content, event and sensor data</td></tr>
+    </table></div>
+    <aside class="note">Redis, a key-value store from the NoSQL family, appears in the scenarios below. It keeps data in memory for very fast lookups by key and is often used for caches and counters.</aside>
+  </article>
+
+  <article class="step" data-title="Scenario challenge">
+    <p>Choose the best fit for each situation. You get instant feedback and a reason. Several scenarios have more than one defensible answer, and the feedback says so.</p>
+    <div id="scenarios" class="hidden-slot"></div>
+    <p class="score" id="scenario-score" aria-live="polite"></p>
+  </article>
+
+  <article class="step" data-title="Try the decision wizard">
+    <p>Answer a few questions about a project of your own and see where they lead.</p>
+    <div class="wiz" id="wizard"></div>
+  </article>
+
+  <article class="step" data-title="Write your recommendation">
+    <p>Pick a real or imagined project (for example a campus club app, a small store, or the database for your course project). Write a short recommendation using the template. Your text is saved in this browser as you type, and you can copy it to paste elsewhere.</p>
+    <label for="reco" class="label">Your recommendation</label>
+    <textarea id="reco" spellcheck="true" aria-describedby="reco-help"></textarea>
+    <p id="reco-help" class="fb">Aim for one short paragraph per heading.</p>
+    <div class="tools">
+      <button type="button" class="btn primary" id="reco-copy">Copy text</button>
+      <button type="button" class="btn" id="reco-template">Insert template</button>
+      <span class="fb" id="reco-status" aria-live="polite"></span>
+    </div>
+  </article>
+
+  <div class="panel">
+    <h3>Takeaways</h3>
+    <ul>
+      <li>Ask three questions: how many users write at once, how structured and connected is the data, and what must never go wrong?</li>
+      <li>Start simple. A single file is often enough until the evidence says otherwise.</li>
+      <li>Relational and NoSQL are tools with different strengths. Good engineers can explain the trade-off out loud.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============ CHEAT SHEET ============ -->
+<section class="lab" id="cheat">
+  <header>
+    <p class="eyebrow">Reference</p>
+    <h2>Cheat sheet</h2>
+    <p class="lead">Keep this open while you work.</p>
+  </header>
+
+  <div class="panel">
+    <h3>SQL dialect explorer</h3>
+    <p>Choose a task to see how MySQL, SQLite and PostgreSQL each write it.</p>
+    <label for="dialect-pick" class="label">Task</label>
+    <select id="dialect-pick"></select>
+    <div class="cols" id="dialect-out" aria-live="polite"></div>
+    <p class="fb" id="dialect-note"></p>
+  </div>
+
+  <div class="panel">
+    <h3>Shell commands side by side</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Task</th><th>SQLite shell</th><th>psql</th><th>mongosh</th></tr>
+      <tr><td>Connect</td><td><code>sqlite3 music.db</code></td><td><code>psql -U student -h localhost -d music</code></td><td><code>mongosh</code></td></tr>
+      <tr><td>List databases</td><td><code>.databases</code></td><td><code>\l</code></td><td><code>show dbs</code></td></tr>
+      <tr><td>Switch database</td><td>reopen the file</td><td><code>\c music</code></td><td><code>use music</code></td></tr>
+      <tr><td>List tables or collections</td><td><code>.tables</code></td><td><code>\dt</code></td><td><code>show collections</code></td></tr>
+      <tr><td>Describe a table</td><td><code>.schema track</code></td><td><code>\d track</code></td><td><code>db.artists.findOne()</code></td></tr>
+      <tr><td>Readable output</td><td><code>.headers on</code> then <code>.mode column</code></td><td><code>\x</code> toggles expanded output</td><td>built in</td></tr>
+      <tr><td>Run a script file</td><td><code>.read file.sql</code></td><td><code>\i file.sql</code></td><td><code>load("file.js")</code></td></tr>
+      <tr><td>Help</td><td><code>.help</code></td><td><code>\?</code></td><td><code>help()</code></td></tr>
+      <tr><td>Quit</td><td><code>.quit</code></td><td><code>\q</code></td><td><code>exit</code></td></tr>
+    </table></div>
+  </div>
+
+  <div class="panel">
+    <h3>SQL to MongoDB translation</h3>
+    <div class="table-wrap"><table>
+      <tr><th>SQL</th><th>MongoDB (collection <code>artists</code>)</th></tr>
+      <tr><td><code>SELECT * FROM artist</code></td><td><code>db.artists.find()</code></td></tr>
+      <tr><td><code>WHERE genre = 'jazz'</code></td><td><code>db.artists.find({ genre: "jazz" })</code></td></tr>
+      <tr><td><code>SELECT name</code></td><td><code>db.artists.find({}, { name: 1, _id: 0 })</code></td></tr>
+      <tr><td><code>ORDER BY name LIMIT 3</code></td><td><code>.sort({ name: 1 }).limit(3)</code></td></tr>
+      <tr><td><code>SELECT COUNT(*)</code></td><td><code>db.artists.countDocuments()</code></td></tr>
+      <tr><td><code>INSERT INTO ...</code></td><td><code>db.artists.insertOne({ ... })</code></td></tr>
+      <tr><td><code>UPDATE ... SET</code></td><td><code>db.artists.updateOne({ filter }, { $set: { ... } })</code></td></tr>
+      <tr><td><code>DELETE FROM ... WHERE</code></td><td><code>db.artists.deleteOne({ filter })</code></td></tr>
+      <tr><td><code>GROUP BY</code></td><td><code>aggregate([{ $group: { ... } }])</code></td></tr>
+      <tr><td><code>JOIN</code></td><td>embed the data, or <code>$lookup</code> in an aggregation</td></tr>
+      <tr><td><code>CREATE INDEX</code></td><td><code>db.artists.createIndex({ genre: 1 })</code></td></tr>
+      <tr><td><code>BEGIN ... COMMIT</code></td><td>sessions and transactions (need a replica set); one document is already atomic</td></tr>
+    </table></div>
+  </div>
+</section>
+
+<!-- ============ TROUBLESHOOTING ============ -->
+<section class="lab" id="help">
+  <header>
+    <p class="eyebrow">Reference</p>
+    <h2>Troubleshooting</h2>
+    <p class="lead">Read the error message first. It usually names the problem.</p>
+  </header>
+
+  <div class="panel">
+    <h3>SQLite</h3>
+    <details class="more"><summary><code>sqlite3</code> is not recognized (Windows) or command not found</summary><div><p>The folder that holds <code>sqlite3.exe</code> is not on your PATH. On Windows run <code>$env:Path += ";C:\sqlite"</code> in that PowerShell window, or use the full path such as <code>C:\sqlite\sqlite3.exe music.db</code>. On Linux install the package from step 1.</p></div></details>
+    <details class="more"><summary>Error: no such table: track</summary><div><p>You opened a different or empty database file. Check where you are with <code>pwd</code> (or <code>cd</code> on Windows) and run <code>.databases</code> to see which file the shell has open. Run <code>sqlite3 music.db</code> from the <code>db-lab</code> folder.</p></div></details>
+    <details class="more"><summary>Runtime error: database is locked (5)</summary><div><p>Another connection holds a write lock. Close other shells, viewers such as DB Browser, or commit or roll back an open transaction. In the shell, <code>.timeout 3000</code> makes it wait up to three seconds before giving up.</p></div></details>
+    <details class="more"><summary>My foreign key errors never appear</summary><div><p>Foreign keys are off by default for each connection. Run <code>PRAGMA foreign_keys = ON;</code> every time you connect.</p></div></details>
+  </div>
+
+  <div class="panel">
+    <h3>PostgreSQL</h3>
+    <details class="more"><summary>connection to server ... failed: Connection refused</summary><div><p>The server is not running or is on another port. Windows: open <b>Services</b> and start the <code>postgresql</code> service. macOS Homebrew: <code>brew services start postgresql@18</code> (use your version). Linux: <code>sudo systemctl start postgresql</code>. Docker: <code>docker start pg-lab</code>.</p></div></details>
+    <details class="more"><summary>password authentication failed for user</summary><div><p>Wrong password. For the roles in this lab: <code>student</code> uses <code>lab_pass</code>, <code>reader</code> uses <code>read_only_pw</code>, and the <code>postgres</code> password is the one you chose during install (<code>labpass</code> for the Docker command above).</p></div></details>
+    <details class="more"><summary>Peer authentication failed (Linux)</summary><div><p>Connecting through the local socket makes PostgreSQL compare your Linux username with the role name. Add <code>-h localhost</code> to force a password login over the network, or use <code>sudo -u postgres psql</code> for the administrator.</p></div></details>
+    <details class="more"><summary>FATAL: database "music" does not exist, or role "student" does not exist</summary><div><p>Run the create statements from step 4 in an administrator session, then reconnect. Check what exists with <code>\l</code> and <code>\du</code>.</p></div></details>
+    <details class="more"><summary><code>psql</code> is not recognized (Windows)</summary><div><p>Add the <code>bin</code> folder of your installation to the PATH for this window, for example <code>$env:Path += ";C:\Program Files\PostgreSQL\18\bin"</code>, or use <b>SQL Shell (psql)</b> from the Start menu.</p></div></details>
+    <details class="more"><summary>relation "track" already exists</summary><div><p>You ran the create script twice. Either continue with the data you have, or start fresh: <code>DROP TABLE track_meta, track, album, artist;</code> and run the script again.</p></div></details>
+  </div>
+
+  <div class="panel">
+    <h3>MongoDB</h3>
+    <details class="more"><summary>connect ECONNREFUSED 127.0.0.1:27017</summary><div><p>The <code>mongod</code> server is not running. Windows: start the <b>MongoDB Server</b> service in Services. macOS: <code>brew services start mongodb-community</code>. Linux: <code>sudo systemctl start mongod</code>. Docker: <code>docker start mongo-lab</code>.</p></div></details>
+    <details class="more"><summary>mongosh is not recognized</summary><div><p>The shell is a separate install on Windows. Download MongoDB Shell, install it, and open a new terminal window. On macOS use <code>brew install mongosh</code>.</p></div></details>
+    <details class="more"><summary>My query returns nothing</summary><div><p>Check <code>db</code> to confirm you are in <code>music</code>, run <code>show collections</code> to confirm <code>artists</code> exists, and check spelling and capitalization: field names and string values are case-sensitive.</p></div></details>
+    <details class="more"><summary>Pasting multi-line code shows errors</summary><div><p>Paste the whole block at once rather than line by line. If it still fails, paste it into a text file first, check for smart quotes or stray characters, and copy from there. Alternatively save it as <code>load.js</code> and run <code>load("load.js")</code> in mongosh.</p></div></details>
+  </div>
+</section>
+
+</main>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var $$ = function (s, r) { return Array.prototype.slice.call((r || document).querySelectorAll(s)); };
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  /* ---------- per-viewer storage (may be unavailable) ---------- */
+  var store = {
+    get: function (k, d) {
+      try { var v = localStorage.getItem('pb5:' + k); return v === null ? d : JSON.parse(v); } catch (e) { return d; }
+    },
+    set: function (k, v) { try { localStorage.setItem('pb5:' + k, JSON.stringify(v)); } catch (e) {} },
+    clear: function (prefixes) {
+      try {
+        Object.keys(localStorage).forEach(function (key) {
+          prefixes.forEach(function (p) { if (key.indexOf('pb5:' + p) === 0) localStorage.removeItem(key); });
+        });
+      } catch (e) {}
+    }
+  };
+
+  /* ---------- theme ---------- */
+  var root = document.documentElement;
+  var themes = ['auto', 'light', 'dark'];
+  var theme = store.get('theme', 'auto');
+  var themeBtn = $('#theme-btn');
+  function applyTheme() {
+    if (theme === 'auto') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', theme);
+    themeBtn.textContent = 'Theme: ' + theme;
+  }
+  themeBtn.addEventListener('click', function () {
+    theme = themes[(themes.indexOf(theme) + 1) % themes.length];
+    store.set('theme', theme); applyTheme();
+  });
+
+  /* ---------- operating system switch ---------- */
+  function detectOS() {
+    var ua = (navigator.userAgent || '').toLowerCase();
+    if (ua.indexOf('windows') > -1) return 'win';
+    if (ua.indexOf('mac') > -1 || ua.indexOf('iphone') > -1 || ua.indexOf('ipad') > -1) return 'mac';
+    return 'linux';
+  }
+  var os = store.get('os', null) || detectOS();
+  function applyOS() {
+    $$('[data-os]').forEach(function (n) { n.hidden = n.getAttribute('data-os').split(' ').indexOf(os) < 0; });
+    $$('[data-set-os]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-set-os') === os ? 'true' : 'false'); });
+  }
+  $$('[data-set-os]').forEach(function (b) {
+    b.addEventListener('click', function () { os = b.getAttribute('data-set-os'); store.set('os', os); applyOS(); });
+  });
+
+  /* ---------- copy helper ---------- */
+  function selectNode(node) {
+    try {
+      var r = document.createRange(); r.selectNodeContents(node);
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+    } catch (e) {}
+  }
+  function flash(btn, msg) {
+    var old = btn.getAttribute('data-label') || btn.textContent;
+    btn.setAttribute('data-label', old);
+    btn.textContent = msg;
+    setTimeout(function () { btn.textContent = old; }, 1600);
+  }
+  function copyText(text, btn, source) {
+    function fallback() {
+      var ok = false;
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch (e) {}
+      if (ok) { flash(btn, 'Copied'); }
+      else { if (source) { if (source.select) source.select(); else selectNode(source); } flash(btn, 'Press Ctrl+C'); }
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { flash(btn, 'Copied'); }, fallback);
+    } else { fallback(); }
+  }
+
+  /* ---------- code blocks ---------- */
+  var langNames = { bash: 'Terminal', powershell: 'PowerShell', sql: 'SQL', sqlite: 'SQLite shell', psql: 'psql', mongosh: 'mongosh', python: 'Python', json: 'JSON' };
+  $$('pre[data-lang]').forEach(function (pre) {
+    var name = langNames[pre.getAttribute('data-lang')] || pre.getAttribute('data-lang');
+    var wrap = el('div', 'code');
+    var head = el('div', 'code-head');
+    head.appendChild(el('span', null, name));
+    var btn = el('button', 'copy', 'Copy');
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Copy ' + name + ' code');
+    head.appendChild(btn);
+    pre.parentNode.insertBefore(wrap, pre);
+    wrap.appendChild(head); wrap.appendChild(pre);
+    btn.addEventListener('click', function () { copyText(pre.textContent, btn, pre); });
+  });
+
+  /* ---------- steps and progress ---------- */
+  var labs = $$('[data-lab]');
+  function setBar(key, done, total) {
+    var p = total ? Math.round(done * 100 / total) : 0;
+    $$('[data-bar="' + key + '"]').forEach(function (n) { n.style.width = p + '%'; });
+    $$('[data-pct="' + key + '"]').forEach(function (n) { n.textContent = p + '%'; });
+  }
+  function updateProgress() {
+    var total = 0, done = 0;
+    labs.forEach(function (lab) {
+      var steps = $$('.step', lab);
+      var d = steps.filter(function (s) { return s.classList.contains('is-done'); }).length;
+      total += steps.length; done += d;
+      setBar(lab.id, d, steps.length);
+    });
+    setBar('all', done, total);
+  }
+  labs.forEach(function (lab) {
+    $$('.step', lab).forEach(function (step, i) {
+      var id = lab.id + '-' + (i + 1);
+      var title = step.getAttribute('data-title') || ('Step ' + (i + 1));
+      var head = el('header');
+      head.appendChild(el('span', 'num', 'Step ' + (i + 1)));
+      head.appendChild(el('h3', null, title));
+      var label = el('label', 'done');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.id = 'chk-' + id;
+      cb.setAttribute('aria-label', 'Mark "' + title + '" as done');
+      label.appendChild(cb); label.appendChild(document.createTextNode('Done'));
+      head.appendChild(label);
+      step.insertBefore(head, step.firstChild);
+      step.id = id;
+      cb.checked = !!store.get('step:' + id, false);
+      step.classList.toggle('is-done', cb.checked);
+      cb.addEventListener('change', function () {
+        store.set('step:' + id, cb.checked);
+        step.classList.toggle('is-done', cb.checked);
+        updateProgress();
+      });
+    });
+  });
+
+  /* ---------- tabs ---------- */
+  $$('[data-tabs]').forEach(function (group) {
+    var key = group.getAttribute('data-tabs');
+    $$('button', group).forEach(function (b) {
+      b.addEventListener('click', function () {
+        $$('button', group).forEach(function (x) { x.setAttribute('aria-pressed', x === b ? 'true' : 'false'); });
+        $$('[data-tabpanel="' + key + '"]').forEach(function (p) { p.hidden = p.getAttribute('data-tab') !== b.getAttribute('data-tab'); });
+      });
+    });
+  });
+
+  /* ---------- quizzes ---------- */
+  var QUIZ = {
+    lab1: [
+      { q: 'Which statement about SQLite is true?',
+        o: ['It needs a server process listening on a port', 'The whole database lives in a single file that your program opens directly', 'It cannot run joins or aggregates', 'It only runs on Linux'],
+        a: 1, e: 'SQLite is a library. There is no server, and the database is one file you can copy.' },
+      { q: 'You insert the text \'abc\' into an INTEGER column of an ordinary SQLite table. What happens?',
+        o: ['The insert fails with a type error', 'SQLite stores it as text, because a column type is only a preference', 'SQLite converts it to 0', 'SQLite converts it to NULL'],
+        a: 1, e: 'This is type affinity. Declare the table STRICT if you want PostgreSQL-style enforcement.' },
+      { q: 'Why can a foreign key violation go unnoticed in SQLite?',
+        o: ['SQLite does not support foreign keys', 'Enforcement is off by default and must be switched on for each connection with PRAGMA foreign_keys = ON', 'Foreign keys only work on Windows', 'They are checked only when the file is closed'],
+        a: 1, e: 'The setting belongs to the connection, so every program that opens the file must turn it on.' },
+      { q: 'Which workload is the best fit for SQLite?',
+        o: ['A bank processing thousands of simultaneous transfers', 'Local storage inside a mobile or desktop app', 'A website with hundreds of writers per second', 'A globally distributed social feed'],
+        a: 1, e: 'One writer at a time and no server make SQLite ideal for local, single-user or low-write data.' },
+      { q: 'What kind of command is .tables?',
+        o: ['Standard SQL that works in every database', 'A SQLite shell command that starts with a dot and needs no semicolon', 'A PostgreSQL command', 'A Python function'],
+        a: 1, e: 'Dot commands belong to the sqlite3 shell. psql has backslash commands and MySQL has SHOW statements.' }
+    ],
+    lab2: [
+      { q: 'Which psql command lists the tables in the current database?',
+        o: ['\\l', '\\dt', '\\du', '\\q'],
+        a: 1, e: '\\dt lists tables, \\l lists databases, \\du lists roles and \\q quits.' },
+      { q: 'Session A has updated a row inside an open transaction and has not committed. Session B runs a SELECT on that row. What does B see?',
+        o: ['Nothing: B waits until A commits', 'An error', 'The old committed value, immediately', 'The new uncommitted value'],
+        a: 2, e: 'MVCC keeps old row versions, so readers are never blocked by writers. B would only wait if it tried to update the same row.' },
+      { q: 'What does  info @> \'{"instruments": ["piano"]}\'  test?',
+        o: ['Whether the JSONB value contains that structure, here an instruments array holding "piano"', 'Whether the column equals that exact text', 'Whether the column is NULL', 'It converts JSONB to text'],
+        a: 0, e: '@> is the containment operator for JSONB.' },
+      { q: 'Why did inserting an explicit value into a GENERATED ALWAYS identity column fail?',
+        o: ['The value was too large', 'PostgreSQL reserves the column for its own generated numbers unless you explicitly override it', 'Identity columns can never be written', 'The table had no primary key'],
+        a: 1, e: 'GENERATED ALWAYS protects the sequence. OVERRIDING SYSTEM VALUE exists for special cases.' },
+      { q: 'Why give an application a read-only role such as reader instead of the superuser?',
+        o: ['It makes queries faster', 'Least privilege: a bug or attacker can read but cannot change or delete data', 'PostgreSQL requires it', 'Read-only roles skip authentication'],
+        a: 1, e: 'Grant each program only the permissions it needs.' }
+    ],
+    lab3: [
+      { q: 'A MongoDB document is most like:',
+        o: ['A column in a table', 'A row that can hold nested arrays and objects', 'A whole database', 'An index'],
+        a: 1, e: 'A document is a JSON-like record. A collection of documents is roughly a table.' },
+      { q: 'In db.artists.find({ genre: "jazz" }, { name: 1, _id: 0 }), what is the second argument?',
+        o: ['A sort order', 'A projection: which fields to return', 'A limit', 'A second filter'],
+        a: 1, e: 'The projection picks fields, like the SELECT list in SQL.' },
+      { q: 'Which aggregation stage turns an array field into one document per element?',
+        o: ['$group', '$match', '$unwind', '$sort'],
+        a: 2, e: '$unwind flattens arrays so later stages can filter and group the elements.' },
+      { q: 'What is the main risk of embedding an unbounded list, such as every play event, inside one document?',
+        o: ['The document grows without limit (documents are capped at 16 MB) and every update rewrites a large document', 'MongoDB cannot store arrays', 'Queries stop working', 'Embedded data cannot be indexed'],
+        a: 0, e: 'Reference data that grows without bound instead of embedding it.' },
+      { q: 'What does "flexible schema" mean in practice?',
+        o: ['MongoDB automatically fixes typos in field names', 'Documents in one collection may differ, and structure is enforced only if you add validation rules', 'Every document must have identical fields', 'MongoDB does not store types'],
+        a: 1, e: 'Flexibility is a default, not a rule. Validation rules bring structure back where you want it.' }
+    ]
+  };
+
+  function renderQuiz(box) {
+    var key = box.getAttribute('data-quiz');
+    var qs = QUIZ[key] || [];
+    var saved = store.get('quiz:' + key, {});
+    box.innerHTML = '';
+    box.style.display = 'flex'; box.style.flexDirection = 'column'; box.style.gap = '14px';
+    var scoreLine = el('p', 'score');
+    scoreLine.setAttribute('aria-live', 'polite');
+    var retry = el('button', 'btn', 'Try again');
+    retry.type = 'button'; retry.hidden = true;
+    function refresh() {
+      var answered = Object.keys(saved).length;
+      var right = 0;
+      qs.forEach(function (q, i) { if (saved[i] === q.a) right++; });
+      scoreLine.textContent = answered < qs.length
+        ? 'Answer each question. Feedback appears right away.'
+        : 'Score: ' + right + ' of ' + qs.length + '.';
+      retry.hidden = answered < qs.length;
+    }
+    qs.forEach(function (q, i) {
+      var fs = el('fieldset', 'q');
+      fs.appendChild(el('legend', null, (i + 1) + '. ' + q.q));
+      var fb = el('p', 'fb');
+      fb.setAttribute('aria-live', 'polite');
+      var buttons = [];
+      function reveal(choice) {
+        buttons.forEach(function (b, j) {
+          b.disabled = true;
+          if (j === q.a) b.classList.add('right');
+          else if (j === choice) b.classList.add('wrong');
+        });
+        fb.textContent = '';
+        var tag = el('b', choice === q.a ? 'ok' : 'no', choice === q.a ? 'Correct. ' : 'Not quite. ');
+        fb.appendChild(tag);
+        fb.appendChild(document.createTextNode(q.e));
+      }
+      q.o.forEach(function (text, j) {
+        var b = el('button', 'opt', text);
+        b.type = 'button';
+        b.addEventListener('click', function () {
+          saved[i] = j; store.set('quiz:' + key, saved); reveal(j); refresh();
+        });
+        buttons.push(b); fs.appendChild(b);
+      });
+      fs.appendChild(fb);
+      box.appendChild(fs);
+      if (saved[i] !== undefined) reveal(saved[i]);
+    });
+    retry.addEventListener('click', function () { store.set('quiz:' + key, {}); renderQuiz(box); });
+    box.appendChild(scoreLine); box.appendChild(retry);
+    refresh();
+  }
+  function renderQuizzes() { $$('[data-quiz]').forEach(renderQuiz); }
+
+  /* ---------- scenario challenge ---------- */
+  var ENGINES = [['sqlite', 'SQLite'], ['postgres', 'PostgreSQL'], ['mongo', 'MongoDB'], ['redis', 'Redis (key-value)']];
+  var SCN = [
+    { t: 'A desktop note-taking app. Each person\'s notes stay on their own laptop.', best: 'sqlite', ok: [],
+      why: 'One user, one machine, and no server to run. A single file is exactly what SQLite is for.' },
+    { t: 'A university registration system for 20,000 students, where two students must never get the last seat in a class.', best: 'postgres', ok: [],
+      why: 'Many simultaneous writers plus a rule that must never break call for full ACID transactions and row-level concurrency.' },
+    { t: 'An online catalog where laptops, shirts and books have very different attributes, and new attributes appear every month.', best: 'mongo', ok: ['postgres'],
+      why: 'Varied, evolving records suit documents. PostgreSQL with JSONB columns is also a strong answer when you want SQL joins and strict transactions for orders.' },
+    { t: 'A game leaderboard that must return the top 10 players in under a millisecond while scores update thousands of times per second.', best: 'redis', ok: [],
+      why: 'This is a fast, key-based, in-memory job. Redis keeps sorted scores in memory. The other engines could do it, but not as quickly.' },
+    { t: 'A weekend hackathon prototype built by one developer with no time for setup.', best: 'sqlite', ok: ['postgres'],
+      why: 'Zero setup wins. PostgreSQL is fine if the team already has it running, but SQLite gets you started in seconds.' },
+    { t: 'A hospital scheduling system with strict permission rules, audit trails, and reports that combine many tables.', best: 'postgres', ok: [],
+      why: 'Connected data, roles and privileges, and complex reporting play to PostgreSQL\'s strengths.' },
+    { t: 'A stream of sensor readings as JSON, with different fields per device model, millions per day, mostly read by time range.', best: 'mongo', ok: ['postgres'],
+      why: 'Varied documents at high volume favour a document store built to scale out. PostgreSQL with JSONB and time-based indexes can also cope.' },
+    { t: 'The offline storage inside a mobile app that syncs with a server later.', best: 'sqlite', ok: [],
+      why: 'SQLite is embedded in phones for exactly this reason: local, reliable, and no server.' }
+  ];
+  function renderScenarios() {
+    var box = $('#scenarios');
+    var scoreEl = $('#scenario-score');
+    var saved = store.get('scn', {});
+    box.hidden = false;
+    box.innerHTML = '';
+    box.style.display = 'flex'; box.style.flexDirection = 'column'; box.style.gap = '14px';
+    function tally() {
+      var n = Object.keys(saved).length, best = 0, ok = 0;
+      SCN.forEach(function (s, i) { if (saved[i] === s.best) best++; else if (saved[i] && s.ok.indexOf(saved[i]) > -1) ok++; });
+      scoreEl.textContent = n < SCN.length
+        ? n + ' of ' + SCN.length + ' answered.'
+        : 'Done. ' + best + ' best fits and ' + ok + ' defensible alternatives out of ' + SCN.length + '.';
+    }
+    SCN.forEach(function (s, i) {
+      var fs = el('fieldset', 'q');
+      fs.appendChild(el('legend', null, 'Scenario ' + (i + 1)));
+      fs.appendChild(el('p', null, s.t));
+      var pills = el('div', 'pills');
+      var fb = el('p', 'fb'); fb.setAttribute('aria-live', 'polite');
+      var buttons = [];
+      function reveal(pick) {
+        buttons.forEach(function (b) {
+          b.disabled = true;
+          var id = b.getAttribute('data-id');
+          if (id === s.best) b.classList.add('right');
+          else if (id === pick) b.classList.add('wrong');
+        });
+        var verdict = pick === s.best ? 'Best fit. ' : (s.ok.indexOf(pick) > -1 ? 'Defensible, but not the first choice. ' : 'Not the best fit. ');
+        fb.textContent = '';
+        fb.appendChild(el('b', pick === s.best ? 'ok' : (s.ok.indexOf(pick) > -1 ? '' : 'no'), verdict));
+        var bestName = ENGINES.filter(function (e) { return e[0] === s.best; })[0][1];
+        fb.appendChild(document.createTextNode('Top choice: ' + bestName + '. ' + s.why));
+      }
+      ENGINES.forEach(function (e) {
+        var b = el('button', 'opt', e[1]);
+        b.type = 'button'; b.setAttribute('data-id', e[0]);
+        b.style.width = 'auto'; b.style.flex = '1 1 150px';
+        b.addEventListener('click', function () { saved[i] = e[0]; store.set('scn', saved); reveal(e[0]); tally(); });
+        buttons.push(b); pills.appendChild(b);
+      });
+      fs.appendChild(pills); fs.appendChild(fb);
+      box.appendChild(fs);
+      if (saved[i]) reveal(saved[i]);
+    });
+    var retry = el('button', 'btn', 'Try the scenarios again');
+    retry.type = 'button';
+    retry.addEventListener('click', function () { store.set('scn', {}); renderScenarios(); });
+    box.appendChild(retry);
+    tally();
+  }
+
+  /* ---------- decision wizard ---------- */
+  var WIZ = {
+    q1: { q: 'Will many users or services write to the data at the same time, over a network?', yes: 'q2', no: 'q4' },
+    q2: { q: 'Is the data highly structured and linked by relationships, and must multi-step changes succeed or fail together?', yes: 'r_pg', no: 'q3' },
+    q3: { q: 'Is the main job fast lookup by a key, such as a cache, a session or a counter?', yes: 'r_redis', no: 'q5' },
+    q5: { q: 'Do records vary in shape or nest deeply, or do you expect to spread data across many servers?', yes: 'r_mongo', no: 'r_pg2' },
+    q4: { q: 'Does the data belong to one application, device or file that you ship or copy around?', yes: 'r_sqlite', no: 'r_either' },
+    r_pg: { r: 'PostgreSQL', d: 'Structured, connected data with strict rules and many writers is what a relational server does best.' },
+    r_pg2: { r: 'PostgreSQL, with JSONB where needed', d: 'Your data is not extreme in shape or scale, so a relational server keeps SQL, joins and transactions, and JSONB covers the flexible parts.' },
+    r_redis: { r: 'Redis (a key-value store)', d: 'An in-memory key-value store answers lookups by key faster than a general-purpose database.' },
+    r_mongo: { r: 'MongoDB (a document database)', d: 'Varied, nested records and the need to scale out point to documents. Embed what is read together and reference what grows without bound.' },
+    r_sqlite: { r: 'SQLite', d: 'One application, one file, no server and no administration.' },
+    r_either: { r: 'SQLite to start, PostgreSQL if it grows', d: 'A single person analysing data is comfortable in one file. Move to a server when other people need to write at the same time.' }
+  };
+  var wizBox = $('#wizard');
+  var wizPath = ['q1'];
+  function renderWizard() {
+    wizBox.innerHTML = '';
+    var cur = wizPath[wizPath.length - 1];
+    var node = WIZ[cur];
+    if (node.q) {
+      wizBox.appendChild(el('p', 'label', 'Question ' + wizPath.length));
+      wizBox.appendChild(el('p', null, node.q));
+      var ans = el('div', 'ans');
+      var yes = el('button', 'btn primary', 'Yes'); yes.type = 'button';
+      var no = el('button', 'btn primary', 'No'); no.type = 'button';
+      yes.addEventListener('click', function () { wizPath.push(node.yes); renderWizard(); });
+      no.addEventListener('click', function () { wizPath.push(node.no); renderWizard(); });
+      ans.appendChild(yes); ans.appendChild(no);
+      wizBox.appendChild(ans);
+    } else {
+      var res = el('div', 'result');
+      res.appendChild(el('span', 'label', 'Suggested starting point'));
+      res.appendChild(el('b', null, node.r));
+      res.appendChild(el('p', null, node.d));
+      wizBox.appendChild(res);
+    }
+    var nav = el('div', 'ans');
+    if (wizPath.length > 1) {
+      var back = el('button', 'btn', 'Back'); back.type = 'button';
+      back.addEventListener('click', function () { wizPath.pop(); renderWizard(); });
+      var again = el('button', 'btn', 'Start over'); again.type = 'button';
+      again.addEventListener('click', function () { wizPath = ['q1']; renderWizard(); });
+      nav.appendChild(back); nav.appendChild(again);
+    }
+    wizBox.appendChild(nav);
+  }
+
+  /* ---------- written recommendation ---------- */
+  var reco = $('#reco'), recoStatus = $('#reco-status');
+  var TEMPLATE = 'Project:\n\nWho uses it, and how many at the same time:\n\nRecommended database:\n\nWhy it fits (data shape, concurrency, consistency):\n\nTrade-offs I am accepting:\n\nWhat would make me change my mind:\n';
+  reco.value = store.get('reco', '');
+  reco.addEventListener('input', function () { store.set('reco', reco.value); });
+  $('#reco-template').addEventListener('click', function () {
+    reco.value = reco.value.trim() ? reco.value.replace(/\s+$/, '') + '\n\n' + TEMPLATE : TEMPLATE;
+    store.set('reco', reco.value); recoStatus.textContent = 'Template added.'; reco.focus();
+  });
+  $('#reco-copy').addEventListener('click', function () {
+    if (!reco.value.trim()) { recoStatus.textContent = 'Nothing to copy yet.'; return; }
+    copyText(reco.value, $('#reco-copy'), reco);
+  });
+
+  /* ---------- dialect explorer ---------- */
+  var DIALECTS = [
+    { t: 'Auto-incrementing key', my: 'id INT AUTO_INCREMENT PRIMARY KEY', sq: 'id INTEGER PRIMARY KEY AUTOINCREMENT', pg: 'id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY',
+      n: 'PostgreSQL also has the older SERIAL shorthand. In SQLite, INTEGER PRIMARY KEY alone already numbers rows automatically; AUTOINCREMENT only stops deleted IDs from being reused.' },
+    { t: 'Join two strings', my: "CONCAT(first_name, ' ', last_name)", sq: "first_name || ' ' || last_name", pg: "first_name || ' ' || last_name",
+      n: 'PostgreSQL also accepts CONCAT(). Recent SQLite versions add a concat() function too.' },
+    { t: 'Current date and time', my: 'NOW()', sq: "datetime('now')", pg: 'NOW()',
+      n: "SQLite's datetime('now') returns UTC text. CURRENT_TIMESTAMP works in all three." },
+    { t: 'Limit and skip rows', my: 'SELECT * FROM track ORDER BY track_id\nLIMIT 5 OFFSET 10;', sq: 'SELECT * FROM track ORDER BY track_id\nLIMIT 5 OFFSET 10;', pg: 'SELECT * FROM track ORDER BY track_id\nLIMIT 5 OFFSET 10;',
+      n: 'Identical in all three. Always pair LIMIT with ORDER BY, or the rows you get are not defined.' },
+    { t: 'Replace NULL with a default', my: 'IFNULL(price, 0)', sq: 'IFNULL(price, 0)', pg: 'COALESCE(price, 0)',
+      n: 'COALESCE is standard SQL and works in all three, so prefer it.' },
+    { t: 'Get the year from a date', my: 'YEAR(created_at)', sq: "strftime('%Y', created_at)", pg: 'EXTRACT(YEAR FROM created_at)',
+      n: 'Date functions are where the dialects differ most.' },
+    { t: 'Quote an identifier', my: '`order`', sq: '"order"', pg: '"order"',
+      n: 'Text values always use single quotes. Double quotes mean an identifier in SQLite and PostgreSQL; MySQL uses backticks by default.' },
+    { t: 'Case-insensitive search', my: "WHERE title LIKE '%blue%'", sq: "WHERE title LIKE '%blue%'", pg: "WHERE title ILIKE '%blue%'",
+      n: 'LIKE ignores case in MySQL (default collation) and, for plain English letters, in SQLite. It is case-sensitive in PostgreSQL, which adds ILIKE.' },
+    { t: 'Insert or update (upsert)', my: "INSERT INTO t (id, name) VALUES (1, 'x')\nON DUPLICATE KEY UPDATE name = 'x';", sq: "INSERT INTO t (id, name) VALUES (1, 'x')\nON CONFLICT (id) DO UPDATE SET name = 'x';", pg: "INSERT INTO t (id, name) VALUES (1, 'x')\nON CONFLICT (id) DO UPDATE SET name = 'x';",
+      n: 'SQLite and PostgreSQL share the ON CONFLICT syntax.' },
+    { t: 'List the tables', my: 'SHOW TABLES;', sq: '.tables', pg: '\\dt',
+      n: 'The SQLite and psql versions are shell commands, not SQL statements, so they take no semicolon.' },
+    { t: 'Describe a table', my: 'DESCRIBE track;', sq: '.schema track', pg: '\\d track',
+      n: 'SQLite also offers PRAGMA table_info(track); as an SQL-style alternative.' },
+    { t: 'Insert text into an integer column', my: "INSERT INTO t (n) VALUES ('abc');\n-- error in strict mode (the default)", sq: "INSERT INTO t (n) VALUES ('abc');\n-- accepted, unless the table is STRICT", pg: "INSERT INTO t (n) VALUES ('abc');\n-- error: invalid input syntax for type integer",
+      n: 'SQLite is the odd one out. Use STRICT tables to make it behave like the others.' }
+  ];
+  var pick = $('#dialect-pick'), dOut = $('#dialect-out'), dNote = $('#dialect-note');
+  DIALECTS.forEach(function (d, i) { var o = document.createElement('option'); o.value = i; o.textContent = d.t; pick.appendChild(o); });
+  function renderDialect() {
+    var d = DIALECTS[pick.value];
+    dOut.innerHTML = '';
+    [['MySQL', d.my], ['SQLite', d.sq], ['PostgreSQL', d.pg]].forEach(function (pair) {
+      var col = el('div');
+      col.appendChild(el('h4', null, pair[0]));
+      var wrap = el('div', 'code'); wrap.appendChild(el('pre', null, pair[1]));
+      col.appendChild(wrap); dOut.appendChild(col);
+    });
+    dNote.textContent = d.n;
+  }
+  pick.addEventListener('change', renderDialect);
+
+  /* ---------- scroll spy ---------- */
+  var links = {};
+  $$('.nav a').forEach(function (a) { links[a.getAttribute('href').slice(1)] = a; });
+  function setCurrent(id) {
+    Object.keys(links).forEach(function (k) { links[k].removeAttribute('aria-current'); });
+    if (links[id]) links[id].setAttribute('aria-current', 'true');
+  }
+  setCurrent('start');
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) setCurrent(e.target.id); });
+    }, { rootMargin: '-15% 0px -75% 0px' });
+    ['start', 'lab1', 'lab2', 'lab3', 'lab4', 'cheat', 'help'].forEach(function (id) {
+      var s = document.getElementById(id); if (s) io.observe(s);
+    });
+  }
+
+  /* ---------- reset ---------- */
+  var resetBtn = $('#reset-btn'), resetTimer = null;
+  resetBtn.addEventListener('click', function () {
+    if (!resetTimer) {
+      resetBtn.textContent = 'Click again to confirm';
+      resetTimer = setTimeout(function () { resetBtn.textContent = 'Reset progress'; resetTimer = null; }, 4000);
+      return;
+    }
+    clearTimeout(resetTimer); resetTimer = null;
+    resetBtn.textContent = 'Reset progress';
+    store.clear(['step:', 'quiz:', 'scn']);
+    $$('.step').forEach(function (s) {
+      s.classList.remove('is-done');
+      var cb = $('input[type="checkbox"]', s); if (cb) cb.checked = false;
+    });
+    renderQuizzes(); renderScenarios(); wizPath = ['q1']; renderWizard(); updateProgress();
+  });
+
+  /* ---------- start up ---------- */
+  applyTheme();
+  applyOS();
+  renderQuizzes();
+  renderScenarios();
+  renderWizard();
+  renderDialect();
+  updateProgress();
+})();
+</script>
+
+</body></html>

@@ -1,0 +1,496 @@
+<!doctype html>
+<html lang="en" data-slug="data-modeling">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Modeling and the Relational Model: Interactive Tutorial</title>
+<meta name="description" content="Interactive tutorial on data modeling and the relational model: keys, integrity constraints with real MySQL 8.4 errors, ER to relational mapping and physical design.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=IBM+Plex+Mono:wght@400;600&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF2EF; --surface:#FFFFFF; --surface2:#F4F8F6; --ink:#0E2420; --soft:#46605A; --line:#C5D5CE;
+  --accent:#5B3FD0; --accent-tint:#E9E4FB; --accent-ink:#35208F;
+  --teal:#0F766E; --teal-tint:#DDF1ED; --warn:#9A4A0A; --warn-tint:#FBEBD0;
+  --ok:#0B7A5A; --ok-tint:#DDF3EA; --bad:#B3261E; --bad-tint:#FBE3E1;
+  --code-bg:#0D1F1C; --code-bar:#16322D; --code-ink:#DDEBE7;
+  --kw:#C9BEFF; --st:#8FE0C0; --nu:#F2C77B; --cm:#7C9A93; --out-bg:#E4ECE8;
+  --radius:10px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0A1614; --surface:#12231F; --surface2:#0F1D1A; --ink:#E5F0EC; --soft:#9BB3AC; --line:#274039;
+    --accent:#A99BFF; --accent-tint:#2B2552; --accent-ink:#D4CCFF;
+    --teal:#4FD1C5; --teal-tint:#14332E; --warn:#F0B45A; --warn-tint:#3A2C12;
+    --ok:#4CC9A0; --ok-tint:#10382D; --bad:#FF8B82; --bad-tint:#42201D;
+    --code-bg:#08130F; --code-bar:#12302A; --out-bg:#0E1C19;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 "Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+h1,h2,h3,h4{font-family:"Familjen Grotesk","Public Sans",system-ui,sans-serif;line-height:1.15;letter-spacing:-.005em;margin:0}
+a{color:var(--accent-ink)}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:4px}
+code,pre,kbd{font-family:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace}
+code{font-size:.88em;background:var(--accent-tint);color:var(--accent-ink);padding:1px 6px;border-radius:5px;overflow-wrap:anywhere}
+p{margin:.7em 0}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);max-width:1320px;margin:0 auto}
+nav.side{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:28px 18px 24px 24px;border-right:1px solid var(--line)}
+nav.side .brand{font:700 20px "Familjen Grotesk",sans-serif;margin-bottom:4px}
+nav.side .sub{color:var(--soft);font-size:14px;margin-bottom:22px}
+nav.side ol{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+nav.side a{display:flex;gap:10px;align-items:center;text-decoration:none;padding:8px 10px;border-radius:8px;color:var(--soft);font-weight:600;font-size:15px}
+nav.side a:hover{background:var(--surface)}
+nav.side a.active{background:var(--surface);color:var(--ink);box-shadow:inset 3px 0 0 var(--accent)}
+nav.side .tick{margin-left:auto;font-size:13px;font-weight:700;color:var(--ok)}
+nav.side button{margin-top:22px;background:none;border:1px solid var(--line);color:var(--soft);padding:6px 10px;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}
+header.hero{padding:44px 40px 30px;border-bottom:1px solid var(--line)}
+.eyebrow{font:600 13px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink)}
+header.hero h1{font-size:clamp(34px,5vw,56px);font-weight:700;max-width:18ch;margin-top:8px}
+header.hero .lede{font-size:20px;color:var(--soft);max-width:62ch;margin:16px 0 22px}
+.outcomes{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(190px,100%),1fr));gap:10px;margin:22px 0 0;padding:0;list-style:none}
+.outcomes li{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;font-size:15.5px}
+.outcomes b{display:block;font-family:"Familjen Grotesk",sans-serif;font-size:17px}
+main{padding:0 40px 80px;min-width:0}
+section.mod{padding-top:52px}
+section.mod>h2{font-size:clamp(28px,3.4vw,40px);font-weight:700}
+section.mod>h2 .num{font:600 14px "IBM Plex Mono",monospace;color:var(--accent-ink);display:block;margin-bottom:6px;letter-spacing:.06em}
+section.mod h3{font-size:22px;margin:30px 0 6px}
+section.mod h4{font-size:17px;margin:20px 0 4px}
+.lead{font-size:18.5px;color:var(--soft);max-width:68ch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px 22px;margin:18px 0;min-width:0}
+.card>h3:first-child,.card>h4:first-child{margin-top:0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px}
+.grid2>*{min-width:0}
+.callout{border-radius:var(--radius);padding:12px 16px;margin:16px 0;border:1px solid var(--line);background:var(--teal-tint)}
+.callout.warn{background:var(--warn-tint);border-color:var(--warn)}
+.callout.bad{background:var(--bad-tint);border-color:var(--bad)}
+.callout b.tag{display:block;font:700 12px "IBM Plex Mono",monospace;letter-spacing:.09em;text-transform:uppercase;margin-bottom:3px;color:var(--teal)}
+.callout.warn b.tag{color:var(--warn)} .callout.bad b.tag{color:var(--bad)}
+.callout p:first-of-type{margin-top:0}.callout p:last-child{margin-bottom:0}
+.tested{border:1px dashed var(--line);border-radius:var(--radius);padding:12px 16px;margin:22px 0 0;font-size:15px;color:var(--soft);background:var(--surface2)}
+.tested b{color:var(--ink)}
+.tested table{margin:8px 0 0;font-size:14.5px}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);margin:14px 0;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{padding:8px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font:600 12px "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;color:var(--soft);background:var(--surface2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td.num,th.num{text-align:right}
+.code{border-radius:var(--radius);overflow:hidden;background:var(--code-bg);margin:14px 0;min-width:0}
+.code .bar{display:flex;justify-content:space-between;align-items:center;background:var(--code-bar);color:#9fc2b8;padding:5px 8px 5px 14px;font:600 12px "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase}
+.code button{font:500 12px "Public Sans",sans-serif;background:transparent;color:var(--code-ink);border:1px solid #2c5148;border-radius:6px;padding:3px 10px;cursor:pointer}
+.code button:hover{background:#1d423a}
+pre{margin:0;padding:13px 16px;overflow-x:auto;font-size:14px;line-height:1.6;color:var(--code-ink);tab-size:2}
+.code pre .kw{color:var(--kw);font-weight:600}.code pre .st{color:var(--st)}.code pre .nu{color:var(--nu)}.code pre .cm{color:var(--cm);font-style:italic}
+.out{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);margin:-6px 0 14px;background:var(--out-bg);min-width:0}
+.out .bar{padding:4px 14px;font:600 11.5px "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--soft);border-bottom:1px solid var(--line)}
+.out pre{color:var(--ink);font-size:13.5px}
+.out.err pre{color:var(--bad)}
+details.sol{border:1px solid var(--line);border-radius:var(--radius);margin:12px 0;background:var(--surface)}
+details.sol>summary{cursor:pointer;padding:9px 14px;font-weight:600;font-size:15px;background:var(--surface2);border-radius:var(--radius)}
+details.sol[open]>summary{border-bottom:1px solid var(--line);border-radius:var(--radius) var(--radius) 0 0}
+details.sol>div{padding:4px 14px 10px}
+.btn{font:600 14px "Public Sans",sans-serif;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font:600 13px "IBM Plex Mono",monospace;padding:5px 12px;border-radius:99px;border:1px solid var(--line);background:var(--surface2);cursor:pointer;color:var(--ink)}
+.pill[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+select,textarea,input[type=text]{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;max-width:100%}
+textarea{width:100%;font-family:"IBM Plex Mono",monospace;font-size:14px;line-height:1.55;min-height:120px;resize:vertical}
+.quiz{display:flex;flex-direction:column;gap:14px;margin:18px 0}
+.q{border:1px solid var(--line);border-radius:var(--radius);background:var(--surface);padding:16px 18px;margin:0;min-width:0}
+.q legend{font-weight:700;padding:0 6px;font-family:"Familjen Grotesk",sans-serif;font-size:18px}
+.q .opts{display:grid;gap:8px;margin-top:8px}
+.opt{text-align:left;font:inherit;font-size:16px;padding:9px 13px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);cursor:pointer;line-height:1.45}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-tint)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-tint)}
+.fb{font-size:15.5px;color:var(--soft);margin:10px 0 0}
+.fb b.ok{color:var(--ok)}.fb b.no{color:var(--bad)}
+.score{font-weight:700}
+.rs{overflow:auto;max-height:340px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.rs table{font-size:14px}
+.rs td.null{color:var(--soft);font-style:italic}
+.mono{font-family:"IBM Plex Mono",monospace}
+.muted{color:var(--soft)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.chip{display:inline-block;font:600 12px "IBM Plex Mono",monospace;padding:2px 9px;border-radius:99px;background:var(--accent-tint);color:var(--accent-ink)}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+.erd{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch;margin:14px 0}
+.erd>div{border:1px solid var(--line);border-radius:10px;background:var(--surface);min-width:170px;flex:1 1 170px}
+.erd h4{font:700 14px "IBM Plex Mono",monospace;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface2);margin:0}
+.erd ul{list-style:none;margin:0;padding:8px 12px;font:400 13px/1.7 "IBM Plex Mono",monospace}
+.erd b{color:var(--accent-ink)}
+.nav-foot{margin-top:60px;color:var(--soft);font-size:14px;border-top:1px solid var(--line);padding-top:16px}
+@media (max-width:900px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  nav.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px}
+  nav.side ol{grid-auto-flow:column;grid-auto-columns:max-content;overflow-x:auto}
+  header.hero{padding:30px 18px 24px}
+  main{padding:0 16px 60px}
+}
+.row label{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1 1 220px;font-size:14px;color:var(--soft);font-weight:600}
+.row label select{width:100%;font-weight:400;color:var(--ink)}
+
+
+fieldset.ke-f{border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin:0}
+fieldset.ke-f legend{font-size:13.5px;color:var(--soft);padding:0 6px}
+.row label input[type=checkbox]{width:auto}
+
+</style>
+
+</head>
+<body>
+<!--dbm-top-->
+<style>
+.dbm-bar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:10px 20px;background:#0F1F33;color:#E6EEF8;font:600 14.5px/1.3 "Public Sans",system-ui,sans-serif}
+.dbm-bar a{color:#E6EEF8;text-decoration:none;padding:5px 10px;border-radius:8px;border:1px solid #33506f}
+.dbm-bar a:hover,.dbm-bar a:focus-visible{background:#1d3a5c;outline:none}
+.dbm-bar .dbm-where{color:#9DB2CC;font-weight:400;margin-right:auto}
+.dbm-bar .dbm-home{border-color:transparent;padding-left:0}
+.dbm-bar .dbm-home:hover{background:none;text-decoration:underline}
+.dbm-end{max-width:1320px;margin:0 auto;padding:30px 24px 56px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;font-family:"Public Sans",system-ui,sans-serif}
+.dbm-end a{display:block;text-decoration:none;color:inherit;border:1px solid var(--line,#C7D3E1);background:var(--surface,#fff);border-radius:12px;padding:14px 18px;min-width:0}
+.dbm-end a:hover,.dbm-end a:focus-visible{border-color:var(--accent,#1F5FBF);outline:none}
+.dbm-end small{display:block;color:var(--soft,#475C75);font-size:13.5px}
+.dbm-end b{display:block;font-size:18px;overflow-wrap:anywhere}
+.dbm-end .dbm-next{text-align:right;grid-column:2}
+.dbm-end .dbm-hub{grid-column:1/-1;text-align:center}
+@media (max-width:560px){.dbm-end{grid-template-columns:minmax(0,1fr)}.dbm-end .dbm-next{grid-column:auto}.dbm-bar .dbm-where{display:none}.dbm-bar{padding:8px 14px}}
+</style>
+<nav class="dbm-bar" aria-label="Course navigation"><a class="dbm-home" href="../">&larr; All tutorials</a><span class="dbm-where">Module 2 of 10</span><a href="../database-fundamentals/" rel="prev">&larr; Module 1: Database fundamentals</a><a href="../relational-algebra/" rel="next">Module 3: Relational algebra and calculus &rarr;</a></nav>
+<!--/dbm-top-->
+<div class="wrap">
+<nav class="side" aria-label="Sections"><div class="brand">Data Modeling and the Relational Model</div><div class="sub">COSC 431 · Module 2</div>
+<ol><li><a href="#models" data-sec="models"><span>Models and levels</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#relational" data-sec="relational"><span>The relational model</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#keys" data-sec="keys"><span>Keys</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#integrity" data-sec="integrity"><span>Integrity constraints</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#mapping" data-sec="mapping"><span>From ER to tables</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#physical" data-sec="physical"><span>From tables to MySQL</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#practice" data-sec="practice"><span>Practice</span><span class="tick" aria-hidden="true"></span></a></li><li><a href="#final" data-sec="final"><span>Final check</span><span class="tick" aria-hidden="true"></span></a></li></ol><button type="button" id="tk-reset">Reset my progress</button></nav>
+<div>
+<header class="hero"><div class="eyebrow">COSC 431 · Module 2</div><h1>Data Modeling and the Relational Model</h1><p class="lede">Go from an idea to a relational schema: the vocabulary of the relational model, how keys identify rows, how constraints keep data valid, and how an ER diagram becomes MySQL tables. Every error message shown came from a real MySQL server.</p>
+<ul class="outcomes"><li><b>Vocabulary</b>Relation, tuple, attribute, domain</li><li><b>Keys</b>Super, candidate, primary, foreign</li><li><b>Integrity</b>Domain, key, referential constraints</li><li><b>Mapping</b>ER to tables, rule by rule</li><li><b>Physical</b>Types, engine, SHOW CREATE TABLE</li></ul><div class="tested"><b>Tested with.</b> Every command, output and answer in this tutorial was run on real software on <b>October 29, 2026</b>. If you install a newer release, small differences in wording or formatting are normal.<div class="tablewrap"><table><thead><tr><th>Tool</th><th>Version</th><th>Used for</th></tr></thead><tbody><tr><td>MySQL Community Server</td><td><b>8.4.2 (8.4 LTS series), InnoDB</b></td><td>Every statement, output and error message; every DDL in the mapping section was executed</td></tr><tr><td>Demo databases</td><td><b>m2_demo (4 tables)</b></td><td>Download it from the Files list in section 8</td></tr></tbody></table></div></div></header>
+<main>
+<section class="mod" id="models"><h2><span class="num">01</span>Models and levels</h2><p class="lead">A <b>data model</b> is a way of describing data: what things exist, what is known about them, how they relate, and what rules the data must obey. Before you can write a single <code>CREATE TABLE</code> you need a model. This module takes you from an idea in the real world to a working relational schema.</p>
+<h3>Three levels of modeling</h3>
+<p>Designers work from the general to the specific. Each level answers a different question and uses a different notation.</p>
+<div class="tablewrap"><table><thead><tr><th>Level</th><th>Question it answers</th><th>Typical notation</th><th>Example</th></tr></thead><tbody><tr><td><b>Conceptual</b></td><td>What things matter, and how do they relate? Independent of any database product.</td><td>ER or EER diagram</td><td>Student, Course, Department; a student enrolls in many courses.</td></tr><tr><td><b>Logical</b></td><td>How is it organized in the chosen <em>kind</em> of database (here, the relational model)?</td><td>Relational schema: tables, columns, keys</td><td><code>student(sid, name, dept_id)</code> with <code>dept_id</code> referring to <code>department</code>.</td></tr><tr><td><b>Physical</b></td><td>How is it stored in a specific product, for speed and space?</td><td>DDL for one product, plus indexes, types, storage engine</td><td><code>CREATE TABLE ... ENGINE=InnoDB</code> in MySQL 8.4.</td></tr></tbody></table></div>
+<p>Earlier tutorials covered the conceptual level (<a href="../er-eer/index.html">ER and EER modeling</a>). This one covers the relational model itself and the mapping from the conceptual level down to the logical and physical levels. <a href="../normalization/index.html">Normalization</a> then tells you how to judge whether the logical design is a good one.</p>
+<h3>Why the relational model?</h3>
+<p>Proposed by E. F. Codd in 1970, the relational model describes all data as <b>relations</b>: tables of values. It rests on mathematics (sets and logic, the subject of Module 3), which is why a database can reason about your queries and optimize them. Other models exist and are covered in Module 5 (key-value, document, graph), and each is best for some jobs, but the relational model remains the default for structured business data.</p>
+<h3>The running example</h3>
+<p>This module uses a small university database called <code>m2_demo</code>. Download <a href="labs/m2_demo.sql">m2_demo.sql</a> and run it in MySQL Workbench to follow along.</p>
+<div class="erd"><div><h4>department</h4><ul><li><b>dept_id</b> (PK)</li><li>dept_name (UNIQUE)</li></ul></div><div><h4>student</h4><ul><li><b>sid</b> (PK)</li><li>name</li><li>email (UNIQUE)</li><li>dept_id (FK)</li><li>gpa (0 to 4)</li></ul></div><div><h4>course</h4><ul><li><b>cid</b> (PK)</li><li>title</li></ul></div><div><h4>enrolled</h4><ul><li><b>sid</b> (PK, FK)</li><li><b>cid</b> (PK, FK)</li><li>grade</li></ul></div></div><div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SELECT</span> * <span class="kw">FROM</span> student;</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>+-----+-----------+------------------+---------+------+
+| sid | name      | email            | dept_id | gpa  |
++-----+-----------+------------------+---------+------+
+|   1 | Ana Ruiz  | ana@uni.example  |       1 | 3.80 |
+|   2 | Ben Cole  | ben@uni.example  |       1 | 3.20 |
+|   3 | Cara Dunn | cara@uni.example |       2 | 3.90 |
+|   4 | Dev Shah  | dev@uni.example  |       2 | 2.80 |
+|   5 | Eli West  | eli@uni.example  |    NULL | 3.50 |
++-----+-----------+------------------+---------+------+
+5 rows in set</pre></div><p><button type="button" class="btn" data-markdone="models">Mark section as done</button></p></section>
+<section class="mod" id="relational"><h2><span class="num">02</span>The relational model</h2><p class="lead">The relational model has its own vocabulary. SQL uses different everyday words for the same ideas, so learn both.</p>
+<h3>Vocabulary</h3>
+<div class="tablewrap"><table><thead><tr><th>Formal term</th><th>In SQL and everyday use</th><th>Meaning</th></tr></thead><tbody><tr><td><b>Relation</b></td><td>Table</td><td>A set of tuples that all have the same attributes.</td></tr><tr><td><b>Tuple</b></td><td>Row, record</td><td>One fact: a list of values, one per attribute.</td></tr><tr><td><b>Attribute</b></td><td>Column, field</td><td>A named property with a domain.</td></tr><tr><td><b>Domain</b></td><td>Data type plus allowed values</td><td>The set of values an attribute may take (for example whole numbers, or GPAs from 0 to 4).</td></tr><tr><td><b>Degree</b></td><td>Number of columns</td><td>The number of attributes of a relation.</td></tr><tr><td><b>Cardinality</b></td><td>Number of rows</td><td>The number of tuples in a relation <em>right now</em>. (This word also has a different meaning in ER diagrams: 1:N.)</td></tr><tr><td><b>Relation schema</b></td><td>Table definition</td><td>The relation name and its attributes with domains, for example <code>student(sid, name, email, dept_id, gpa)</code>.</td></tr><tr><td><b>Relation instance</b></td><td>The rows currently stored</td><td>The set of tuples at a particular moment. It changes all the time; the schema rarely does.</td></tr></tbody></table></div>
+<h3>Schema versus instance</h3>
+<p>This distinction runs through the whole course. The <b>schema</b> is the design: it says what <em>can</em> be stored and which rules apply. The <b>instance</b> is the data that <em>is</em> stored at this moment. You design schemas; users fill instances. A rule belongs in the schema (a constraint), never in the hope that the current rows happen to follow it.</p>
+<h3>What a relation is (and is not)</h3>
+<p>In the formal model a relation is a <em>set</em> of tuples, which has consequences:</p>
+<ul>
+<li><b>No duplicate tuples.</b> Two identical rows would be the same tuple. SQL tables <em>can</em> contain duplicate rows unless a key forbids it, which is one more reason every table needs a primary key.</li>
+<li><b>No row order.</b> A table has no first row. Without <code>ORDER BY</code>, a query may return rows in any order.</li>
+<li><b>No column order</b> in the formal model, although SQL does remember the order the columns were declared in.</li>
+<li><b>Atomic values.</b> Each cell holds a single value, not a list. This is first normal form (Module 7).</li>
+<li><b>NULL</b> means "no value is known or applicable". It is not zero and not an empty string, and it is not a value of any domain. Section 4 shows how constraints treat it.</li>
+</ul>
+<h3>A relation is not a file or an array</h3>
+<p>Programs often hold records in arrays or files, where position matters and duplicates are fine. Relations are different: you refer to data by <em>values</em> (keys), never by position. That is what makes it possible to reorganize storage without breaking programs, an idea covered in Module 1 as data independence.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="rel"></div><p><button type="button" class="btn" data-markdone="relational">Mark section as done</button></p></section>
+<section class="mod" id="keys"><h2><span class="num">03</span>Keys</h2><p class="lead">Keys are how the relational model identifies tuples and connects relations. Everything else (joins, foreign keys, indexes) builds on them.</p>
+<h3>The kinds of key</h3>
+<div class="tablewrap"><table><thead><tr><th>Key</th><th>Definition</th></tr></thead><tbody><tr><td><b>Superkey</b></td><td>A set of attributes whose values are different for every tuple, in every legal instance. Adding more attributes to a superkey gives another superkey.</td></tr><tr><td><b>Candidate key</b></td><td>A <em>minimal</em> superkey: remove any attribute and it stops being unique. A relation can have several.</td></tr><tr><td><b>Primary key</b></td><td>The candidate key the designer picks to identify tuples. It can never be NULL. One per table.</td></tr><tr><td><b>Alternate key</b></td><td>A candidate key that was not chosen as the primary key. Enforce it with <code>UNIQUE</code>.</td></tr><tr><td><b>Foreign key</b></td><td>Attributes in one relation whose values must match the primary (or a unique) key of another relation, or be NULL. It creates the link between tables.</td></tr><tr><td><b>Composite key</b></td><td>A key made of more than one attribute, such as <code>(sid, cid)</code> in <code>enrolled</code>.</td></tr></tbody></table></div>
+<h3>A key is a rule, not an observation</h3>
+<p>You cannot find out the key by looking at the data. Data can only <em>disprove</em> a candidate key (two rows share the values), never prove it. If every <code>name</code> in your table happens to be different today, that does not make <code>name</code> a key, because tomorrow two people called Alex Kim may enroll. The key comes from the <b>rules of the real world</b> you are modeling: "every student has a unique id", "a flight number is reused every day, so it needs the date".</p>
+<h3>Key explorer</h3>
+<p>Pick a table, tick some attributes, and see whether the values are unique in the rows shown. Then look at the list of attribute sets that <em>could</em> be keys. Notice how many sets the current data allows that no sensible designer would choose.</p>
+<div id="w-keys" class="card"></div>
+<p class="muted">The explorer checks uniqueness on these particular rows, which is exactly the "can only disprove" situation described above. The results were checked against MySQL (<code>COUNT(DISTINCT ...)</code> for every attribute set of every table).</p>
+<h3>Choosing a primary key</h3>
+<ul>
+<li><b>Stable.</b> It should never change. An email address or a name changes; a generated id does not.</li>
+<li><b>Never NULL, always unique.</b> Required by definition.</li>
+<li><b>Small.</b> Foreign keys copy it into other tables, and it is stored in every index, so a short integer beats a long text.</li>
+<li><b>Meaningless is fine.</b> A <b>surrogate key</b> (a generated number such as <code>sid</code> or an <code>AUTO_INCREMENT</code> column) has no business meaning and therefore no reason to change. A <b>natural key</b> comes from the data (such as an ISBN). Use natural keys only when they are truly stable and unique, and still consider adding a <code>UNIQUE</code> constraint on them if you pick a surrogate.</li>
+</ul>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="keys"></div><p><button type="button" class="btn" data-markdone="keys">Mark section as done</button></p></section>
+<section class="mod" id="integrity"><h2><span class="num">04</span>Integrity constraints</h2><p class="lead">Integrity constraints are the rules the database enforces for you, on every insert, update and delete, no matter which program is talking to it. They are the main reason to use a database instead of a pile of files.</p>
+<h3>The four kinds</h3>
+<div class="tablewrap"><table><thead><tr><th>Constraint</th><th>Rule</th><th>MySQL feature</th></tr></thead><tbody><tr><td><b>Domain</b></td><td>Every value must belong to its attribute's domain.</td><td>Data type, <code>NOT NULL</code>, <code>CHECK</code>, <code>DEFAULT</code></td></tr><tr><td><b>Key</b></td><td>No two tuples may have the same key value.</td><td><code>PRIMARY KEY</code>, <code>UNIQUE</code></td></tr><tr><td><b>Entity integrity</b></td><td>No primary key attribute may be NULL.</td><td>Implied by <code>PRIMARY KEY</code></td></tr><tr><td><b>Referential integrity</b></td><td>A foreign key must match an existing row in the referenced table, or be NULL.</td><td><code>FOREIGN KEY ... REFERENCES</code>, with <code>ON DELETE</code> / <code>ON UPDATE</code> actions</td></tr></tbody></table></div>
+<h3>Try to break the rules</h3>
+<p>Fifteen operations on the <code>m2_demo</code> database. Each one was run on a real MySQL 8.4 server, starting from a fresh copy of the data, and its exact response was recorded. Pick one, decide first whether it will succeed, then look.</p>
+<div id="w-ops" class="card"></div>
+<h3>What the experiments teach</h3>
+<ul>
+<li><b>Error messages name the constraint.</b> Read them: <code>student.PRIMARY</code>, <code>student.email</code>, <code>fk_student_dept</code>, <code>gpa_range</code>. Giving constraints good names makes errors much easier to understand.</li>
+<li><b>NULL passes a foreign key.</b> A student with no department (<code>dept_id</code> NULL) is allowed. If every student <em>must</em> have a department, declare the column <code>NOT NULL</code> too.</li>
+<li><b>NULL passes a <code>CHECK</code>.</b> A <code>CHECK</code> that evaluates to unknown (because of NULL) is not a violation. A missing GPA was accepted. Add <code>NOT NULL</code> if a value is mandatory.</li>
+<li><b>An empty string is not NULL.</b> <code>NOT NULL</code> accepted <code>''</code> as a name. If an empty name is invalid, add a <code>CHECK (name &lt;&gt; '')</code>.</li>
+<li><b>Referential actions decide what happens to children.</b> The default (<code>RESTRICT</code>) refused to delete a department that students belong to. <code>ON DELETE CASCADE</code> on <code>enrolled.sid</code> deleted the student's enrollments along with the student.</li>
+</ul>
+<h3>Referential actions</h3>
+<div class="tablewrap"><table><thead><tr><th>Action</th><th>When a parent row is deleted or its key changes</th></tr></thead><tbody><tr><td><code>RESTRICT</code> / <code>NO ACTION</code> (default in MySQL)</td><td>The operation is refused while child rows exist.</td></tr><tr><td><code>CASCADE</code></td><td>The change is applied to the child rows too (delete them, or update their copy of the key).</td></tr><tr><td><code>SET NULL</code></td><td>The child's foreign key is set to NULL (the column must allow NULL).</td></tr></tbody></table></div>
+<p class="muted">MySQL also accepts <code>SET DEFAULT</code> in the syntax but InnoDB rejects it, so do not use it.</p>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="integ"></div><p><button type="button" class="btn" data-markdone="integrity">Mark section as done</button></p></section>
+<section class="mod" id="mapping"><h2><span class="num">05</span>From ER to tables</h2><p class="lead">Turning an ER diagram into tables follows a small set of rules. Learn the rules and the conversion becomes mechanical. Pick a situation below and see the rule and the SQL, which was run on MySQL to make sure it works.</p>
+<h3>Rule by rule</h3>
+<div id="w-map" class="card"></div>
+<h3>The whole procedure</h3>
+<ol>
+<li><b>Each strong entity set becomes a table.</b> Simple attributes become columns; the entity's key becomes the primary key. For a composite attribute (like an address), keep only its simple parts as columns.</li>
+<li><b>Each weak entity set becomes a table</b> whose primary key is the owner's key plus its partial key.</li>
+<li><b>Each 1:N relationship</b> becomes a foreign key on the N side. Relationship attributes move there too.</li>
+<li><b>Each 1:1 relationship</b> becomes a unique foreign key on one side (preferably the side with total participation).</li>
+<li><b>Each M:N relationship</b> becomes a junction table with a composite primary key of the two foreign keys, plus any relationship attributes.</li>
+<li><b>Each multivalued attribute</b> becomes a table of its own.</li>
+<li><b>Each higher-degree relationship</b> (three or more entities) becomes a junction table with a foreign key to each entity.</li>
+<li><b>Each specialization</b> becomes tables by one of several strategies; choose with the constraints (disjoint or overlapping, total or partial) in mind.</li>
+</ol>
+<div class="callout "><b class="tag">Participation and NULL</b><p>Participation tells you about <code>NULL</code>. <b>Total</b> participation (every student must belong to a department) means the foreign key column should be <code>NOT NULL</code>. <b>Partial</b> participation means NULL is allowed.</p></div>
+<h3>Worked example</h3>
+<p>Requirement: "Students belong to one department. Students enroll in many courses, and the grade belongs to the enrollment. A department has many students." From the rules: <code>department</code> and <code>student</code> are strong entities; <i>belongs to</i> is 1:N, so <code>student.dept_id</code> is a foreign key; <i>enrolls in</i> is M:N with a <code>grade</code> attribute, so <code>enrolled(sid, cid, grade)</code> is a junction table. That is exactly the <code>m2_demo</code> schema. Look at the result in MySQL:</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SHOW</span> <span class="kw">CREATE</span> <span class="kw">TABLE</span> enrolled\G</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>*************************** 1. row ***************************
+       Table: enrolled
+Create Table: CREATE TABLE `enrolled` (
+  `sid` int NOT NULL,
+  `cid` varchar(8) NOT NULL,
+  `grade` char(1) DEFAULT NULL,
+  PRIMARY KEY (`sid`,`cid`),
+  KEY `fk_enr_course` (`cid`),
+  CONSTRAINT `fk_enr_course` FOREIGN KEY (`cid`) REFERENCES `course` (`cid`),
+  CONSTRAINT `fk_enr_student` FOREIGN KEY (`sid`) REFERENCES `student` (`sid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+1 row in set</pre></div>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="map"></div><p><button type="button" class="btn" data-markdone="mapping">Mark section as done</button></p></section>
+<section class="mod" id="physical"><h2><span class="num">06</span>From tables to MySQL</h2><p class="lead">The <b>physical</b> design is the same logical schema, written for one product and tuned for it. In MySQL that means choosing data types, constraints, a storage engine and indexes.</p>
+<h3>Data types: choose the smallest that is correct</h3>
+<div class="tablewrap"><table><thead><tr><th>Need</th><th>Good MySQL type</th><th>Notes</th></tr></thead><tbody><tr><td>Whole numbers</td><td><code>INT</code> (4 bytes), <code>BIGINT</code> (8 bytes), <code>SMALLINT</code>, <code>TINYINT</code></td><td>Use <code>BIGINT</code> only when you really expect more than about 2 billion rows or values.</td></tr><tr><td>Money and exact decimals</td><td><code>DECIMAL(p, s)</code></td><td>Exact. Never use <code>FLOAT</code> or <code>DOUBLE</code> for money; they are approximate.</td></tr><tr><td>Short text</td><td><code>VARCHAR(n)</code></td><td>Length is in characters. Pick a realistic maximum.</td></tr><tr><td>Long text</td><td><code>TEXT</code></td><td>Cannot be fully indexed without a prefix length.</td></tr><tr><td>Dates and times</td><td><code>DATE</code>, <code>DATETIME</code>, <code>TIMESTAMP</code></td><td>Never store dates as text.</td></tr><tr><td>Yes or no</td><td><code>BOOLEAN</code> (an alias for <code>TINYINT(1)</code>)</td><td>MySQL has no separate boolean storage type.</td></tr></tbody></table></div>
+<h3>What MySQL actually stored</h3>
+<p>This is the real definition MySQL keeps for the <code>student</code> table. Notice the engine, the character set, the constraint names, and the index MySQL added automatically for the foreign key.</p>
+<div class="code"><div class="bar"><span>SQL</span><button type="button">Copy</button></div><pre><span class="kw">SHOW</span> <span class="kw">CREATE</span> <span class="kw">TABLE</span> student\G</pre></div><div class="out"><div class="bar">Output (MySQL 8.4)</div><pre>*************************** 1. row ***************************
+       Table: student
+Create Table: CREATE TABLE `student` (
+  `sid` int NOT NULL,
+  `name` varchar(40) NOT NULL,
+  `email` varchar(50) NOT NULL,
+  `dept_id` int DEFAULT NULL,
+  `gpa` decimal(3,2) DEFAULT NULL,
+  PRIMARY KEY (`sid`),
+  UNIQUE KEY `email` (`email`),
+  KEY `fk_student_dept` (`dept_id`),
+  CONSTRAINT `fk_student_dept` FOREIGN KEY (`dept_id`) REFERENCES `department` (`dept_id`),
+  CONSTRAINT `gpa_range` CHECK ((`gpa` between 0 and 4))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+1 row in set</pre></div>
+<h3>From logical to physical: a checklist</h3>
+<ol>
+<li>Pick a data type for every column.</li>
+<li>Mark mandatory columns <code>NOT NULL</code>.</li>
+<li>Declare primary keys, <code>UNIQUE</code> alternate keys and foreign keys, and give constraints meaningful names.</li>
+<li>Add <code>CHECK</code> constraints for simple domain rules.</li>
+<li>Use the InnoDB engine (the default in MySQL 8.4), which supports transactions and foreign keys.</li>
+<li>Choose indexes for the queries you expect (Module 9). Primary key, <code>UNIQUE</code> and foreign key columns are indexed for you.</li>
+<li>Choose a naming convention and stick to it (for example lower-case with underscores: <code>dept_id</code>).</li>
+</ol>
+<h3>Check yourself</h3>
+<div class="quiz" data-quiz="phys"></div><p><button type="button" class="btn" data-markdone="physical">Mark section as done</button></p></section>
+<section class="mod" id="practice"><h2><span class="num">07</span>Practice</h2><p class="lead">Predict what MySQL will do. Each question shows a statement run against <code>m2_demo</code>. The explanation shows the real response from the server.</p>
+<div class="quiz" data-quiz="practice"></div><p><button type="button" class="btn" data-markdone="practice">Mark section as done</button></p></section>
+<section class="mod" id="final"><h2><span class="num">08</span>Final check</h2><p class="lead">Ten mixed questions on the module.</p>
+<div class="quiz" data-quiz="final"></div>
+<h3>Where to go next</h3>
+<ul>
+<li><b>Module 3</b> gives the mathematics behind the relational model: relational algebra and calculus.</li>
+<li><b>Module 4</b> is the SQL you use to define and query these tables.</li>
+<li><b>Modules 6 and 7</b> (normalization) tell you whether a logical design has hidden redundancy.</li>
+</ul>
+<h3>Files for this tutorial</h3>
+<ul><li><a href="labs/m2_demo.sql">labs/m2_demo.sql</a>: the demo database for MySQL 8.4 (creates the database <code>m2_demo</code>).</li></ul></section>
+
+<p class="nav-foot">Tutorial date: October 29, 2026. Progress, quiz answers and drafts stay in your own browser.</p>
+</main>
+</div>
+</div>
+<script>window.TK_QUIZ={"rel": [{"q": "What is the <b>degree<\/b> of the relation <code>student(sid, name, email, dept_id, gpa)<\/code>?", "o": ["12", "1", "It depends on the number of rows", "5"], "a": 3, "e": "Degree is the number of attributes (columns): 5."}, {"q": "Which is part of the <b>schema<\/b> rather than the instance?", "o": ["The rule that gpa must be between 0 and 4", "The five student rows currently stored", "The fact that Ana's GPA is 3.80", "The number of rows today"], "a": 0, "e": "Rules and structure belong to the schema. The rows are the instance."}, {"q": "In the formal relational model, which statement about the rows of a relation is true?", "o": ["The first row is the key", "They form a set: no duplicates and no inherent order", "They have a fixed order", "The same tuple can appear twice"], "a": 1, "e": "A relation is a set of tuples."}, {"q": "NULL in a column means:", "o": ["An empty string", "No value is known or applicable", "The row is deleted", "Zero"], "a": 1, "e": "NULL represents missing or inapplicable information."}], "keys": [{"q": "What is the difference between a superkey and a candidate key?", "o": ["There is none", "A candidate key is always a single attribute", "A candidate key is a minimal superkey", "A superkey can contain NULL"], "a": 2, "e": "A candidate key has no unnecessary attribute."}, {"q": "In the explorer, <code>(name, birth_year)<\/code> is unique in the <code>member<\/code> rows. Should you use it as the primary key?", "o": ["Only if the table has an index", "No: data can disprove a key but never prove one, and people can share name and birth year", "Yes, the data proves it is a key", "Yes, because it has two attributes"], "a": 1, "e": "Uniqueness has to come from the rules of the domain, not from today's rows."}, {"q": "A <code>flight<\/code> table stores one row per flight per day. <code>flight_no<\/code> is the same every day. Which primary key is right?", "o": ["seats", "(flight_no, flight_date)", "flight_date", "flight_no"], "a": 1, "e": "Neither value alone is unique; the combination identifies one flight on one day."}, {"q": "A foreign key value must:", "o": ["Be a number", "Be NULL", "Match an existing key value in the referenced table, or be NULL", "Be different from every key"], "a": 2, "e": "That is referential integrity."}, {"q": "Why is a generated integer often a better primary key than an email address?", "o": ["Integers use more space", "Integers are required", "It is stable, small and never needs to change", "Emails cannot be unique"], "a": 2, "e": "Stable, small keys are cheap to copy into foreign keys and indexes."}], "integ": [{"q": "Which constraint stops you from inserting an enrollment for a student who does not exist?", "o": ["Foreign key (referential integrity)", "Primary key", "CHECK", "UNIQUE"], "a": 0, "e": "The foreign key requires the sid to exist in student."}, {"q": "A <code>CHECK (gpa BETWEEN 0 AND 4)<\/code> constraint exists. Can you insert a row whose gpa is NULL?", "o": ["Only as the root user", "No, NULL is outside 0 to 4", "Only with a foreign key", "Yes, because the CHECK evaluates to unknown, which is not a violation"], "a": 3, "e": "The recorded experiment accepted a student with a NULL GPA."}, {"q": "You declare <code>name VARCHAR(40) NOT NULL<\/code>. Can <code>name<\/code> be an empty string?", "o": ["Yes, an empty string is a value, not NULL", "It becomes NULL automatically", "No", "Only for the primary key"], "a": 0, "e": "NOT NULL does not forbid the empty string."}, {"q": "With <code>ON DELETE CASCADE<\/code> on <code>enrolled.sid<\/code>, what happens when a student row is deleted?", "o": ["The delete is refused", "The enrollments are set to NULL", "The student's enrollment rows are deleted too", "Nothing"], "a": 2, "e": "Cascade propagates the delete to the children."}], "map": [{"q": "A project has many employees and an employee works on many projects. How is this represented?", "o": ["A junction table with the two keys", "It cannot be represented", "A foreign key in employee", "A foreign key in project"], "a": 0, "e": "M:N relationships need a junction table."}, {"q": "In a 1:N relationship, where does the foreign key go?", "o": ["In a third table always", "On the N side", "Nowhere", "On the 1 side"], "a": 1, "e": "Each N-side row points at its single 1-side row."}, {"q": "What makes a foreign key implement a <em>one-to-one<\/em> relationship?", "o": ["Declaring it UNIQUE", "Making it the primary key of the other table only", "Declaring it NOT NULL", "Putting it in both tables"], "a": 0, "e": "UNIQUE prevents two rows from pointing at the same parent."}, {"q": "A student can have many phone numbers. What is the standard relational design?", "o": ["A comma-separated list in one column", "Store them in the department table", "A separate table keyed by (sid, phone)", "Columns phone1, phone2, phone3"], "a": 2, "e": "One value per cell; multivalued attributes get their own table."}], "phys": [{"q": "Which type is appropriate for a price like 19.99?", "o": ["DOUBLE", "DECIMAL(8,2)", "FLOAT", "TEXT"], "a": 1, "e": "DECIMAL stores exact values, which money needs."}, {"q": "Which storage engine gives you transactions and foreign keys in MySQL 8.4?", "o": ["CSV", "MEMORY", "InnoDB", "MyISAM"], "a": 2, "e": "InnoDB is the default and the transactional engine."}, {"q": "What happens to an index on a foreign key column in MySQL?", "o": ["It is created only for primary keys", "MySQL creates one automatically if none exists", "Foreign keys cannot be indexed", "You must create it yourself"], "a": 1, "e": "InnoDB requires an index on the referencing columns and creates one if needed (visible as KEY in SHOW CREATE TABLE above)."}], "practice": [{"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO student VALUES (1, 'Zoe Lane', 'zoe@uni.example', 1, 3.00)<\/code>", "o": ["Duplicate key error (1062)", "Foreign key error on a child row (1452)", "NOT NULL error (1048)", "Foreign key error on a parent row (1451)", "CHECK constraint error (3819)", "Success"], "a": 0, "e": "Real MySQL 8.4 response: <code>ERROR 1062: Duplicate entry '1' for key 'student.PRIMARY'<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO student VALUES (6, 'Zoe Lane', 'ana@uni.example', 1, 3.00)<\/code>", "o": ["Duplicate key error (1062)", "Foreign key error on a child row (1452)", "NOT NULL error (1048)", "Success", "Foreign key error on a parent row (1451)", "CHECK constraint error (3819)"], "a": 0, "e": "Real MySQL 8.4 response: <code>ERROR 1062: Duplicate entry 'ana@uni.example' for key 'student.email'<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO student VALUES (6, NULL, 'zoe@uni.example', 1, 3.00)<\/code>", "o": ["Foreign key error on a parent row (1451)", "CHECK constraint error (3819)", "Foreign key error on a child row (1452)", "Success", "Duplicate key error (1062)", "NOT NULL error (1048)"], "a": 5, "e": "Real MySQL 8.4 response: <code>ERROR 1048: Column 'name' cannot be null<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO student VALUES (6, 'Zoe Lane', 'zoe@uni.example', 99, 3.00)<\/code>", "o": ["Duplicate key error (1062)", "CHECK constraint error (3819)", "Foreign key error on a parent row (1451)", "Foreign key error on a child row (1452)", "NOT NULL error (1048)", "Success"], "a": 3, "e": "Real MySQL 8.4 response: <code>ERROR 1452: Cannot add or update a child row: a foreign key constraint fails (`m2_demo`.`student`, CONSTRAINT `fk_student_dept` FOREIGN KEY (`dept_id`) REFERENCES `department` (`dept_id`))<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO student VALUES (6, 'Zoe Lane', 'zoe@uni.example', 1, 4.50)<\/code>", "o": ["NOT NULL error (1048)", "Foreign key error on a child row (1452)", "Foreign key error on a parent row (1451)", "CHECK constraint error (3819)", "Duplicate key error (1062)", "Success"], "a": 3, "e": "Real MySQL 8.4 response: <code>ERROR 3819: Check constraint 'gpa_range' is violated.<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO student VALUES (6, 'Zoe Lane', 'zoe@uni.example', NULL, 3.00)<\/code>", "o": ["Foreign key error on a child row (1452)", "CHECK constraint error (3819)", "Success", "Duplicate key error (1062)", "Foreign key error on a parent row (1451)", "NOT NULL error (1048)"], "a": 2, "e": "Real MySQL 8.4 response: <code>Query OK, 1 row affected<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO student VALUES (6, 'Zoe Lane', 'zoe@uni.example', 1, NULL)<\/code>", "o": ["CHECK constraint error (3819)", "Success", "NOT NULL error (1048)", "Foreign key error on a child row (1452)", "Foreign key error on a parent row (1451)", "Duplicate key error (1062)"], "a": 1, "e": "Real MySQL 8.4 response: <code>Query OK, 1 row affected<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>DELETE FROM department WHERE dept_id = 1<\/code>", "o": ["Foreign key error on a parent row (1451)", "NOT NULL error (1048)", "CHECK constraint error (3819)", "Duplicate key error (1062)", "Foreign key error on a child row (1452)", "Success"], "a": 0, "e": "Real MySQL 8.4 response: <code>ERROR 1451: Cannot delete or update a parent row: a foreign key constraint fails (`m2_demo`.`student`, CONSTRAINT `fk_student_dept` FOREIGN KEY (`dept_id`) REFERENCES `department` (`dept_id`))<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>UPDATE department SET dept_id = 10 WHERE dept_id = 1<\/code>", "o": ["Duplicate key error (1062)", "Foreign key error on a child row (1452)", "NOT NULL error (1048)", "Foreign key error on a parent row (1451)", "Success", "CHECK constraint error (3819)"], "a": 3, "e": "Real MySQL 8.4 response: <code>ERROR 1451: Cannot delete or update a parent row: a foreign key constraint fails (`m2_demo`.`student`, CONSTRAINT `fk_student_dept` FOREIGN KEY (`dept_id`) REFERENCES `department` (`dept_id`))<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>DELETE FROM student WHERE sid = 1<\/code>", "o": ["Duplicate key error (1062)", "Foreign key error on a child row (1452)", "CHECK constraint error (3819)", "Foreign key error on a parent row (1451)", "Success", "NOT NULL error (1048)"], "a": 4, "e": "Real MySQL 8.4 response: <code>Query OK, 1 row affected<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO enrolled VALUES (1, 'C1', 'A')<\/code>", "o": ["Success", "Foreign key error on a child row (1452)", "CHECK constraint error (3819)", "Duplicate key error (1062)", "NOT NULL error (1048)", "Foreign key error on a parent row (1451)"], "a": 3, "e": "Real MySQL 8.4 response: <code>ERROR 1062: Duplicate entry '1-C1' for key 'enrolled.PRIMARY'<\/code>"}, {"q": "Run on the <code>m2_demo<\/code> database: <br><code>INSERT INTO enrolled VALUES (1, 'ZZ9', 'A')<\/code>", "o": ["Foreign key error on a child row (1452)", "CHECK constraint error (3819)", "NOT NULL error (1048)", "Success", "Foreign key error on a parent row (1451)", "Duplicate key error (1062)"], "a": 0, "e": "Real MySQL 8.4 response: <code>ERROR 1452: Cannot add or update a child row: a foreign key constraint fails (`m2_demo`.`enrolled`, CONSTRAINT `fk_enr_course` FOREIGN KEY (`cid`) REFERENCES `course` (`cid`))<\/code>"}], "final": [{"q": "A relation instance is:", "o": ["A kind of index", "A foreign key", "The set of tuples stored at a given moment", "The table definition"], "a": 2, "e": "The schema is the definition; the instance is the current data."}, {"q": "Which of these is <em>always<\/em> true of a primary key?", "o": ["It cannot be referenced", "It is a single column", "It is never NULL and uniquely identifies each row", "It is a number"], "a": 2, "e": "Uniqueness and non-NULL are required."}, {"q": "You see that all values in the <code>name<\/code> column are different today. What can you conclude?", "o": ["name is a candidate key", "Nothing about keys; data cannot prove a key", "name is a foreign key", "name should be the primary key"], "a": 1, "e": "Keys are rules from the domain."}, {"q": "Which referential action refuses to delete a parent row that has children?", "o": ["CASCADE", "RESTRICT", "None of these", "SET NULL"], "a": 1, "e": "RESTRICT (also the default behavior) refuses the delete."}, {"q": "A 1:N relationship from department to student is implemented by:", "o": ["sid in department", "dept_id in student", "A view", "A junction table"], "a": 1, "e": "The foreign key goes on the many side."}, {"q": "Which pair of types is right for a person's name and a product price?", "o": ["INT and DATE", "TEXT and FLOAT", "DECIMAL and VARCHAR", "VARCHAR and DECIMAL"], "a": 3, "e": "Text for the name; exact decimal for money."}, {"q": "A student table must record that every student belongs to a department. Which is needed?", "o": ["A foreign key only", "A CHECK only", "A foreign key and NOT NULL on the column", "A junction table"], "a": 2, "e": "The foreign key lets NULL through unless the column is NOT NULL."}, {"q": "What is the entity-relationship step for a multivalued attribute?", "o": ["A view", "A new table with a foreign key to the owner", "A new column", "Ignore it"], "a": 1, "e": "Multivalued attributes become tables."}, {"q": "What does a weak entity table's primary key consist of?", "o": ["Nothing", "A random id", "The owner's key plus its partial key", "Only its own attribute"], "a": 2, "e": "A weak entity depends on its owner for identification."}, {"q": "Which MySQL feature keeps data valid no matter which application writes it?", "o": ["A naming convention", "Autocommit", "Constraints in the schema", "A comment in the code"], "a": 2, "e": "Constraints are enforced by the server for every client."}]};</script>
+<script>
+(function(){
+'use strict';
+var SLUG = document.documentElement.getAttribute('data-slug') || 'tutorial';
+var $ = function(s,r){return (r||document).querySelector(s)};
+var $$ = function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
+function el(tag,cls,text){var e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+var store={
+  get:function(k,d){try{var v=localStorage.getItem('tk:'+SLUG+':'+k);return v===null?d:JSON.parse(v)}catch(e){return d}},
+  set:function(k,v){try{localStorage.setItem('tk:'+SLUG+':'+k,JSON.stringify(v))}catch(e){}},
+  clear:function(){try{Object.keys(localStorage).forEach(function(k){if(k.indexOf('tk:'+SLUG+':')===0)localStorage.removeItem(k)})}catch(e){}}
+};
+window.TK={$:$,$$:$$,el:el,store:store,slug:SLUG};
+
+/* copy buttons */
+$$('.code').forEach(function(c){
+  var b=$('button',c); if(!b) return;
+  b.addEventListener('click',function(){
+    var t=$('pre',c).textContent;
+    function done(){var o=b.textContent;b.textContent='Copied';setTimeout(function(){b.textContent=o},1200)}
+    if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(done,function(){fallback(t,done)})}else fallback(t,done);
+  });
+});
+function fallback(t,cb){var ta=document.createElement('textarea');ta.value=t;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');cb()}catch(e){}document.body.removeChild(ta)}
+
+/* section nav */
+var secs=$$('section.mod'), links=$$('nav.side a[data-sec]');
+var done=store.get('done',{});
+function paintDone(){links.forEach(function(a){var t=$('.tick',a);if(t)t.textContent=done[a.getAttribute('data-sec')]?'✓':''})}
+paintDone();
+if('IntersectionObserver' in window){
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){
+    if(e.isIntersecting){links.forEach(function(a){a.classList.toggle('active',a.getAttribute('data-sec')===e.target.id)})}
+  })},{rootMargin:'-20% 0px -70% 0px'});
+  secs.forEach(function(s){io.observe(s)});
+}
+$$('button[data-markdone]').forEach(function(b){
+  var id=b.getAttribute('data-markdone');
+  function paint(){b.textContent=done[id]?'Marked as done ✓':'Mark section as done';b.setAttribute('aria-pressed',done[id]?'true':'false')}
+  paint();
+  b.addEventListener('click',function(){done[id]=!done[id];store.set('done',done);paint();paintDone()});
+});
+var reset=$('#tk-reset'); if(reset) reset.addEventListener('click',function(){if(confirm('Clear your saved progress and quiz answers in this browser?')){store.clear();location.reload()}});
+
+/* quizzes: data in window.TK_QUIZ = {id:[{q,o:[],a,e}]} */
+TK.quiz=function(box){
+  var id=box.getAttribute('data-quiz'), qs=(window.TK_QUIZ||{})[id]||[];
+  var saved=store.get('quiz:'+id,{});
+  box.innerHTML='';
+  var score=el('p','score'); score.setAttribute('aria-live','polite');
+  var retry=el('button','btn','Try again'); retry.type='button'; retry.hidden=true;
+  function refresh(){
+    var n=Object.keys(saved).length, r=0; qs.forEach(function(q,i){if(saved[i]===q.a)r++});
+    score.textContent=n<qs.length?'Answer each question. Feedback appears right away.':'Score: '+r+' of '+qs.length+'.';
+    retry.hidden=n<qs.length;
+  }
+  qs.forEach(function(q,i){
+    var fs=el('fieldset','q'); var lg=el('legend'); lg.innerHTML=(i+1)+'. '+q.q; fs.appendChild(lg);
+    if(q.code){var pre=el('pre','',q.code);pre.style.cssText='background:var(--code-bg);color:var(--code-ink);border-radius:8px;margin:8px 0';fs.appendChild(pre)}
+    var opts=el('div','opts'), fb=el('p','fb'); fb.setAttribute('aria-live','polite'); var bs=[];
+    function reveal(c){
+      bs.forEach(function(b,j){b.disabled=true;if(j===q.a)b.classList.add('right');else if(j===c)b.classList.add('wrong')});
+      fb.textContent=''; fb.appendChild(el('b',c===q.a?'ok':'no',c===q.a?'Correct. ':'Not quite. ')); var ex=el('span'); ex.innerHTML=q.e; fb.appendChild(ex);
+    }
+    q.o.forEach(function(t,j){var b=el('button','opt');b.innerHTML=t;b.type='button';b.addEventListener('click',function(){saved[i]=j;store.set('quiz:'+id,saved);reveal(j);refresh()});bs.push(b);opts.appendChild(b)});
+    fs.appendChild(opts); fs.appendChild(fb); box.appendChild(fs);
+    if(saved[i]!==undefined) reveal(saved[i]);
+  });
+  retry.addEventListener('click',function(){store.set('quiz:'+id,{});TK.quiz(box)});
+  box.appendChild(score); box.appendChild(retry); refresh();
+};
+$$('[data-quiz]').forEach(TK.quiz);
+
+/* result-set table builder: cols[], rows[][] */
+TK.table=function(cols,rows,opt){
+  opt=opt||{};
+  var w=el('div','rs'), t=el('table'), th=el('thead'), tr=el('tr');
+  cols.forEach(function(c,ci){var isnum=rows.length&&rows.some(function(r){return typeof r[ci]==='number'})&&rows.every(function(r){return r[ci]===null||typeof r[ci]==='number'});tr.appendChild(el('th',isnum?'num':null,c))}); th.appendChild(tr); t.appendChild(th);
+  var tb=el('tbody');
+  rows.forEach(function(r,ri){var tr=el('tr'); if(opt.rowClass){var c=opt.rowClass(r,ri);if(c)tr.className=c}
+    r.forEach(function(v){var td=el('td',v===null?'null':(typeof v==='number'?'num':''),v===null?'NULL':String(v));tr.appendChild(td)});tb.appendChild(tr)});
+  t.appendChild(tb); w.appendChild(t); return w;
+};
+})();
+
+</script>
+<script>window.M2={"keys": {"member": {"attrs": ["member_no", "email", "name", "birth_year", "city"], "rows": [["M101", "alex.kim@mail.example", "Alex Kim", 1999, "Muncie"], ["M102", "alex.kim2@mail.example", "Alex Kim", 2001, "Muncie"], ["M103", "bea.ortiz@mail.example", "Bea Ortiz", 1999, "Indianapolis"], ["M104", "cy.lund@mail.example", "Cy Lund", 2000, "Muncie"], ["M105", "dee.shah@mail.example", "Dee Shah", 2001, "Fort Wayne"], ["M106", "eve.cho@mail.example", "Eve Cho", 2000, "Indianapolis"], ["M107", "finn.roy@mail.example", "Finn Roy", 1999, "Muncie"], ["M108", "gus.lee@mail.example", "Gus Lee", 2001, "Fort Wayne"]]}, "enrolled_hist": {"attrs": ["sid", "cid", "term", "grade"], "rows": [[1, "C1", "Fall 2025", "A"], [1, "C1", "Fall 2026", "B"], [1, "C2", "Fall 2025", "B"], [2, "C1", "Fall 2025", "B"], [2, "C2", "Fall 2026", "A"], [3, "C2", "Fall 2025", "A"]]}, "flight": {"attrs": ["flight_no", "flight_date", "origin", "dest", "seats"], "rows": [["UA101", "2026-11-01", "ORD", "LAX", 180], ["UA101", "2026-11-02", "ORD", "LAX", 180], ["DL220", "2026-11-01", "ATL", "JFK", 150], ["DL220", "2026-11-02", "ATL", "JFK", 150], ["AA330", "2026-11-01", "DFW", "MIA", 160], ["AA330", "2026-11-03", "DFW", "MIA", 160]]}}, "ops": [{"title": "Insert a valid student", "sql": "INSERT INTO student VALUES (6, 'Fay Ito', 'fay@uni.example', 2, 3.50)", "kind": "none", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 6, "course": 3, "enrolled": 6}, "ok": true, "msg": "Query OK, 1 row affected"}, {"title": "Insert a student with an existing sid", "sql": "INSERT INTO student VALUES (1, 'Zoe Lane', 'zoe@uni.example', 1, 3.00)", "kind": "Key / entity integrity", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1062: Duplicate entry '1' for key 'student.PRIMARY'", "code": 1062}, {"title": "Insert a student with an existing email", "sql": "INSERT INTO student VALUES (6, 'Zoe Lane', 'ana@uni.example', 1, 3.00)", "kind": "Key (UNIQUE)", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1062: Duplicate entry 'ana@uni.example' for key 'student.email'", "code": 1062}, {"title": "Insert a student with no name", "sql": "INSERT INTO student VALUES (6, NULL, 'zoe@uni.example', 1, 3.00)", "kind": "Domain (NOT NULL)", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1048: Column 'name' cannot be null", "code": 1048}, {"title": "Insert a student in a department that does not exist", "sql": "INSERT INTO student VALUES (6, 'Zoe Lane', 'zoe@uni.example', 99, 3.00)", "kind": "Referential integrity", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1452: Cannot add or update a child row: a foreign key constraint fails (`m2_demo`.`student`, CONSTRAINT `fk_student_dept` FOREIGN KEY (`dept_id`) REFERENCES `department` (`dept_id`))", "code": 1452}, {"title": "Insert a student with GPA 4.5", "sql": "INSERT INTO student VALUES (6, 'Zoe Lane', 'zoe@uni.example', 1, 4.50)", "kind": "Domain (CHECK)", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 3819: Check constraint 'gpa_range' is violated.", "code": 3819}, {"title": "Insert a student with no department (NULL)", "sql": "INSERT INTO student VALUES (6, 'Zoe Lane', 'zoe@uni.example', NULL, 3.00)", "kind": "none", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 6, "course": 3, "enrolled": 6}, "ok": true, "msg": "Query OK, 1 row affected"}, {"title": "Insert a student with no GPA yet (NULL)", "sql": "INSERT INTO student VALUES (6, 'Zoe Lane', 'zoe@uni.example', 1, NULL)", "kind": "none", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 6, "course": 3, "enrolled": 6}, "ok": true, "msg": "Query OK, 1 row affected"}, {"title": "Insert a student whose name is an empty string", "sql": "INSERT INTO student VALUES (6, '', 'zoe@uni.example', 1, 3.00)", "kind": "none", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 6, "course": 3, "enrolled": 6}, "ok": true, "msg": "Query OK, 1 row affected"}, {"title": "Move a student to a department that does not exist", "sql": "UPDATE student SET dept_id = 99 WHERE sid = 1", "kind": "Referential integrity", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1452: Cannot add or update a child row: a foreign key constraint fails (`m2_demo`.`student`, CONSTRAINT `fk_student_dept` FOREIGN KEY (`dept_id`) REFERENCES `department` (`dept_id`))", "code": 1452}, {"title": "Delete a department that students belong to", "sql": "DELETE FROM department WHERE dept_id = 1", "kind": "Referential integrity", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1451: Cannot delete or update a parent row: a foreign key constraint fails (`m2_demo`.`student`, CONSTRAINT `fk_student_dept` FOREIGN KEY (`dept_id`) REFERENCES `department` (`dept_id`))", "code": 1451}, {"title": "Change the key of a department that students belong to", "sql": "UPDATE department SET dept_id = 10 WHERE dept_id = 1", "kind": "Referential integrity", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1451: Cannot delete or update a parent row: a foreign key constraint fails (`m2_demo`.`student`, CONSTRAINT `fk_student_dept` FOREIGN KEY (`dept_id`) REFERENCES `department` (`dept_id`))", "code": 1451}, {"title": "Delete a student who has enrollments", "sql": "DELETE FROM student WHERE sid = 1", "kind": "none (ON DELETE CASCADE)", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 4, "course": 3, "enrolled": 4}, "ok": true, "msg": "Query OK, 1 row affected"}, {"title": "Enroll a student in the same course twice", "sql": "INSERT INTO enrolled VALUES (1, 'C1', 'A')", "kind": "Key (composite primary key)", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1062: Duplicate entry '1-C1' for key 'enrolled.PRIMARY'", "code": 1062}, {"title": "Enroll a student in a course that does not exist", "sql": "INSERT INTO enrolled VALUES (1, 'ZZ9', 'A')", "kind": "Referential integrity", "before": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "after": {"department": 3, "student": 5, "course": 3, "enrolled": 6}, "ok": false, "msg": "ERROR 1452: Cannot add or update a child row: a foreign key constraint fails (`m2_demo`.`enrolled`, CONSTRAINT `fk_enr_course` FOREIGN KEY (`cid`) REFERENCES `course` (`cid`))", "code": 1452}], "map": [{"id": "1n", "label": "One-to-many (a department has many students)", "rule": "Put a foreign key on the <b>many<\/b> side. Each student row stores the key of its one department. The \"one\" side needs no extra column.", "ddl": "CREATE TABLE department (dept_id INT PRIMARY KEY, dept_name VARCHAR(30) NOT NULL);\nCREATE TABLE student (\n  sid     INT PRIMARY KEY,\n  name    VARCHAR(40) NOT NULL,\n  dept_id INT,                                   -- NULL allowed: partial participation\n  FOREIGN KEY (dept_id) REFERENCES department(dept_id));", "tables": ["department", "student"], "describe": "-- department\n+-----------+-------------+------+-----+---------+-------+\n| Field     | Type        | Null | Key | Default | Extra |\n+-----------+-------------+------+-----+---------+-------+\n| dept_id   | int         | NO   | PRI | NULL    |       |\n| dept_name | varchar(30) | NO   |     | NULL    |       |\n+-----------+-------------+------+-----+---------+-------+\n2 rows in set\n\n-- student\n+---------+-------------+------+-----+---------+-------+\n| Field   | Type        | Null | Key | Default | Extra |\n+---------+-------------+------+-----+---------+-------+\n| sid     | int         | NO   | PRI | NULL    |       |\n| name    | varchar(40) | NO   |     | NULL    |       |\n| dept_id | int         | YES  | MUL | NULL    |       |\n+---------+-------------+------+-----+---------+-------+\n3 rows in set"}, {"id": "mn", "label": "Many-to-many (students enroll in courses)", "rule": "A foreign key cannot hold many values, so create a <b>junction table<\/b> (also called a bridge or associative table). Its primary key is the pair of foreign keys. Attributes of the relationship (here <code>grade<\/code>) go in the junction table.", "ddl": "CREATE TABLE student (sid INT PRIMARY KEY, name VARCHAR(40) NOT NULL);\nCREATE TABLE course  (cid VARCHAR(8) PRIMARY KEY, title VARCHAR(50) NOT NULL);\nCREATE TABLE enrolled (\n  sid   INT,\n  cid   VARCHAR(8),\n  grade CHAR(1),\n  PRIMARY KEY (sid, cid),\n  FOREIGN KEY (sid) REFERENCES student(sid),\n  FOREIGN KEY (cid) REFERENCES course(cid));", "tables": ["student", "course", "enrolled"], "describe": "-- student\n+-------+-------------+------+-----+---------+-------+\n| Field | Type        | Null | Key | Default | Extra |\n+-------+-------------+------+-----+---------+-------+\n| sid   | int         | NO   | PRI | NULL    |       |\n| name  | varchar(40) | NO   |     | NULL    |       |\n+-------+-------------+------+-----+---------+-------+\n2 rows in set\n\n-- course\n+-------+-------------+------+-----+---------+-------+\n| Field | Type        | Null | Key | Default | Extra |\n+-------+-------------+------+-----+---------+-------+\n| cid   | varchar(8)  | NO   | PRI | NULL    |       |\n| title | varchar(50) | NO   |     | NULL    |       |\n+-------+-------------+------+-----+---------+-------+\n2 rows in set\n\n-- enrolled\n+-------+------------+------+-----+---------+-------+\n| Field | Type       | Null | Key | Default | Extra |\n+-------+------------+------+-----+---------+-------+\n| sid   | int        | NO   | PRI | NULL    |       |\n| cid   | varchar(8) | NO   | PRI | NULL    |       |\n| grade | char(1)    | YES  |     | NULL    |       |\n+-------+------------+------+-----+---------+-------+\n3 rows in set"}, {"id": "11", "label": "One-to-one (a person has at most one passport)", "rule": "Put a foreign key on one side and make it <b>UNIQUE<\/b>, so no two rows can point at the same parent. Put it on the side that always participates (a passport cannot exist without a person), so the column never needs to be NULL.", "ddl": "CREATE TABLE person (person_id INT PRIMARY KEY, name VARCHAR(40) NOT NULL);\nCREATE TABLE passport (\n  passport_no VARCHAR(12) PRIMARY KEY,\n  person_id   INT NOT NULL UNIQUE,               -- UNIQUE is what makes it 1:1\n  FOREIGN KEY (person_id) REFERENCES person(person_id));", "tables": ["person", "passport"], "describe": "-- person\n+-----------+-------------+------+-----+---------+-------+\n| Field     | Type        | Null | Key | Default | Extra |\n+-----------+-------------+------+-----+---------+-------+\n| person_id | int         | NO   | PRI | NULL    |       |\n| name      | varchar(40) | NO   |     | NULL    |       |\n+-----------+-------------+------+-----+---------+-------+\n2 rows in set\n\n-- passport\n+-------------+-------------+------+-----+---------+-------+\n| Field       | Type        | Null | Key | Default | Extra |\n+-------------+-------------+------+-----+---------+-------+\n| passport_no | varchar(12) | NO   | PRI | NULL    |       |\n| person_id   | int         | NO   | UNI | NULL    |       |\n+-------------+-------------+------+-----+---------+-------+\n2 rows in set"}, {"id": "mv", "label": "Multivalued attribute (a student has several phone numbers)", "rule": "A column holds one value per row (first normal form). Move the multivalued attribute to its own table. The key is the owner's key plus the value itself.", "ddl": "CREATE TABLE student (sid INT PRIMARY KEY, name VARCHAR(40) NOT NULL);\nCREATE TABLE student_phone (\n  sid   INT,\n  phone VARCHAR(20),\n  PRIMARY KEY (sid, phone),\n  FOREIGN KEY (sid) REFERENCES student(sid) ON DELETE CASCADE);", "tables": ["student", "student_phone"], "describe": "-- student\n+-------+-------------+------+-----+---------+-------+\n| Field | Type        | Null | Key | Default | Extra |\n+-------+-------------+------+-----+---------+-------+\n| sid   | int         | NO   | PRI | NULL    |       |\n| name  | varchar(40) | NO   |     | NULL    |       |\n+-------+-------------+------+-----+---------+-------+\n2 rows in set\n\n-- student_phone\n+-------+-------------+------+-----+---------+-------+\n| Field | Type        | Null | Key | Default | Extra |\n+-------+-------------+------+-----+---------+-------+\n| sid   | int         | NO   | PRI | NULL    |       |\n| phone | varchar(20) | NO   | PRI | NULL    |       |\n+-------+-------------+------+-----+---------+-------+\n2 rows in set"}, {"id": "weak", "label": "Weak entity (a room exists only inside a building)", "rule": "A weak entity has no key of its own. Its table's primary key combines the owner's key with the weak entity's <em>partial key<\/em>, and the owner part is a foreign key (usually with <code>ON DELETE CASCADE<\/code>, since a room cannot outlive its building).", "ddl": "CREATE TABLE building (building_id INT PRIMARY KEY, name VARCHAR(40) NOT NULL);\nCREATE TABLE room (\n  building_id INT,\n  room_no     VARCHAR(8),\n  seats       INT,\n  PRIMARY KEY (building_id, room_no),\n  FOREIGN KEY (building_id) REFERENCES building(building_id) ON DELETE CASCADE);", "tables": ["building", "room"], "describe": "-- building\n+-------------+-------------+------+-----+---------+-------+\n| Field       | Type        | Null | Key | Default | Extra |\n+-------------+-------------+------+-----+---------+-------+\n| building_id | int         | NO   | PRI | NULL    |       |\n| name        | varchar(40) | NO   |     | NULL    |       |\n+-------------+-------------+------+-----+---------+-------+\n2 rows in set\n\n-- room\n+-------------+------------+------+-----+---------+-------+\n| Field       | Type       | Null | Key | Default | Extra |\n+-------------+------------+------+-----+---------+-------+\n| building_id | int        | NO   | PRI | NULL    |       |\n| room_no     | varchar(8) | NO   | PRI | NULL    |       |\n| seats       | int        | YES  |     | NULL    |       |\n+-------------+------------+------+-----+---------+-------+\n3 rows in set"}, {"id": "isa", "label": "Specialization (a salaried employee is an employee)", "rule": "One option: a table for the general entity, and a table for each specialization whose primary key is <em>also<\/em> a foreign key to the general table. Shared attributes live once in the parent. Other options (one table for everything, or only subclass tables) trade simplicity against NULLs and joins; see the EER tutorial.", "ddl": "CREATE TABLE employee (emp_id INT PRIMARY KEY, name VARCHAR(40) NOT NULL);\nCREATE TABLE salaried_employee (\n  emp_id INT PRIMARY KEY,                        -- same key as the parent\n  salary DECIMAL(9,2) NOT NULL,\n  FOREIGN KEY (emp_id) REFERENCES employee(emp_id) ON DELETE CASCADE);", "tables": ["employee", "salaried_employee"], "describe": "-- employee\n+--------+-------------+------+-----+---------+-------+\n| Field  | Type        | Null | Key | Default | Extra |\n+--------+-------------+------+-----+---------+-------+\n| emp_id | int         | NO   | PRI | NULL    |       |\n| name   | varchar(40) | NO   |     | NULL    |       |\n+--------+-------------+------+-----+---------+-------+\n2 rows in set\n\n-- salaried_employee\n+--------+--------------+------+-----+---------+-------+\n| Field  | Type         | Null | Key | Default | Extra |\n+--------+--------------+------+-----+---------+-------+\n| emp_id | int          | NO   | PRI | NULL    |       |\n| salary | decimal(9,2) | NO   |     | NULL    |       |\n+--------+--------------+------+-----+---------+-------+\n2 rows in set"}]};</script>
+<script>
+(function(){
+'use strict';
+var $=TK.$, $$=TK.$$, el=TK.el, D=window.M2;
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+function codeBox(label,text){var c=el('div','code');c.innerHTML='<div class="bar"><span>'+esc(label)+'</span></div>';var p=el('pre',null,text);c.appendChild(p);return c}
+
+/* ===== key explorer ===== */
+(function(){
+  var box=$('#w-keys'); if(!box) return;
+  var names=Object.keys(D.keys), cur=names[0], pick={};
+  box.innerHTML='<div class="row"><label>Table <select id="ke-t"></select></label></div><div id="ke-data" style="margin:10px 0"></div><fieldset class="ke-f"><legend>Attributes to test as a key</legend><div id="ke-a" class="row"></div></fieldset><div id="ke-res" class="fb" aria-live="polite" style="margin:12px 0"></div><h4>Attribute sets that could be keys in these rows</h4><div id="ke-list"></div>';
+  var sel=$('#ke-t',box); names.forEach(function(n){var o=el('option',null,n);o.value=n;sel.appendChild(o)});
+  function subsets(n){var out=[];for(var m=1;m<(1<<n);m++){var s=[];for(var i=0;i<n;i++) if(m&(1<<i)) s.push(i);out.push(s)}return out}
+  function isUnique(t,idx){var seen={},r=D.keys[t].rows;for(var i=0;i<r.length;i++){var k=JSON.stringify(idx.map(function(j){return r[i][j]}));if(seen[k]) return false;seen[k]=1}return true}
+  function analyze(t,idx){
+    var u=isUnique(t,idx), minimal=u;
+    if(u) subsets(idx.length).forEach(function(s){ if(s.length<idx.length){ var sub=s.map(function(j){return idx[j]}); if(isUnique(t,sub)) minimal=false } });
+    return {unique:u,minimal:minimal};
+  }
+  TK.keyInfo=function(t,attrs){var a=D.keys[t].attrs;return analyze(t,attrs.map(function(x){return a.indexOf(x)}))};
+  function draw(){
+    var d=D.keys[cur], dv=$('#ke-data',box); dv.innerHTML=''; dv.appendChild(TK.table(d.attrs,d.rows));
+    var ad=$('#ke-a',box); ad.innerHTML='';
+    d.attrs.forEach(function(a,i){var l=el('label'); l.style.cssText='flex:0 0 auto;flex-direction:row;align-items:center;gap:6px'; var cb=el('input'); cb.type='checkbox'; cb.checked=!!pick[cur+':'+i]; cb.id='ke-'+a; cb.addEventListener('change',function(){pick[cur+':'+i]=cb.checked;result()}); l.appendChild(cb); l.appendChild(el('span',null,a)); ad.appendChild(l)});
+    var list=$('#ke-list',box); list.innerHTML='';
+    var cands=[]; subsets(d.attrs.length).forEach(function(s){var r=analyze(cur,s); if(r.minimal) cands.push(s.map(function(i){return d.attrs[i]}))});
+    cands.sort(function(a,b){return a.length-b.length});
+    var ul=el('ul'); cands.forEach(function(c){ul.appendChild(el('li',null,'('+c.join(', ')+')'))}); list.appendChild(ul);
+    list.appendChild(el('p','muted',cands.length+' minimal unique set'+(cands.length===1?'':'s')+' in these '+d.rows.length+' rows. Only the real-world rules can say which of them are true keys.'));
+    result();
+  }
+  function result(){
+    var d=D.keys[cur], idx=[]; d.attrs.forEach(function(a,i){if(pick[cur+':'+i]) idx.push(i)});
+    var r=$('#ke-res',box);
+    if(!idx.length){r.textContent='Tick one or more attributes.';return}
+    var a=analyze(cur,idx), names=idx.map(function(i){return d.attrs[i]}).join(', ');
+    r.innerHTML='<b>('+esc(names)+')</b>: '+(a.unique?(a.minimal?'<b class="ok">unique, and no smaller set is unique: a candidate key on this data.</b>':'<b class="ok">unique, but a smaller set is already unique: a superkey, not a candidate key.</b>'):'<b class="no">not unique: two or more rows share these values, so it cannot be a key.</b>');
+  }
+  sel.addEventListener('change',function(){cur=sel.value;draw()}); draw();
+})();
+
+/* ===== integrity lab ===== */
+(function(){
+  var box=$('#w-ops'); if(!box) return;
+  box.innerHTML='<div class="row"><label>Operation <select id="op-s"></select></label></div><div id="op-out" aria-live="polite" style="margin-top:12px"></div>';
+  var sel=$('#op-s',box); D.ops.forEach(function(o,i){var e=el('option',null,o.title);e.value=i;sel.appendChild(e)});
+  function render(){
+    var o=D.ops[sel.value], out=$('#op-out',box); out.innerHTML='';
+    out.appendChild(codeBox('SQL',o.sql+';'));
+    var r=el('div','out'+(o.ok?'':' err')); r.innerHTML='<div class="bar">Real response from MySQL 8.4</div><pre id="op-msg"></pre>'; $('pre',r).textContent=o.msg; out.appendChild(r);
+    var p=el('p','fb'); p.innerHTML='<b>'+(o.ok?'<span class="ok">Allowed.</span>':'<span class="no">Rejected.</span>')+'</b> '+(o.ok?(o.kind==='none (ON DELETE CASCADE)'?'The student\'s enrollments were deleted too, because the foreign key says ON DELETE CASCADE.':'No constraint was violated.'):'Constraint involved: <b>'+esc(o.kind)+'</b>. The table was left unchanged.')+' Row counts after the operation: student '+o.after.student+', enrolled '+o.after.enrolled+' (before: student '+o.before.student+', enrolled '+o.before.enrolled+').';
+    out.appendChild(p);
+  }
+  sel.addEventListener('change',render); render();
+})();
+
+/* ===== mapper ===== */
+(function(){
+  var box=$('#w-map'); if(!box) return;
+  box.innerHTML='<div class="row"><label>Situation <select id="mp-s"></select></label></div><div id="mp-out" aria-live="polite" style="margin-top:12px"></div>';
+  var sel=$('#mp-s',box); D.map.forEach(function(m,i){var o=el('option',null,m.label);o.value=i;sel.appendChild(o)});
+  function render(){
+    var m=D.map[sel.value], out=$('#mp-out',box); out.innerHTML='';
+    var p=el('p'); p.innerHTML='<b>Rule.</b> '+m.rule; out.appendChild(p);
+    out.appendChild(codeBox('SQL (run on MySQL 8.4)',m.ddl));
+    var r=el('div','out'); r.innerHTML='<div class="bar">Resulting tables (DESCRIBE, real output)</div><pre></pre>'; $('pre',r).textContent=m.describe; out.appendChild(r);
+  }
+  sel.addEventListener('change',render); render();
+})();
+})();
+
+</script>
+<!--dbm-end-->
+<nav class="dbm-end" aria-label="Previous and next tutorial"><a href="../database-fundamentals/" rel="prev"><small>&larr; Previous tutorial</small><b>Module 1: Database fundamentals</b></a><a class="dbm-next" href="../relational-algebra/" rel="next"><small>Next tutorial &rarr;</small><b>Module 3: Relational algebra and calculus</b></a><a class="dbm-hub" href="../"><small>Course home</small><b>All tutorials</b></a></nav>
+<!--/dbm-end-->
+</body>
+</html>

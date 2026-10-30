@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Database Management: Interactive Tutorials</title>
-<meta name="description" content="Interactive database tutorials with worked examples, diagrams, runnable code, and knowledge checks: ER design, normalization, database connectivity, and indexing.">
+<meta name="description" content="Interactive database tutorials with worked examples, diagrams, runnable code, and knowledge checks: environment setup, SQL, relational algebra, ER design, normalization, connectivity, indexing, transactions and security.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@600;700&family=Public+Sans:wght@400;600;700&display=swap" rel="stylesheet">
@@ -58,18 +58,25 @@ footer{max-width:980px;margin:0 auto;padding:10px 20px 56px;color:var(--soft);fo
   <p class="eyebrow">Computer Science &middot; Bowie State University</p>
   <h1>Database Management</h1>
   <p class="lede">Interactive tutorials for working through the course at your own pace. Each one pairs the theory with worked examples, diagrams you can click, code you can run, and short knowledge checks.</p>
-  <a class="cta" href="er-eer/">Start with tutorial 1</a>
+  <a class="cta" href="environment-setup/">Start with Module 0</a>
   <ul class="feat"><li>Worked examples</li><li>Runnable labs</li><li>Interactive diagrams</li><li>Knowledge checks</li></ul>
 </div></header>
 <main>
 <section style="margin-top:0">
   <h2>Tutorials</h2>
-  <p class="sub">Best taken in order, though each stands on its own.</p>
+  <p class="sub">One tutorial for each course module, numbered as on Blackboard. Best taken in order, though each stands on its own.</p>
   <div class="grid">
-  <a class="card" href="er-eer/"><span class="num">1</span><div><b>ER and EER design</b><p>Entities, relationships, specialization and generalization, and converting diagrams to relational schemas.</p><ul class="tags"><li>Design</li><li>ER diagrams</li><li>Relational mapping</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
-  <a class="card" href="normalization/"><span class="num">2</span><div><b>Database normalization</b><p>Functional dependencies, 1NF to BCNF, lossless decomposition, and performance trade-offs.</p><ul class="tags"><li>Design</li><li>Dependencies</li><li>Decomposition</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
-  <a class="card" href="db-connectivity/"><span class="num">3</span><div><b>Database connectivity</b><p>Connect from Java or Python, run queries, read result sets, and prevent SQL injection with parameterized queries.</p><ul class="tags"><li>Java</li><li>Python</li><li>JDBC</li><li>Security</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
-  <a class="card" href="physical-design-indexing/"><span class="num">4</span><div><b>Physical design and indexing</b><p>Blocks and file organization, hashing, B-tree and B+ tree indexes, and choosing indexes for a workload.</p><ul class="tags"><li>Storage</li><li>B+ trees</li><li>Query plans</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="environment-setup/"><span class="num">0</span><div><b>Environment setup</b><p>Install MySQL 8.4 LTS and Workbench, connect, verify with a test database, and learn the ten most common error messages.</p><ul class="tags"><li>MySQL 8.4</li><li>Workbench</li><li>Troubleshooting</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="database-fundamentals/"><span class="num">1</span><div><b>Database fundamentals</b><p>DBMS versus files, the three-schema architecture, data independence, what is inside a server, and the design lifecycle.</p><ul class="tags"><li>DBMS</li><li>Architecture</li><li>Lifecycle</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="data-modeling/"><span class="num">2</span><div><b>Data modeling and the relational model</b><p>Relations, keys, integrity constraints and mapping an ER design to MySQL tables, with the errors the server really returns.</p><ul class="tags"><li>Keys</li><li>Integrity</li><li>Mapping</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="relational-algebra/"><span class="num">3</span><div><b>Relational algebra and calculus</b><p>Select, project, joins, division and grouping in a runnable algebra lab, query trees, and tuple relational calculus.</p><ul class="tags"><li>Algebra lab</li><li>Query trees</li><li>Calculus</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="sql-programming/"><span class="num">4</span><div><b>SQL programming</b><p>DDL, DML, joins, grouping, subqueries, transactions and views with a practice lab that runs in your browser.</p><ul class="tags"><li>MySQL</li><li>Practice lab</li><li>EXPLAIN</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="alternative-databases/"><span class="num">5</span><div><b>Alternative database systems</b><p>Hands-on labs with SQLite, PostgreSQL and MongoDB, and a guide to choosing between them.</p><ul class="tags"><li>SQLite</li><li>PostgreSQL</li><li>MongoDB</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="er-eer/"><span class="num">6</span><div><b>ER and EER design</b><p>Entities, relationships, specialization and generalization, and converting diagrams to relational schemas.</p><ul class="tags"><li>Design</li><li>ER diagrams</li><li>Relational mapping</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="normalization/"><span class="num">7</span><div><b>Database normalization</b><p>Functional dependencies, 1NF to BCNF, lossless decomposition, and performance trade-offs.</p><ul class="tags"><li>Design</li><li>Dependencies</li><li>Decomposition</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="db-connectivity/"><span class="num">8</span><div><b>Database connectivity</b><p>Connect from Java or Python, run queries, read result sets, and prevent SQL injection with parameterized queries.</p><ul class="tags"><li>Java</li><li>Python</li><li>JDBC</li><li>Security</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="physical-design-indexing/"><span class="num">9</span><div><b>Physical design and indexing</b><p>Blocks and file organization, hashing, B-tree and B+ tree indexes, and choosing indexes for a workload.</p><ul class="tags"><li>Storage</li><li>B+ trees</li><li>Query plans</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
+  <a class="card" href="transactions-security/"><span class="num">10</span><div><b>Transactions and security</b><p>ACID, concurrency problems, isolation levels, deadlocks, privileges, SQL injection and professional responsibility, with recorded two-session runs.</p><ul class="tags"><li>ACID</li><li>Concurrency</li><li>Security</li></ul></div><span class="go" aria-hidden="true">&rarr;</span></a>
   </div>
 </section>
 <section>
@@ -84,9 +91,10 @@ footer{max-width:980px;margin:0 auto;padding:10px 20px 56px;color:var(--soft);fo
   <h2>Files for instructors</h2>
   <p class="sub">Course resources that sit beside the tutorials.</p>
   <div class="files"><ul>
-    <li><span>Kahoot import sheets</span><small><a href="kahoot/kahoot-er-eer-quiz.xlsx">ER and EER</a> &middot; <a href="kahoot/kahoot-normalization-quiz.xlsx">Normalization</a></small></li>
+    <li><span>Kahoot import sheets</span><small><a href="kahoot/kahoot-environment-setup-quiz.xlsx">Module 0</a> &middot; <a href="kahoot/kahoot-database-fundamentals-quiz.xlsx">1</a> &middot; <a href="kahoot/kahoot-data-modeling-quiz.xlsx">2</a> &middot; <a href="kahoot/kahoot-relational-algebra-quiz.xlsx">3</a> &middot; <a href="kahoot/kahoot-sql-programming-quiz.xlsx">4</a> &middot; <a href="kahoot/kahoot-alternative-databases-quiz.xlsx">5</a> &middot; <a href="kahoot/kahoot-er-eer-quiz.xlsx">6</a> &middot; <a href="kahoot/kahoot-normalization-quiz.xlsx">7</a> &middot; <a href="kahoot/kahoot-transactions-security-quiz.xlsx">10</a></small></li>
     <li><span>Connectivity lab code</span><small><a href="https://github.com/md-k-sarker/Database-Management/tree/main/db-connectivity/labs">db-connectivity/labs</a></small></li>
     <li><span>Indexing lab code</span><small><a href="https://github.com/md-k-sarker/Database-Management/tree/main/physical-design-indexing/labs">physical-design-indexing/labs</a></small></li>
+    <li><span>Lab and demo database scripts</span><small>In the <code>labs</code> folder of Modules 1, 2, 3, 4 and 10, and <code>setup_check.sql</code> in Module 0</small></li>
     <li><span>Source repository</span><small><a href="https://github.com/md-k-sarker/Database-Management">github.com/md-k-sarker/Database-Management</a></small></li>
   </ul></div>
 </section>
